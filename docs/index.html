@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMELO.CZ</title>
+    <title>ŠMELO.CZ</title>
     <style>
       body {
         background: #181818;
@@ -35,8 +35,19 @@
     </p>
   </div>
 </div>
+<div style="display:flex; justify-content:center; margin:40px 0;">
+  <div id="testimonial-carousel" style="max-width:500px; width:100%; background:rgba(34,34,34,0.7); border-radius:12px; padding:24px; box-shadow:0 2px 12px #0003; text-align:left; backdrop-filter:blur(12px);">
+    <div id="testimonial-content" style="min-height:100px; display:flex; gap:16px; opacity:1; transition:opacity 0.5s;">
+      <!-- Testimonials will appear here -->
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:6px;">
+      <button onclick="prevTestimonial()" style="background:#333; color:#eee; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; text-align:center;">&#8592;</button>
+      <button onclick="nextTestimonial()" style="background:#333; color:#eee; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; text-align:center;">&#8594;</button>
+    </div>
+  </div>
+</div>
 <hr>
-<div style="max-width:600px;margin:auto;">
+<div style="max-width:400px;margin:auto;">
   <h2 style="text-align:center;">Šmelkarty</h2>
   <div style="display:flex;flex-direction:column;gap:24px;">
     <img src="assets/nepracuje_at_smeli.png" alt="Frame 12" style="width:100%;height:auto;" />
@@ -69,3 +80,33 @@
 </div>
 </body>
 </html>
+<script>
+  const testimonials = [
+    { text: "Můj život byl šedivý, byl jsem poslušný a hrál podle pravidel. Ale pak jsem se na to vykašlal. Díky šmelu je můj život barevnější.", author: "Pavel 🌈" },
+    { text: "Dokud jsem nezačal šmelit, tak o mě holky nejevily zájem.", author: "Jindra 😅" },
+    { text: "Kurzy šmelení mi doslova změnily život. Teď jsem vysoce postavená politička a šmelím celý náš národ.", author: "Karolína 🏛️" },
+  ];
+  let current = 0;
+  function showTestimonial(idx) {
+    const container = document.getElementById('testimonial-content');
+    container.style.opacity = 0;
+    setTimeout(() => {
+      container.innerHTML = '';
+      const div = document.createElement('div');
+      div.style.flex = '1';
+      div.innerHTML = `<span style="font-size:1.15em; font-weight:500;">“${testimonials[idx].text}”</span><br>
+        <span style="display:block; margin-top:12px; font-size:1em; color:#bbb; font-style:italic;">– ${testimonials[idx].author}</span>`;
+      container.appendChild(div);
+      container.style.opacity = 1;
+    }, 300);
+  }
+  function prevTestimonial() {
+    current = (current - 1 + testimonials.length) % testimonials.length;
+    showTestimonial(current);
+  }
+  function nextTestimonial() {
+    current = (current + 1) % testimonials.length;
+    showTestimonial(current);
+  }
+  showTestimonial(current);
+</script>
