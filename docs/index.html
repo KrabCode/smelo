@@ -41,7 +41,7 @@
     <div id="testimonial-content" style="min-height:100px; display:flex; gap:16px; opacity:1; transition:opacity 0.5s;">
       <!-- Testimonials will appear here -->
     </div>
-    <div style="display:flex; justify-content:space-between; margin-top:6px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
       <button onclick="prevTestimonial()" style="background:#333; color:#eee; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; text-align:center;">&#8592;</button>
       <button onclick="nextTestimonial()" style="background:#333; color:#eee; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; text-align:center;">&#8594;</button>
     </div>
@@ -85,9 +85,10 @@
   const testimonials = [
     { text: "Můj život byl šedivý, byl jsem poslušný a hrál podle pravidel. Ale pak jsem se na to vykašlal. Díky šmelu je můj život barevnější.", author: "Pavel 🌈" },
     { text: "Dokud jsem nezačal šmelit, tak o mě holky nejevily zájem.", author: "Jindra 😅" },
-    { text: "Kurzy šmelení mi doslova změnily život. Teď jsem vysoce postavená politička a šmelím celý náš národ.", author: "Karolína 🏛️" },
+    { text: "Kurzy šmelení mi doslova změnily život. Teď jsem vysoce postavená politička a šmelím celý náš národ.", author: "Karolína 🏛️" }
   ];
   let current = 0;
+
   function showTestimonial(idx) {
     const container = document.getElementById('testimonial-content');
     container.style.opacity = 0;
@@ -101,6 +102,7 @@
       container.style.opacity = 1;
     }, 300);
   }
+
   function prevTestimonial() {
     current = (current - 1 + testimonials.length) % testimonials.length;
     showTestimonial(current);
@@ -109,5 +111,6 @@
     current = (current + 1) % testimonials.length;
     showTestimonial(current);
   }
+
   showTestimonial(current);
 </script>
