@@ -38,7 +38,7 @@
 </div>
 <div style="display:flex; justify-content:center; margin:40px 0;">
   <div id="testimonial-carousel" style="max-width:500px; width:100%; background:rgba(34,34,34,0.7); border-radius:12px; padding:24px; box-shadow:0 2px 12px #0003; text-align:left; backdrop-filter:blur(12px);">
-    <div id="testimonial-content" style="min-height:100px; display:flex; gap:16px; opacity:1; transition:opacity 0.5s;">
+    <div id="testimonial-content" style="min-height:120px; display:flex; gap:16px; opacity:1; transition:opacity 0.5s;">
       <!-- Testimonials will appear here -->
     </div>
     <div style="display:flex; align-items:center; justify-content:space-between; margin-top:12px;">
@@ -88,6 +88,7 @@
     { text: "Kurzy šmelení mi doslova změnily život. Teď jsem vysoce postavená politička a šmelím celý náš národ.", author: "Karolína 🏛️" }
   ];
   let current = 0;
+  let intervalId;
 
   function showTestimonial(idx) {
     const container = document.getElementById('testimonial-content');
@@ -97,25 +98,33 @@
       const div = document.createElement('div');
       div.style.flex = '1';
       div.innerHTML = `<span style="font-size:1.25em; font-weight:500;">“${testimonials[idx].text}”</span><br>
-        <span style="display:block; margin-top:12px; font-size:1.15em; color:#bbb; font-style:italic;">– ${testimonials[idx].author}</span>`;
+        <span style="display:block; margin-top:12px; font-size:1.1em; color:#bbb; font-style:italic;">– ${testimonials[idx].author}</span>`;
       container.appendChild(div);
       container.style.opacity = 1;
     }, 300);
   }
 
+  function resetTestimonialInterval() {
+    clearInterval(intervalId);
+    intervalId = setInterval(() => {
+      nextTestimonial();
+    }, 8000);
+  }
+
   function prevTestimonial() {
     current = (current - 1 + testimonials.length) % testimonials.length;
     showTestimonial(current);
+    resetTestimonialInterval();
   }
   function nextTestimonial() {
     current = (current + 1) % testimonials.length;
     showTestimonial(current);
+    resetTestimonialInterval();
   }
 
   showTestimonial(current);
 
-  // Cycle testimonial every 8 seconds
-  setInterval(() => {
+  intervalId = setInterval(() => {
     nextTestimonial();
   }, 8000);
 </script>
