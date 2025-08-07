@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Shell Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            border: 2px solid #fff;
+            border-radius: 8px;
+            background-color: #600;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #8B0000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #f0f0f0;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        #smeloText {
+            position: absolute;
+            margin-top: 180px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+        }
+        h2 {
+            color: #fff;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #scoreText {
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2>najdi červenou</h1>
+    <div id="scoreText">skóre : 0</div>
+    <canvas id="gameCanvas" width="400" height="200"></canvas>
+    <div id="smeloText">šmelo</div>
+    <button id="shuffleBtn" onclick="shuffleShells()">najdu</button>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const smeloText = document.getElementById('smeloText');
+
+        // Shell positions
+        let shells = [
+            { x: 80, y: 100, targetX: 80, clicked: false, animProgress: 1, startX: 80, shouldLift: false, flashing: false, hovered: false },
+            { x: 200, y: 100, targetX: 200, clicked: false, animProgress: 1, startX: 200, shouldLift: false, flashing: false, hovered: false },
+            { x: 320, y: 100, targetX: 320, clicked: false, animProgress: 1, startX: 320, shouldLift: false, flashing: false, hovered: false }
+        ];
+
+        let isAnimating = false;
+        let gameActive = false; // Track if player can make a selection
+        let isFlashing = false; // Track if we're in flash state
+        const shellWidth = 60;
+        const shellHeight = 40;
+
+        function drawShells() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw shells as rectangles
+            shells.forEach((shell, index) => {
+                // Calculate arc height based on animation progress and shouldLift flag
+                let yOffset = 0;
+                if (shell.shouldLift && shell.animProgress < 1) {
+                    // Create arc: starts at 0, peaks at 0.5 progress, ends at 0
+                    const arcProgress = shell.animProgress;
+                    const arcHeight = Math.sin(arcProgress * Math.PI) * 30; // Peak height of 30px
+                    yOffset = -arcHeight;
+                }
+                
+                const currentY = shell.y + yOffset;
+                
+                // Determine color: flashing bright red, clicked blue, hovered light red, or default
+                let fillColor = '#2a2a2a'; // default
+                if (shell.flashing) {
+                    fillColor = '#FF0000'; // bright red for flash
+                } else if (shell.clicked) {
+                    fillColor = '#4169E1'; // blue for clicked
+                } else if (shell.hovered && gameActive && !isAnimating && !isFlashing) {
+                    fillColor = '#606060'; // light red tint for hover
+                }
+                
+                ctx.fillStyle = fillColor;
+                ctx.fillRect(shell.x - shellWidth/2, currentY - shellHeight/2, shellWidth, shellHeight);
+                
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(shell.x - shellWidth/2, currentY - shellHeight/2, shellWidth, shellHeight);
+            
+            });
+        }
+
+        function showSmeloText() {
+            // Show the text
+            smeloText.style.opacity = '1';
+            
+            // Fade it out after 1 second
+            setTimeout(() => {
+                smeloText.style.opacity = '0';
+            }, 1000);
+        }
+
+        function shuffleShells() {
+            if (isAnimating) return;
+            
+            // Start flash effect
+            isFlashing = true;
+            const flashShellIndex = Math.floor(Math.random() * 3);
+            shells[flashShellIndex].flashing = true;
+            drawShells();
+            
+            // After flash delay, start the actual shuffling
+            setTimeout(() => {
+                shells[flashShellIndex].flashing = false;
+                isFlashing = false;
+                startShuffling();
+            }, 300); // Flash for 300ms
+        }
+
+        function startShuffling() {
+            isAnimating = true;
+            shuffleBtn.disabled = true;
+            gameActive = false; // Disable clicking during shuffle
+            
+            // Reset all shell colors and lifted states
+            shells.forEach(shell => {
+                shell.clicked = false;
+                shell.animProgress = 1;
+                shell.shouldLift = false;
+                shell.flashing = false;
+                shell.hovered = false;
+            });
+            
+            // Random number of shuffles between 30 and 50
+            const numberOfShuffles = Math.floor(Math.random() * 10) + 10;
+            let currentShuffle = 0;
+            
+            performNextShuffle();
+            
+            function performNextShuffle() {
+                if (currentShuffle >= numberOfShuffles) {
+                    isAnimating = false;
+                    shuffleBtn.disabled = false;
+                    gameActive = true; // Enable clicking after shuffle is done
+                    return;
+                }
+                
+                // Pick two random shells to swap
+                const shell1Index = Math.floor(Math.random() * 3);
+                let shell2Index = Math.floor(Math.random() * 3);
+                
+                // Make sure we don't pick the same shell twice
+                while (shell2Index === shell1Index) {
+                    shell2Index = Math.floor(Math.random() * 3);
+                }
+                
+                // Store current positions
+                const shell1CurrentX = shells[shell1Index].x;
+                const shell2CurrentX = shells[shell2Index].x;
+                
+                // Store starting positions for animation
+                shells[shell1Index].startX = shells[shell1Index].x;
+                shells[shell2Index].startX = shells[shell2Index].x;
+                
+                // Set target positions (swap them)
+                shells[shell1Index].targetX = shell2CurrentX;
+                shells[shell2Index].targetX = shell1CurrentX;
+                
+                // Reset animation progress
+                shells[shell1Index].animProgress = 0;
+                shells[shell2Index].animProgress = 0;
+                
+                // Reset all lift states, then mark one of the swapping shells to lift
+                shells.forEach(shell => shell.shouldLift = false);
+                const liftedShell = Math.random() < 0.5 ? shell1Index : shell2Index;
+                shells[liftedShell].shouldLift = true;
+                
+                currentShuffle++;
+                animateShells(() => {
+                    // Small delay between shuffles for visual effect
+                    setTimeout(performNextShuffle, 30);
+                });
+            }
+        }
+
+        // Easing function (ease-in-out cubic)
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function animateShells(onComplete) {
+            let allReached = true;
+            const animSpeed = 0.08; // Animation speed (0-1 per frame)
+            
+            shells.forEach(shell => {
+                if (shell.animProgress < 1) {
+                    shell.animProgress += animSpeed;
+                    if (shell.animProgress > 1) shell.animProgress = 1;
+                    
+                    // Apply easing to the progress
+                    const easedProgress = easeInOutCubic(shell.animProgress);
+                    
+                    // Interpolate position with easing
+                    shell.x = shell.startX + (shell.targetX - shell.startX) * easedProgress;
+                    
+                    if (shell.animProgress < 1) {
+                        allReached = false;
+                    }
+                }
+            });
+            
+            drawShells();
+            
+            if (!allReached) {
+                requestAnimationFrame(() => animateShells(onComplete));
+            } else if (onComplete) {
+                onComplete();
+            }
+        }
+
+        // Handle canvas clicks
+        canvas.addEventListener('click', function(event) {
+            if (isAnimating || !gameActive || isFlashing) return; // Don't allow clicks during animation, after selection, or during flash
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            // Check which shell was clicked
+            shells.forEach(shell => {
+                // Calculate current Y position including any arc offset
+                let yOffset = 0;
+                if (shell.shouldLift && shell.animProgress < 1) {
+                    const arcProgress = shell.animProgress;
+                    const arcHeight = Math.sin(arcProgress * Math.PI) * 30;
+                    yOffset = -arcHeight;
+                }
+                const currentY = shell.y + yOffset;
+                
+                const shellLeft = shell.x - shellWidth/2;
+                const shellRight = shell.x + shellWidth/2;
+                const shellTop = currentY - shellHeight/2;
+                const shellBottom = currentY + shellHeight/2;
+                
+                if (x >= shellLeft && x <= shellRight && y >= shellTop && y <= shellBottom) {
+                    shell.clicked = true;
+                    gameActive = false; // Disable further clicking after first selection
+                    showSmeloText(); // Show the "šmelo" text
+                    drawShells();
+                }
+            });
+        });
+
+        // Handle mouse move for cursor changes
+        canvas.addEventListener('mousemove', function(event) {
+            if (isAnimating || !gameActive || isFlashing) {
+                canvas.style.cursor = 'default';
+                // Reset all hover states when not interactive
+                shells.forEach(shell => shell.hovered = false);
+                drawShells();
+                return;
+            }
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            
+            let overShell = false;
+            
+            // Reset all hover states first
+            shells.forEach(shell => shell.hovered = false);
+            
+            // Check if mouse is over any shell
+            shells.forEach(shell => {
+                // Calculate current Y position including any arc offset
+                let yOffset = 0;
+                if (shell.shouldLift && shell.animProgress < 1) {
+                    const arcProgress = shell.animProgress;
+                    const arcHeight = Math.sin(arcProgress * Math.PI) * 30;
+                    yOffset = -arcHeight;
+                }
+                const currentY = shell.y + yOffset;
+                
+                const shellLeft = shell.x - shellWidth/2;
+                const shellRight = shell.x + shellWidth/2;
+                const shellTop = currentY - shellHeight/2;
+                const shellBottom = currentY + shellHeight/2;
+                
+                if (x >= shellLeft && x <= shellRight && y >= shellTop && y <= shellBottom) {
+                    overShell = true;
+                    shell.hovered = true;
+                }
+            });
+            
+            // Change cursor based on whether mouse is over a clickable shell
+            canvas.style.cursor = overShell ? 'pointer' : 'default';
+            
+            // Redraw to show hover effects
+            drawShells();
+        });
+
+        // Initial draw
+        drawShells();
+    </script>
+</body>
+</html>

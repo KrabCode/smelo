@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testimonials</title>
+    <style>
+      body {
+        background: transparent;
+        color: #eee;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      }
+      
+      .testimonial-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 40px 0;
+      }
+      
+      #testimonial-carousel {
+        max-width: 500px;
+        width: 100%;
+        background: rgba(34,34,34,0.7);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 12px #0003;
+        text-align: left;
+        backdrop-filter: blur(12px);
+      }
+      
+      #testimonial-content {
+        min-height: 120px;
+        display: flex;
+        gap: 16px;
+        opacity: 1;
+        transition: opacity 0.5s;
+      }
+      
+      .testimonial-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+      }
+      
+      .testimonial-btn {
+        background: #333;
+        color: #eee;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        cursor: pointer;
+        text-align: center;
+      }
+      
+      .testimonial-btn:hover {
+        background: #444;
+      }
+    </style>
+</head>
+<body>
+  <div class="testimonial-wrapper">
+    <div id="testimonial-carousel">
+      <div id="testimonial-content">
+        <!-- Testimonials will appear here -->
+      </div>
+      <div class="testimonial-nav">
+        <button onclick="prevTestimonial()" class="testimonial-btn">&#8592;</button>
+        <button onclick="nextTestimonial()" class="testimonial-btn">&#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const testimonials = [
+      { text: "Můj život byl šedivý, byl jsem poslušný a hrál podle pravidel. Ale pak jsem se na to vykašlal. Díky šmelu je můj život barevnější.", author: "Pavel 🌈" },
+      { text: "Dokud jsem nezačal šmelit, tak o mě holky nejevily zájem.", author: "Jindra 😅" },
+      { text: "Kurzy šmelení mi doslova změnily život. Teď jsem vysoce postavená politička a šmelím celý národ.", author: "Karolína 🏛️" }
+    ];
+    let current = 0;
+    let intervalId;
+
+    function showTestimonial(idx) {
+      const container = document.getElementById('testimonial-content');
+      container.style.opacity = 0;
+      setTimeout(() => {
+        container.innerHTML = '';
+        const div = document.createElement('div');
+        div.style.flex = '1';
+        div.innerHTML = `<span style="font-size:1.25em; font-weight:500;">"${testimonials[idx].text}"</span><br>
+          <span style="display:block; margin-top:12px; font-size:1.1em; color:#bbb; font-style:italic;">– ${testimonials[idx].author}</span>`;
+        container.appendChild(div);
+        container.style.opacity = 1;
+      }, 300);
+    }
+
+    function resetTestimonialInterval() {
+      clearInterval(intervalId);
+      intervalId = setInterval(() => {
+        nextTestimonial();
+      }, 8000);
+    }
+
+    function prevTestimonial() {
+      current = (current - 1 + testimonials.length) % testimonials.length;
+      showTestimonial(current);
+      resetTestimonialInterval();
+    }
+    
+    function nextTestimonial() {
+      current = (current + 1) % testimonials.length;
+      showTestimonial(current);
+      resetTestimonialInterval();
+    }
+
+    showTestimonial(current);
+
+    intervalId = setInterval(() => {
+      nextTestimonial();
+    }, 8000);
+  </script>
+</body>
+</html>
