@@ -52,18 +52,32 @@
             margin-bottom: 10px;
             text-align: center;
         }
+        #smeloText {
+            width: 400px;
+            margin: auto;
+            text-align: center;
+            font-size: 1em;
+            font-weight: bold;
+            color: #fff;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
     <h2>najdi</h2>
     <div id="scoreText" style="margin-bottom: 20px">skóre : 0</div>
-    <canvas id="gameCanvas" width="400" height="200"></canvas>
+    <canvas id="gameCanvas" width="400" height="200" style="display:block;position:relative;z-index:1;"></canvas>
     <button id="shuffleBtn" onclick="shuffleShells()">najdu</button>
-    
+    <div id="smeloText">šmelo</div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const shuffleBtn = document.getElementById('shuffleBtn');
+        const smeloText = document.getElementById('smeloText');
 
 
         // Load images
@@ -270,10 +284,19 @@
                     shell.clicked = true;
                     setGameActive(false); // Disable further clicking after first selection
                     shuffleBtn.disabled = false; // Enable shuffle button after shell is chosen
+                    showSmeloText(); // Show the "šmelo" text
                     drawShells();
                 }
             });
         });
+
+        // Show smelo text after picking a shell
+        function showSmeloText() {
+            smeloText.style.opacity = '1';
+            setTimeout(() => {
+                smeloText.style.opacity = '0';
+            }, 1000);
+        }
 
         // Handle mouse move for cursor changes
         canvas.addEventListener('mousemove', function(event) {
