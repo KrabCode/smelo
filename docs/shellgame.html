@@ -39,16 +39,6 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
-        #smeloText {
-            position: absolute;
-            margin-top: 180px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #fff;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-            pointer-events: none;
-        }
         h2 {
             color: #fff;
             font-size: 28px;
@@ -65,17 +55,24 @@
     </style>
 </head>
 <body>
-    <h2>najdi červenou</h1>
-    <div id="scoreText">skóre : 0</div>
+    <h2>najdi</h2>
+    <div id="scoreText" style="margin-bottom: 20px">skóre : 0</div>
     <canvas id="gameCanvas" width="400" height="200"></canvas>
-    <div id="smeloText">šmelo</div>
     <button id="shuffleBtn" onclick="shuffleShells()">najdu</button>
     
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const shuffleBtn = document.getElementById('shuffleBtn');
-        const smeloText = document.getElementById('smeloText');
+
+
+        // Load images
+        const imgShellOpen = new Image();
+        imgShellOpen.src = 'shellgame_assets/shell_open.png';
+        const imgShellClosed = new Image();
+        imgShellClosed.src = 'shellgame_assets/shell_closed.png';
+        const imgBall = new Image();
+        imgBall.src = 'shellgame_assets/ball.png';
 
         // Shell positions
         let shells = [
@@ -87,58 +84,47 @@
         let isAnimating = false;
         let gameActive = false; // Track if player can make a selection
         let isFlashing = false; // Track if we're in flash state
+        let isPreviewState = true; // Track if we are in preview state
         const shellWidth = 60;
         const shellHeight = 40;
 
         function drawShells() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw shells as rectangles
+            // Use explicit preview state
             shells.forEach((shell, index) => {
-                // Calculate arc height based on animation progress and shouldLift flag
                 let yOffset = 0;
                 if (shell.shouldLift && shell.animProgress < 1) {
-                    // Create arc: starts at 0, peaks at 0.5 progress, ends at 0
                     const arcProgress = shell.animProgress;
-                    const arcHeight = Math.sin(arcProgress * Math.PI) * 30; // Peak height of 30px
+                    const arcHeight = Math.sin(arcProgress * Math.PI) * 30;
                     yOffset = -arcHeight;
                 }
-                
                 const currentY = shell.y + yOffset;
-                
-                // Determine color: flashing bright red, clicked blue, hovered light red, or default
-                let fillColor = '#2a2a2a'; // default
-                if (shell.flashing) {
-                    fillColor = '#FF0000'; // bright red for flash
-                } else if (shell.clicked) {
-                    fillColor = '#4169E1'; // blue for clicked
-                } else if (shell.hovered && gameActive && !isAnimating && !isFlashing) {
-                    fillColor = '#606060'; // light red tint for hover
+                let drawOpen = false;
+                let drawBall = false;
+                // Preview: show open shell with ball in front (overlaid)
+                if (isPreviewState && index === 1) {
+                    drawOpen = true;
+                    drawBall = true;
+                } else drawOpen = !!shell.clicked;
+                // After preview, all shells closed unless clicked
+                const shellImg = drawOpen ? imgShellOpen : imgShellClosed;
+                // Draw shell at its natural size, centered
+                const shellDrawX = shell.x - shellImg.width / 2;
+                const shellDrawY = currentY - shellImg.height / 2;
+                ctx.drawImage(shellImg, shellDrawX, shellDrawY);
+                // Draw ball only in preview, overlaid in front of open shell
+                if (drawBall) {
+                    const ballDrawX = shell.x - imgBall.width / 2;
+                    const ballDrawY = currentY + shellImg.height / 4 - imgBall.height / 2;
+                    ctx.drawImage(imgBall, ballDrawX, ballDrawY);
                 }
-                
-                ctx.fillStyle = fillColor;
-                ctx.fillRect(shell.x - shellWidth/2, currentY - shellHeight/2, shellWidth, shellHeight);
-                
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(shell.x - shellWidth/2, currentY - shellHeight/2, shellWidth, shellHeight);
-            
             });
-        }
-
-        function showSmeloText() {
-            // Show the text
-            smeloText.style.opacity = '1';
-            
-            // Fade it out after 1 second
-            setTimeout(() => {
-                smeloText.style.opacity = '0';
-            }, 1000);
         }
 
         function shuffleShells() {
             if (isAnimating) return;
-            
+            isPreviewState = false; // End preview as soon as shuffling starts
+
             // Start flash effect
             isFlashing = true;
             const flashShellIndex = Math.floor(Math.random() * 3);
@@ -156,8 +142,9 @@
         function startShuffling() {
             isAnimating = true;
             shuffleBtn.disabled = true;
-            gameActive = false; // Disable clicking during shuffle
-            
+            setGameActive(false); // Disable clicking during shuffle
+            isPreviewState = false; // Ensure preview is off during shuffling
+
             // Reset all shell colors and lifted states
             shells.forEach(shell => {
                 shell.clicked = false;
@@ -166,7 +153,8 @@
                 shell.flashing = false;
                 shell.hovered = false;
             });
-            
+            drawShells(); // Ensure all shells are closed before shuffling
+
             // Random number of shuffles between 30 and 50
             const numberOfShuffles = Math.floor(Math.random() * 10) + 10;
             let currentShuffle = 0;
@@ -176,8 +164,8 @@
             function performNextShuffle() {
                 if (currentShuffle >= numberOfShuffles) {
                     isAnimating = false;
-                    shuffleBtn.disabled = false;
-                    gameActive = true; // Enable clicking after shuffle is done
+                    shuffleBtn.disabled = true;
+                    setGameActive(true); // Enable clicking after shuffle is done, but keep button disabled
                     return;
                 }
                 
@@ -256,15 +244,11 @@
 
         // Handle canvas clicks
         canvas.addEventListener('click', function(event) {
-            if (isAnimating || !gameActive || isFlashing) return; // Don't allow clicks during animation, after selection, or during flash
-            
+            if (isAnimating || !gameActive || isFlashing) return;
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            
-            // Check which shell was clicked
-            shells.forEach(shell => {
-                // Calculate current Y position including any arc offset
+            shells.forEach((shell, index) => {
                 let yOffset = 0;
                 if (shell.shouldLift && shell.animProgress < 1) {
                     const arcProgress = shell.animProgress;
@@ -272,16 +256,20 @@
                     yOffset = -arcHeight;
                 }
                 const currentY = shell.y + yOffset;
-                
-                const shellLeft = shell.x - shellWidth/2;
-                const shellRight = shell.x + shellWidth/2;
-                const shellTop = currentY - shellHeight/2;
-                const shellBottom = currentY + shellHeight/2;
-                
+                // Use the correct image for hit area
+                let drawOpen = false;
+                if (isPreviewState && index === 1) {
+                    drawOpen = true;
+                } else drawOpen = !!shell.clicked;
+                const shellImg = drawOpen ? imgShellOpen : imgShellClosed;
+                const shellLeft = shell.x - shellImg.width / 2;
+                const shellRight = shell.x + shellImg.width / 2;
+                const shellTop = currentY - shellImg.height / 2;
+                const shellBottom = currentY + shellImg.height / 2;
                 if (x >= shellLeft && x <= shellRight && y >= shellTop && y <= shellBottom) {
                     shell.clicked = true;
-                    gameActive = false; // Disable further clicking after first selection
-                    showSmeloText(); // Show the "šmelo" text
+                    setGameActive(false); // Disable further clicking after first selection
+                    shuffleBtn.disabled = false; // Enable shuffle button after shell is chosen
                     drawShells();
                 }
             });
@@ -291,24 +279,16 @@
         canvas.addEventListener('mousemove', function(event) {
             if (isAnimating || !gameActive || isFlashing) {
                 canvas.style.cursor = 'default';
-                // Reset all hover states when not interactive
                 shells.forEach(shell => shell.hovered = false);
                 drawShells();
                 return;
             }
-            
             const rect = canvas.getBoundingClientRect();
             const x = event.clientX - rect.left;
             const y = event.clientY - rect.top;
-            
             let overShell = false;
-            
-            // Reset all hover states first
             shells.forEach(shell => shell.hovered = false);
-            
-            // Check if mouse is over any shell
-            shells.forEach(shell => {
-                // Calculate current Y position including any arc offset
+            shells.forEach((shell, index) => {
                 let yOffset = 0;
                 if (shell.shouldLift && shell.animProgress < 1) {
                     const arcProgress = shell.animProgress;
@@ -316,27 +296,39 @@
                     yOffset = -arcHeight;
                 }
                 const currentY = shell.y + yOffset;
-                
-                const shellLeft = shell.x - shellWidth/2;
-                const shellRight = shell.x + shellWidth/2;
-                const shellTop = currentY - shellHeight/2;
-                const shellBottom = currentY + shellHeight/2;
-                
+                let drawOpen = false;
+                if (isPreviewState && index === 1) {
+                    drawOpen = true;
+                } else drawOpen = !!shell.clicked;
+                const shellImg = drawOpen ? imgShellOpen : imgShellClosed;
+                const shellLeft = shell.x - shellImg.width / 2;
+                const shellRight = shell.x + shellImg.width / 2;
+                const shellTop = currentY - shellImg.height / 2;
+                const shellBottom = currentY + shellImg.height / 2;
                 if (x >= shellLeft && x <= shellRight && y >= shellTop && y <= shellBottom) {
                     overShell = true;
                     shell.hovered = true;
                 }
             });
-            
-            // Change cursor based on whether mouse is over a clickable shell
             canvas.style.cursor = overShell ? 'pointer' : 'default';
-            
-            // Redraw to show hover effects
             drawShells();
         });
 
         // Initial draw
-        drawShells();
+        function resetPreview() {
+            isPreviewState = true;
+            shells.forEach(shell => shell.clicked = false);
+            drawShells();
+            shuffleBtn.disabled = false; // Enable button in preview
+        }
+        resetPreview();
+        shuffleBtn.addEventListener('click', resetPreview);
+
+        // Update shuffle button state when gameActive changes
+        function setGameActive(active) {
+            gameActive = active;
+            shuffleBtn.disabled = active; // Disable button when gameActive is true
+        }
     </script>
 </body>
 </html>
