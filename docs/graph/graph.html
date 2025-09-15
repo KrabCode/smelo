@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Poker Winnings Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<canvas id="winningsChart" style="width:100%; display:block;"></canvas>
+<script>
+
+    const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv`;
+
+    fetch(url)
+        .then(response => response.text()) // Use text() for CSV
+        .then(csv => {
+            // Simple CSV parsing (assumes no commas in values)
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',');
+            // Start from line 2 if you have a second header row, else use line 1
+            const dataRows = lines.slice(2).map(line => line.split(','));
+            // Filter out rows where the date (second column) is empty
+            const rows = dataRows.filter(row => row[1] && row[1].trim() !== '');
+            // Convert all values to numbers (except empty strings)
+            const winnings = rows.map(row => row.map(cell => cell === '' ? 0 : Number(cell)));
+            // Compute cumulative sums for each player (column)
+            const cumulative = headers.map((_, colIdx) => {
+                let sum = 0;
+                return winnings.map(row => sum += (row[colIdx] || 0));
+            });
+            // Helper to determine if a point should be opaque or alpha
+            function isOpaquePoint(data, i) {
+                const prev = i > 0 ? data[i] !== data[i-1] : false;
+                const next = i < data.length-1 ? data[i] !== data[i+1] : false;
+                return prev || next;
+            }
+            // Nicer color palette (Tableau 10)
+            const niceColors = [
+                "#4E79A7", // blue
+                "#F28E2B", // orange
+                "#E15759", // red
+                "#76B7B2", // teal
+                "#59A14F", // green
+                "#EDC948", // yellow
+                "#B07AA1", // purple
+                "#FF9DA7", // pink
+                "#9C755F", // brown
+                "#BAB0AC"  // gray
+            ];
+            // Helper to convert hex to rgba with alpha
+            function hexToRgba(hex, alpha) {
+                // Accepts #RRGGBB or #RGB
+                if (hex.length === 7) {
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    return `rgba(${r},${g},${b},${alpha})`;
+                } else if (hex.length === 4) {
+                    const r = parseInt(hex[1] + hex[1], 16);
+                    const g = parseInt(hex[2] + hex[2], 16);
+                    const b = parseInt(hex[3] + hex[3], 16);
+                    return `rgba(${r},${g},${b},${alpha})`;
+                }
+                return hex;
+            }
+            // Prepare data for each player (column)
+            const datasets = headers.map((player, colIdx) => {
+                const color = niceColors[colIdx % niceColors.length];
+                const colorTransparent = hexToRgba(color, 0.3);
+                return {
+                    label: player,
+                    data: cumulative[colIdx],
+                    fill: false,
+                    borderColor: color,
+                    tension: 0.1,
+                    segment: {
+                        borderColor: ctx => {
+                            const i = ctx.p0DataIndex;
+                            const data = cumulative[colIdx];
+                            if (data[i] === data[i + 1]) {
+                                // Use 30% alpha for no-change segments
+                                return colorTransparent;
+                            }
+                            return color;
+                        }
+                    },
+                    pointBackgroundColor: (ctx) => {
+                        const i = ctx.dataIndex;
+                        const data = cumulative[colIdx];
+                        return isOpaquePoint(data, i) ? color : colorTransparent;
+                    },
+                    pointBorderColor: (ctx) => {
+                        const i = ctx.dataIndex;
+                        const data = cumulative[colIdx];
+                        return isOpaquePoint(data, i) ? color : colorTransparent;
+                    }
+                };
+            });
+            // X-axis labels: Use the second column (date/session), formatted as Czech date
+            const sessionLabels = rows.map((row, i) => row[1]);
+            // Render chart
+            new Chart(document.getElementById('winningsChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: sessionLabels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Kumulativní šmelo'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const i = context.dataIndex;
+                                    const data = context.dataset.data;
+                                    const player = context.dataset.label;
+                                    const cumulative = data[i];
+                                    const prev = i > 0 ? data[i-1] : 0;
+                                    const change = cumulative - prev;
+                                    const sign = change > 0 ? '+' : '';
+                                    return `${player}: ${cumulative} (Δ ${sign}${change})`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Výhra / Ztráta (Kč)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Datum pošmelení'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+</script>
+</body>
+</html>
