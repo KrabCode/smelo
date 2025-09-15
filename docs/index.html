@@ -21,8 +21,6 @@
 <div style="text-align:center;">
   <h1><a href="https://smelo.cz">ŠMELO.CZ</a></h1>
   <hr>
-  <div id="friday-counter" style="text-align:center;font-size:1.5em;margin:32px 0;"></div>
-  <hr>
   <div style="display:flex; justify-content:center;">
     <p style="text-align:left; max-width:600px;">
       🃏✨ Jednoho večera jsem seděl u pokerového stolu s podezřelými lidmi.<br><br>
@@ -43,57 +41,6 @@
 <div style="display:flex; justify-content:center; margin:40px 0; background: none;">
   <iframe src="testimonials.html" style="width:100%; max-width:548px; height:380px; border:none; border-radius:12px; background: none;"></iframe>
 </div>
-<!--div style="display:flex; justify-content:center; margin:40px 0; background: none;">
-  <iframe src="shellgame.html" style="width:100%; max-width:548px; height:440px; border:none; border-radius:12px; background:none;"></iframe>
-</div-->
-<script>
-function getNextFriday1800CEST(now) {
-    // CEST is UTC+2
-    // Get current UTC time
-    const utcNow = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
-    // Find next Friday
-    let daysToFriday = (5 - utcNow.getUTCDay() + 7) % 7;
-    if (daysToFriday === 0 && (utcNow.getUTCHours() > 16 || (utcNow.getUTCHours() === 16 && utcNow.getUTCMinutes() >= 0))) {
-        daysToFriday = 7;
-    }
-    // Next Friday at 16:00 UTC (18:00 CEST)
-    const nextFriday = new Date(Date.UTC(
-        utcNow.getUTCFullYear(),
-        utcNow.getUTCMonth(),
-        utcNow.getUTCDate() + daysToFriday,
-        16, 0, 0, 0
-    ));
-    return nextFriday;
-}
-
-function updateFridayCounter() {
-    const now = new Date();
-    // CEST is UTC+2
-    const cestOffset = 2 * 60; // minutes
-    const cestNow = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + cestOffset * 60000);
-    const day = cestNow.getDay(); // 0=Sun, 5=Fri
-    const hour = cestNow.getHours();
-    const min = cestNow.getMinutes();
-    if (day === 5 && hour === 18 && min >= 0 && min < 5) {
-        document.getElementById('friday-counter').textContent = 'ŠMELTIME';
-        return;
-    }
-    const nextFriday = getNextFriday1800CEST(now);
-    let diff = nextFriday - now;
-    if (diff < 0) diff = 0;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-    let multipleDaysSuffix = '';
-    if(days > 1){
-      multipleDaysSuffix = 's';
-    }
-    document.getElementById('friday-counter').textContent = `do pátečního večera zbývá: ${days} den${multipleDaysSuffix}, ${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-}
-setInterval(updateFridayCounter, 1000);
-updateFridayCounter();
-</script>
 <hr>
 <div style="max-width:400px;margin:auto;">
   <h2 style="text-align:center;">Šmelkarty</h2>
