@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ŠMELO.CZ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
     <style>
       body {
         background: #181818;
@@ -14,6 +15,10 @@
       hr { border-color: #333; }
       img {
         border-radius: 16px;
+      }
+      .smelotitle {
+        font-family: 'Staatliches', sans-serif;
+        letter-spacing: 4px;
       }
       /* Chart iframe responsive styles */
       .chart-iframe {
@@ -37,7 +42,7 @@
 </head>
 <body>
 <div style="text-align:center;">
-  <h1><a href="https://smelo.cz">ŠMELO.CZ</a></h1>
+  <h1 class="smelotitle"><a href="https://smelo.cz">ŠMELO.CZ</a></h1>
   <hr>
   <div style="overflow-x:auto; overflow-y:hidden; width:100%; height:80vh; max-height:80vh; min-height:0;">
     <iframe src="graph/graph.html" class="chart-iframe"></iframe>
