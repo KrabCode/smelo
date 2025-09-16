@@ -21,6 +21,12 @@
         letter-spacing: 4px;
         padding-top: 16px;
       }
+      .smelkarta {
+        width: 100%;
+        height: auto;
+        margin-top: 16px;
+        border-radius: 16px;
+      }
       /* Chart iframe responsive styles */
       .chart-iframe {
         width: 100%;
@@ -39,74 +45,128 @@
           max-width: 100%;
         }
       }
+      .collapsible-title {
+        cursor: pointer;
+        user-select: none;
+        transition: color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .collapsible-title:hover {
+        color: #ffb300;
+      }
+      .arrow {
+        display: inline-block;
+        transition: transform 0.2s;
+        font-size: 1.1em;
+      }
+      .collapsed-section {
+        height: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        opacity: 0.01;
+        pointer-events: none;
+      }
     </style>
 </head>
 <body>
 <div style="text-align:center;">
   <h1 class="smelotitle"><a href="https://smelo.cz">ŠMELO.CZ</a></h1>
   <hr>
-  <h2 style="text-align:center;">Výsledky</h2>
-  <div style="overflow-x:auto; overflow-y:hidden; width:100%; height:80vh; max-height:80vh; min-height:0;">
-    <iframe src="graph/graph.html" class="chart-iframe"></iframe>
+  <h2 class="collapsible-title"><span class="arrow">▼</span>Výsledky</h2>
+  <div class="collapsible-section">
+    <div style="overflow-x:auto; overflow-y:hidden; width:100%; height:80vh; max-height:80vh; min-height:0;">
+      <iframe src="graph/graph.html" class="chart-iframe"></iframe>
+    </div>
   </div>
   <hr>
-  <h2 style="text-align:center;">Můj příběh</h2>
-  <div style="display:flex; justify-content:center;">
-    <p style="text-align:left; max-width:600px;">
-      🃏✨ Jednoho večera jsem seděl u pokerového stolu s podezřelými lidmi.<br><br>
-      Karty byly proti mně, soupeř si tahal z rukávu žetony. 🎲<br>
-      Tu noc jsem prohrál. 😅<br><br>
-      Ale naučil jsem se něco zásadního: 💡<br>
-      V pokeru – i v životě – nejvíc vyhráváš, když ohýbáš pravidla. 🔄<br><br>
-      Proč hrát fér, když můžeš hrát chytře? 🧠<br><br>
-      Uvědomil jsem si, že úspěch není o štěstí 🍀 - že štěstíčku se musí jít naproti. 🚶‍♂️<br>
-      Šmel vždy a všude 🕵️‍♂️ a sleduj, jak se ti otevírají dveře. 🚪<br><br>
-      Život je hra. Play to win. ♠️💪<br><br>
-      Šmelím, tedy jsem. 😎
-      <br>
-    </p>
+  <h2 class="collapsible-title"><span class="arrow">▼</span>šmelo</h2>
+  <div class="collapsible-section">
+    <div style="display:flex; justify-content:center;">
+      <p style="text-align:left; max-width:600px;">
+        🃏✨ Jednoho večera jsem seděl u pokerového stolu s podezřelými lidmi.<br><br>
+        Karty byly proti mně, soupeř si tahal z rukávu žetony. 🎲<br>
+        Tu noc jsem prohrál. 😅<br><br>
+        Ale naučil jsem se něco zásadního: 💡<br>
+        V pokeru – i v životě – nejvíc vyhráváš, když ohýbáš pravidla. 🔄<br><br>
+        Proč hrát fér, když můžeš hrát chytře? 🧠<br><br>
+        Uvědomil jsem si, že úspěch není o štěstí 🍀 - že štěstíčku se musí jít naproti. 🚶‍♂️<br>
+        Šmel vždy a všude 🕵️‍♂️ a sleduj, jak se ti otevírají dveře. 🚪<br><br>
+        Život je hra. Play to win. ♠️💪<br><br>
+        Šmelím, tedy jsem. 😎
+        <br>
+      </p>
+    </div>
   </div>
-</div>
-<hr>
-<h2 style="text-align:center;">Inspirace</h2>
-<div style="display:flex; justify-content:center; margin:40px 0; background: none;">
-
-  <iframe src="testimonials.html" style="width:100%; max-width:548px; height:380px; border:none; border-radius:12px; background: none;"></iframe>
-</div>
-<hr>
-<div style="max-width:400px;margin:auto;">
-  <h2 style="text-align:center;">Šmelkarty</h2>
-  <div style="display:flex;flex-direction:column;gap:24px;">
-    <img src="assets/Uspokojsa.png" alt="Ucpokorca" style="width:100%;height:auto;" />
-    <img src="assets/Smutek.png" alt="Smutek" style="width:100%;height:auto;" />
-    <img src="assets/Blindy.png" alt="Blindy" style="width:100%;height:auto;" />
-    <img src="assets/Tank.png" alt="Tank" style="width:100%;height:auto;" />
-    <img src="assets/nepracuje_at_smeli.png" alt="Frame 12" style="width:100%;height:auto;" />
-    <img src="assets/nesmeli_at_neji.png" alt="smelo_7" style="width:100%;height:auto;" />
-    <img src="assets/nesmelite_smelte.png" alt="Frame 18" style="width:100%;height:auto;" />
-    <img src="assets/Šmelwood.png" alt="Šmelwood" style="width:100%;height:auto;" />
-    <img src="assets/lotr.png" alt="LOTR" style="width:100%;height:auto;" />
-    <img src="assets/Šmelparte.png" alt="Šmelparte" style="width:100%;height:auto;" />
-    <img src="assets/Šmelbank.png" alt="Šmelbank" style="width:100%;height:auto;" />
-    <img src="assets/zizka.png" alt="Frame 11" style="width:100%;height:auto;" />
-    <img src="assets/nesoudime.png" alt="Nesoudime" style="width:100%;height:auto;" />
-    <img src="assets/radeji_smelo.png" alt="Frame 10" style="width:100%;height:auto;" />
-    <img src="assets/posmeleni.png" alt="Frame 13" style="width:100%;height:auto;" />
-    <img src="assets/dokonale_smelo.png" alt="Frame 19" style="width:100%;height:auto;" />
-    <img src="assets/neleni_smeleni.png" alt="Frame 23" style="width:100%;height:auto;" />
-    <img src="assets/smelo_je_zelezna_kosile.png" alt="Frame 8" style="width:100%;height:auto;" />
-    <img src="assets/na_starem_smelidle.png" alt="Babicka" style="width:100%;height:auto;" />
-    <img src="assets/tiche_smelo.png" alt="Frame 9" style="width:100%;height:auto;" />
-    <img src="assets/manon.png" alt="Manon" style="width:100%;height:auto;" />
-    <img src="assets/Problém tří šmeles.png" alt="Problém tří šmeles" style="width:100%;height:auto;" />
-    <img src="assets/samotari.png" alt="Samotáři_2" style="width:100%;height:auto;" />
-    <img src="assets/tolik_zetonu_jsi_nemel.jpg" alt="smelo_1_fade" style="width:100%;height:auto;" />
-    <img src="assets/neni_dulezite_vyhrat.jpg" alt="smelo_2_fade" style="width:100%;height:auto;" />
-    <img src="assets/smelit_definice.png" alt="smelo_3" style="width:100%;height:auto;" />
-    <img src="assets/starci.png" alt="starci" style="width:100%;height:auto;" />
-    <img src="assets/mluviti_stribro_smeliti_zlato.png" alt="Frame 3" style="width:100%;height:auto;" />
-    <img src="assets/live_laugh_smelo.png" alt="Frame 5" style="width:100%;height:auto;" />
+  <hr>
+  <h2 class="collapsible-title"><span class="arrow">▼</span>Příběhy</h2>
+  <div class="collapsible-section">
+    <div style="display:flex; justify-content:center; margin:40px 0; background: none;">
+      <iframe src="testimonials.html" style="width:100%; max-width:548px; height:380px; border:none; border-radius:12px; background: none;"></iframe>
+    </div>
   </div>
-</div>
+  <hr>
+  <h2 class="collapsible-title"><span class="arrow">▼</span>Šmelkarty</h2>
+  <div class="collapsible-section">
+    <div style="max-width:400px;margin:auto;">
+      <div style="display:flex;flex-direction:column;gap:24px;">
+        <img src="assets/Uspokojsa.png" alt="Ucpokorca" class="smelkarta" />
+        <img src="assets/Smutek.png" alt="Smutek" class="smelkarta" />
+        <img src="assets/Blindy.png" alt="Blindy" class="smelkarta" />
+        <img src="assets/Tank.png" alt="Tank" class="smelkarta" />
+        <img src="assets/nepracuje_at_smeli.png" alt="Frame 12" class="smelkarta" />
+        <img src="assets/nesmeli_at_neji.png" alt="smelo_7" class="smelkarta" />
+        <img src="assets/nesmelite_smelte.png" alt="Frame 18" class="smelkarta" />
+        <img src="assets/Šmelwood.png" alt="Šmelwood" class="smelkarta" />
+        <img src="assets/lotr.png" alt="LOTR" class="smelkarta" />
+        <img src="assets/Šmelparte.png" alt="Šmelparte" class="smelkarta" />
+        <img src="assets/Šmelbank.png" alt="Šmelbank" class="smelkarta" />
+        <img src="assets/zizka.png" alt="Frame 11" class="smelkarta" />
+        <img src="assets/nesoudime.png" alt="Nesoudime" class="smelkarta" />
+        <img src="assets/radeji_smelo.png" alt="Frame 10" class="smelkarta" />
+        <img src="assets/posmeleni.png" alt="Frame 13" class="smelkarta" />
+        <img src="assets/dokonale_smelo.png" alt="Frame 19" class="smelkarta" />
+        <img src="assets/neleni_smeleni.png" alt="Frame 23" class="smelkarta" />
+        <img src="assets/smelo_je_zelezna_kosile.png" alt="Frame 8" class="smelkarta" />
+        <img src="assets/na_starem_smelidle.png" alt="Babicka" class="smelkarta" />
+        <img src="assets/tiche_smelo.png" alt="Frame 9" class="smelkarta" />
+        <img src="assets/manon.png" alt="Manon" class="smelkarta" />
+        <img src="assets/Problém tří šmeles.png" alt="Problém tří šmeles" class="smelkarta" />
+        <img src="assets/samotari.png" alt="Samotáři_2" class="smelkarta" />
+        <img src="assets/tolik_zetonu_jsi_nemel.jpg" alt="smelo_1_fade" class="smelkarta" />
+        <img src="assets/neni_dulezite_vyhrat.jpg" alt="smelo_2_fade" class="smelkarta" />
+        <img src="assets/smelit_definice.png" alt="smelo_3" class="smelkarta" />
+        <img src="assets/starci.png" alt="starci" class="smelkarta" />
+        <img src="assets/mluviti_stribro_smeliti_zlato.png" alt="Frame 3" class="smelkarta" />
+        <img src="assets/live_laugh_smelo.png" alt="Frame 5" class="smelkarta" />
+      </div>
+    </div>
+  </div>
 </body>
 </html>
+<script>
+// Collapsible sections logic
+  document.addEventListener('DOMContentLoaded', function() {
+    const titles = document.querySelectorAll('.collapsible-title');
+    titles.forEach(function(title) {
+      const arrow = title.querySelector('.arrow');
+      const section = title.nextElementSibling;
+      title.setAttribute('tabindex', '0');
+      title.setAttribute('role', 'button');
+      title.setAttribute('aria-expanded', 'true');
+      title.addEventListener('click', function() {
+        const isCollapsed = section.classList.toggle('collapsed-section');
+        title.setAttribute('aria-expanded', !isCollapsed);
+        arrow.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+      });
+      title.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          title.click();
+        }
+      });
+    });
+  });
+</script>
