@@ -238,6 +238,17 @@
                                     const deltaStr = sign + change;
                                     return ` ${name}${totalStr} (Δ ${deltaStr})`;
                                 }
+                            },
+                            itemSort: function(a, b) {
+                                // Sort by cumulative value at hovered index (descending)
+                                const i = a.dataIndex;
+                                const aVal = a.dataset.data[i];
+                                const bVal = b.dataset.data[i];
+                                // Nulls last
+                                if (aVal == null && bVal == null) return 0;
+                                if (aVal == null) return 1;
+                                if (bVal == null) return -1;
+                                return bVal - aVal;
                             }
                         }
                     },
