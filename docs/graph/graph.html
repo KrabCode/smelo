@@ -3,9 +3,51 @@
 <head>
     <title>Poker Winnings Graph</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            overflow-y: hidden;
+        }
+        .chart-scroll-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .chart-scroll-inner {
+            min-width: 600px;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 100%;
+            overflow-y: hidden;
+            box-sizing: border-box;
+            padding-bottom: 16px;
+        }
+        @media (max-width: 700px) {
+            .chart-scroll-inner {
+                min-width: 600px;
+                width: 100vw;
+            }
+        }
+        @media (max-width: 500px) {
+            .chart-scroll-inner {
+                min-width: 400px;
+                width: 100vw;
+            }
+        }
+        #winningsChart {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+    </style>
 </head>
 <body>
-<canvas id="winningsChart" style="width:100%; display:block;"></canvas>
+<div class="chart-scroll-wrapper">
+  <div class="chart-scroll-inner">
+    <canvas id="winningsChart"></canvas>
+  </div>
+</div>
 <script>
 
     const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv`;
