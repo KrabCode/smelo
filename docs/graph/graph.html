@@ -177,7 +177,15 @@
                 };
             });
             // X-axis labels: Use the second column (date/session), formatted as Czech date
-            const sessionLabels = rows.map((row, i) => row[1]);
+            const sessionLabels = rows.map((row, i) => row[1]
+                .replace(/Mon/g, 'Po')
+                .replace(/Tue/g, 'Út')
+                .replace(/Wed/g, 'St')
+                .replace(/Thu/g, 'Čt')
+                .replace(/Fri/g, 'Pá')
+                .replace(/Sat/g, 'So')
+                .replace(/Sun/g, 'Ne')
+            );
             // Render chart
             new Chart(document.getElementById('winningsChart').getContext('2d'), {
                 type: 'line',
