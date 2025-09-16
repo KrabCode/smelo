@@ -56,18 +56,16 @@
                 const next = i < data.length-1 ? data[i] !== data[i+1] : false;
                 return prev || next;
             }
-            // Nicer color palette (Tableau 10)
             const niceColors = [
-                "#4E79A7", // blue
-                "#F28E2B", // orange
-                "#E15759", // red
-                "#76B7B2", // teal
-                "#59A14F", // green
-                "#EDC948", // yellow
-                "#B07AA1", // purple
-                "#FF9DA7", // pink
-                "#9C755F", // brown
-                "#BAB0AC"  // gray
+                "#E15759", "#4E79A7", "#F28E2B", "#76B7B2", "#59A14F", "#EDC948",
+                "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC", "#1F77B4", "#AEC7E8",
+                "#FF7F0E", "#FFBB78", "#2CA02C", "#98DF8A", "#D62728", "#FF9896",
+                "#9467BD", "#C5B0D5", "#8C564B", "#C49C94", "#E377C2", "#F7B6D2",
+                "#7F7F7F", "#C7C7C7", "#BCBD22", "#DBDB8D", "#17BECF", "#9EDAE5",
+                "#393b79", "#5254a3", "#6b6ecf", "#9c9ede", "#637939", "#8ca252",
+                "#b5cf6b", "#cedb9c", "#8c6d31", "#bd9e39", "#e7ba52", "#e7cb94",
+                "#843c39", "#ad494a", "#d6616b", "#e7969c", "#7b4173", "#a55194",
+                "#ce6dbd", "#de9ed6", "#1b9e77", "#d95f02"
             ];
             // Helper to convert hex to rgba with alpha
             function hexToRgba(hex, alpha) {
