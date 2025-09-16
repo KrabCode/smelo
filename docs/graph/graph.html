@@ -20,12 +20,35 @@
             const dataRows = lines.slice(2).map(line => line.split(','));
             // Filter out rows where the date (second column) is empty
             const rows = dataRows.filter(row => row[1] && row[1].trim() !== '');
+            // Filter out columns with empty header
+            const validColumns = headers.map((h, i) => ({h, i})).filter(x => x.h && x.h.trim() !== '');
+            const filteredHeaders = validColumns.map(x => x.h);
             // Convert all values to numbers (except empty strings)
-            const winnings = rows.map(row => row.map(cell => cell === '' ? 0 : Number(cell)));
+            const winnings = rows.map(row => validColumns.map(x => row[x.i] === '' ? 0 : Number(row[x.i])));
+            // Keep original cell values for presence detection (filtered)
+            const originalCells = rows.map(row => validColumns.map(x => row[x.i]));
             // Compute cumulative sums for each player (column)
-            const cumulative = headers.map((_, colIdx) => {
+            const cumulative = filteredHeaders.map((_, colIdx) => {
                 let sum = 0;
                 return winnings.map(row => sum += (row[colIdx] || 0));
+            });
+            // After cumulative is built, set values after last session (non-empty, nonzero) for each player to null
+            cumulative.forEach((arr, colIdx) => {
+                // Find last index where the original cell is not empty and not zero
+                let lastIdx = -1;
+                for (let i = arr.length - 1; i >= 0; i--) {
+                    const cell = originalCells[i][colIdx];
+                    if (cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0) {
+                        lastIdx = i;
+                        break;
+                    }
+                }
+                if (lastIdx >= 0 && lastIdx < arr.length - 1) {
+                    for (let i = lastIdx + 1; i < arr.length; i++) {
+                        arr[i] = null;
+                    }
+                }
+                // Do NOT set points with zero/missing delta to null here, so lines remain continuous
             });
             // Helper to determine if a point should be opaque or alpha
             function isOpaquePoint(data, i) {
@@ -63,7 +86,7 @@
                 return hex;
             }
             // Prepare data for each player (column)
-            const datasets = headers.map((player, colIdx) => {
+            const datasets = filteredHeaders.map((player, colIdx) => {
                 const color = niceColors[colIdx % niceColors.length];
                 const colorTransparent = hexToRgba(color, 0.3);
                 return {
@@ -77,11 +100,29 @@
                             const i = ctx.p0DataIndex;
                             const data = cumulative[colIdx];
                             if (data[i] === data[i + 1]) {
-                                // Use 30% alpha for no-change segments
+                                // Use lower alpha for no-change segments
                                 return colorTransparent;
                             }
                             return color;
                         }
+                    },
+                    pointRadius: (ctx) => {
+                        const i = ctx.dataIndex;
+                        const data = cumulative[colIdx];
+                        const prev = i > 0 ? data[i-1] : 0;
+                        const curr = data[i];
+                        const delta = (curr != null && prev != null) ? curr - prev : null;
+                        if (!isFinite(delta) || delta === 0) return 0;
+                        return 3;
+                    },
+                    pointHoverRadius: (ctx) => {
+                        const i = ctx.dataIndex;
+                        const data = cumulative[colIdx];
+                        const prev = i > 0 ? data[i-1] : 0;
+                        const curr = data[i];
+                        const delta = (curr != null && prev != null) ? curr - prev : null;
+                        if (!isFinite(delta) || delta === 0) return 0;
+                        return 6;
                     },
                     pointBackgroundColor: (ctx) => {
                         const i = ctx.dataIndex;
@@ -107,6 +148,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -116,16 +161,42 @@
                             text: 'Kumulativní šmelo'
                         },
                         tooltip: {
+                            enabled: true,
+                            bodyFont: {
+                                family: 'monospace',
+                                size: 14
+                            },
                             callbacks: {
                                 label: function(context) {
                                     const i = context.dataIndex;
                                     const data = context.dataset.data;
-                                    const player = context.dataset.label;
+                                    let player = context.dataset.label;
                                     const cumulative = data[i];
                                     const prev = i > 0 ? data[i-1] : 0;
                                     const change = cumulative - prev;
+                                    // Always show the hovered dataset, hide others if delta is 0 or not finite
+                                    const tooltip = context.chart.tooltip;
+                                    const hoveredDatasetIndex = tooltip && tooltip.dataPoints && tooltip.dataPoints[0] ? tooltip.dataPoints[0].datasetIndex : null;
+                                    if (context.datasetIndex !== hoveredDatasetIndex && (!isFinite(change) || change === 0)) return '';
+                                    // Truncate player name to 8 chars with ... if longer
+                                    if (player.match('/')) player = player.split('/')[0];
+                                    // Find max player name and total length for alignment
+                                    const allLabels = context.chart.data.datasets.map(ds => {
+                                        let l = ds.label;
+                                        return l.length > 8 ? 10 : l.length;
+                                    });
+                                    const namePad = Math.max(...allLabels) ;
+                                    // Find max cumulative length for alignment
+                                    const allTotals = context.chart.data.datasets.map(ds => {
+                                        const d = ds.data[i];
+                                        return d != null ? d.toString().length : 0;
+                                    });
+                                    const totalPad = Math.max(...allTotals);
+                                    const name = player.padEnd(namePad, ' ');
+                                    const totalStr = cumulative.toString().padStart(totalPad, ' ');
                                     const sign = change > 0 ? '+' : '';
-                                    return `${player}: ${cumulative} (Δ ${sign}${change})`;
+                                    const deltaStr = (sign + change).padStart(6, ' ');
+                                    return ` ${name}${totalStr} Δ${deltaStr}`;
                                 }
                             }
                         }
