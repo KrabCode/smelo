@@ -231,7 +231,7 @@
                                     // Find max player name and total length for alignment
                                     const allLabels = context.chart.data.datasets.map(ds => {
                                         let l = ds.label;
-                                        return l.length > 8 ? 10 : l.length;
+                                        return l.length > 6 ? 8 : l.length;
                                     });
                                     const namePad = Math.max(...allLabels) ;
                                     // Find max cumulative length for alignment
