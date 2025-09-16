@@ -195,8 +195,8 @@
                                     const name = player.padEnd(namePad, ' ');
                                     const totalStr = cumulative.toString().padStart(totalPad, ' ');
                                     const sign = change > 0 ? '+' : '';
-                                    const deltaStr = (sign + change).padStart(6, ' ');
-                                    return ` ${name}${totalStr} Δ${deltaStr}`;
+                                    const deltaStr = sign + change;
+                                    return ` ${name}${totalStr} (Δ ${deltaStr})`;
                                 }
                             }
                         }
