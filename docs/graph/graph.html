@@ -76,6 +76,7 @@
     </style>
 </head>
 <body>
+<div id="playerFilterContainer" style="margin: 12px 0 0 0; text-align:center;"></div>
 <div class="chart-scroll-wrapper">
   <div class="chart-scroll-inner">
     <div id="loadingSpinner">
@@ -88,11 +89,129 @@
 
     const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv`;
 
+    let chartInstance = null;
+    let allDatasets = null;
+    let filteredHeaders = null;
+    let sessionLabels = null;
+
+    function renderPlayerFilter(players) {
+        const container = document.getElementById('playerFilterContainer');
+        container.innerHTML = '';
+        const select = document.createElement('select');
+        select.style.fontSize = '1.1em';
+        select.style.padding = '2px 8px';
+        select.id = 'playerFilterSelect';
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.textContent = 'Všichni';
+        select.appendChild(allOption);
+        // Sort players alphabetically (locale-aware, case-insensitive)
+        const sortedPlayers = [...players].sort((a, b) => a.localeCompare(b, 'cs', {sensitivity: 'base'}));
+        sortedPlayers.forEach(player => {
+            // Only display the part before the first /, trimmed
+            const displayName = player.split('/')[0].trim();
+            const opt = document.createElement('option');
+            opt.value = player;
+            opt.textContent = displayName;
+            select.appendChild(opt);
+        });
+        container.appendChild(select);
+        select.addEventListener('change', () => {
+            updateChartForPlayer(select.value);
+        });
+    }
+
+    function updateChartForPlayer(selectedPlayer = '') {
+        if (!chartInstance || !allDatasets) return;
+        chartInstance.data.datasets = allDatasets.map(ds => {
+            // Deep clone dataset to avoid Chart.js mutation issues
+            const newDs = JSON.parse(JSON.stringify(ds));
+            if (!selectedPlayer || ds.label === selectedPlayer) {
+                // Full color
+                newDs.borderColor = ds._origBorderColor;
+                // Make the selected player's line fully opaque
+                if (selectedPlayer && ds.label === selectedPlayer) {
+                    newDs.segment = {
+                        borderColor: ds._origBorderColor
+                    };
+                } else {
+                    newDs.segment = ds._origSegment;
+                }
+                newDs.pointBackgroundColor = ds._origPointBackgroundColor;
+                newDs.pointBorderColor = ds._origPointBorderColor;
+                newDs.borderWidth = 2;
+                newDs.hidden = false;
+                // Make points bigger if this is the selected player
+                if (selectedPlayer && ds.label === selectedPlayer) {
+                    const origPointRadius = ds.pointRadius;
+                    // Find first non-null, non-zero index
+                    let firstNonNullIdx = -1;
+                    for (let i = 0; i < ds.data.length; i++) {
+                        const curr = ds.data[i];
+                        if (curr != null && curr !== 0) {
+                            firstNonNullIdx = i;
+                            break;
+                        }
+                    }
+                    // Hide all data before firstNonNullIdx by setting to null
+                    if (firstNonNullIdx > 0) {
+                        for (let i = 0; i < firstNonNullIdx; i++) {
+                            newDs.data[i] = null;
+                        }
+                    }
+                    newDs.pointRadius = (ctx) => {
+                        const i = ctx.dataIndex;
+                        const curr = ds.data[i];
+                        const prev = i > 0 ? ds.data[i-1] : 0;
+                        const delta = (curr != null && prev != null) ? curr - prev : null;
+                        if (!isFinite(delta) || delta === 0) return 0;
+                        let base = 3;
+                        if (typeof origPointRadius === 'function') {
+                            base = origPointRadius(ctx);
+                        } else if (typeof origPointRadius === 'number') {
+                            base = origPointRadius;
+                        }
+                        return base > 0 ? base * 1.5 : 0;
+                    };
+                    // Keep hover radius normal
+                    newDs.pointHoverRadius = ds.pointHoverRadius;
+                }
+            } else {
+                // Hide all points for other players when filtered, but keep them in tooltip
+                newDs.borderColor = ds._desatBorderColor;
+                newDs.segment = ds._desatSegment;
+                newDs.pointBackgroundColor = ds._desatPointBackgroundColor;
+                newDs.pointBorderColor = ds._desatPointBorderColor;
+                newDs.borderWidth = 1;
+                newDs.hidden = false;
+                newDs.pointRadius = () => 0;
+            }
+            // For all players: hide line before first non-null, non-zero point
+            let firstNonNullIdx = -1;
+            for (let i = 0; i < newDs.data.length; i++) {
+                const curr = newDs.data[i];
+                if (curr != null && curr !== 0) {
+                    firstNonNullIdx = i;
+                    break;
+                }
+            }
+            if (firstNonNullIdx > 0) {
+                for (let i = 0; i < firstNonNullIdx; i++) {
+                    newDs.data[i] = null;
+                }
+            }
+            return newDs;
+        });
+        chartInstance.update();
+    }
+
     requestAnimationFrame(() => {
         const spinner = document.getElementById('loadingSpinner');
         const canvas = document.getElementById('winningsChart');
         spinner.style.display = 'flex';
         canvas.style.display = 'none';
+        // Threshold for minimum number of appearances
+        const PLAYER_MIN_SESSIONS = 2;
         fetch(url)
             .then(response => response.text()) // Use text() for CSV
             .then(csv => {
@@ -105,11 +224,24 @@
                 const rows = dataRows.filter(row => row[1] && row[1].trim() !== '');
                 // Filter out columns with empty header
                 const validColumns = headers.map((h, i) => ({h, i})).filter(x => x.h && x.h.trim() !== '');
-                const filteredHeaders = validColumns.map(x => x.h);
+                // --- Count nonzero/non-null appearances for each player ---
+                const playerAppearances = validColumns.map((x, colIdx) => {
+                    let count = 0;
+                    for (let row of rows) {
+                        const val = row[x.i];
+                        if (val !== undefined && val !== '' && val !== '0' && Number(val) !== 0) {
+                            count++;
+                        }
+                    }
+                    return count;
+                });
+                // Only keep players with at least PLAYER_MIN_SESSIONS appearances
+                const filteredValidColumns = validColumns.filter((x, idx) => playerAppearances[idx] >= PLAYER_MIN_SESSIONS);
+                filteredHeaders = filteredValidColumns.map(x => x.h);
                 // Convert all values to numbers (except empty strings)
-                const winnings = rows.map(row => validColumns.map(x => row[x.i] === '' ? 0 : Number(row[x.i])));
+                const winnings = rows.map(row => filteredValidColumns.map(x => row[x.i] === '' ? 0 : Number(row[x.i])));
                 // Keep original cell values for presence detection (filtered)
-                const originalCells = rows.map(row => validColumns.map(x => row[x.i]));
+                const originalCells = rows.map(row => filteredValidColumns.map(x => row[x.i]));
                 // Compute cumulative sums for each player (column)
                 const cumulative = filteredHeaders.map((_, colIdx) => {
                     let sum = 0;
@@ -166,11 +298,61 @@
                     }
                     return hex;
                 }
+                // Helper: hex to HSL
+                function hexToHsl(hex) {
+                    // Remove #
+                    hex = hex.replace('#', '');
+                    if (hex.length === 3) {
+                        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                    }
+                    const r = parseInt(hex.substring(0,2),16)/255;
+                    const g = parseInt(hex.substring(2,4),16)/255;
+                    const b = parseInt(hex.substring(4,6),16)/255;
+                    const max = Math.max(r,g,b), min = Math.min(r,g,b);
+                    let h, s, l = (max+min)/2;
+                    if(max===min){h=s=0;}else{
+                        const d = max-min;
+                        s = l>0.5 ? d/(2-max-min) : d/(max+min);
+                        switch(max){
+                            case r: h=(g-b)/d+(g<b?6:0); break;
+                            case g: h=(b-r)/d+2; break;
+                            case b: h=(r-g)/d+4; break;
+                        }
+                        h/=6;
+                    }
+                    return [h*360, s, l];
+                }
+                // Helper: HSL to rgba
+                function hslToRgba(h, s, l, a) {
+                    let r, g, b;
+                    if(s===0){r=g=b=l;}else{
+                        const hue2rgb = (p,q,t)=>{
+                            if(t<0)t+=1;if(t>1)t-=1;
+                            if(t<1/6)return p+(q-p)*6*t;
+                            if(t<1/2)return q;
+                            if(t<2/3)return p+(q-p)*(2/3-t)*6;
+                            return p;
+                        };
+                        const q = l<0.5?l*(1+s):l+s-l*s;
+                        const p = 2*l-q;
+                        r = hue2rgb(p,q,h/360+1/3);
+                        g = hue2rgb(p,q,h/360);
+                        b = hue2rgb(p,q,h/360-1/3);
+                    }
+                    return `rgba(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)},${a})`;
+                }
+                // Helper: desaturate hex color
+                function desaturateHex(hex, sat=0.15, alpha=0.7) {
+                    const [h, , l] = hexToHsl(hex);
+                    return hslToRgba(h, sat, l, alpha);
+                }
                 // Prepare data for each player (column)
                 const datasets = filteredHeaders.map((player, colIdx) => {
                     const color = niceColors[colIdx % niceColors.length];
                     const colorTransparent = hexToRgba(color, 0.3);
-                    return {
+                    const desatColor = desaturateHex(color, 0.15, 0.7);
+                    const desatColorTransparent = desaturateHex(color, 0.10, 0.25);
+                    const ds = {
                         label: player,
                         data: cumulative[colIdx],
                         fill: false,
@@ -214,11 +396,40 @@
                             const i = ctx.dataIndex;
                             const data = cumulative[colIdx];
                             return isOpaquePoint(data, i) ? color : colorTransparent;
+                        },
+                        // Store desaturated colors for dimming
+                        _desatBorderColor: desatColor,
+                        _desatSegment: {
+                            borderColor: ctx => {
+                                const i = ctx.p0DataIndex;
+                                const data = cumulative[colIdx];
+                                if (data[i] === data[i + 1]) {
+                                    return desatColorTransparent;
+                                }
+                                return desatColor;
+                            }
+                        },
+                        _desatPointBackgroundColor: (ctx) => {
+                            const i = ctx.dataIndex;
+                            const data = cumulative[colIdx];
+                            return isOpaquePoint(data, i) ? desatColor : desatColorTransparent;
+                        },
+                        _desatPointBorderColor: (ctx) => {
+                            const i = ctx.dataIndex;
+                            const data = cumulative[colIdx];
+                            return isOpaquePoint(data, i) ? desatColor : desatColorTransparent;
                         }
                     };
+                    // Store original color/segment for dimming logic
+                    ds._origBorderColor = color;
+                    ds._origSegment = ds.segment;
+                    ds._origPointBackgroundColor = ds.pointBackgroundColor;
+                    ds._origPointBorderColor = ds.pointBorderColor;
+                    return ds;
                 });
+                allDatasets = datasets;
                 // X-axis labels: Use the second column (date/session), formatted as Czech date
-                const sessionLabels = rows.map((row, i) => row[1]
+                sessionLabels = rows.map((row, i) => row[1]
                     .replace(/Mon/g, 'Po')
                     .replace(/Tue/g, 'Út')
                     .replace(/Wed/g, 'St')
@@ -227,8 +438,10 @@
                     .replace(/Sat/g, 'So')
                     .replace(/Sun/g, 'Ne')
                 );
+                // Render player filter
+                renderPlayerFilter(filteredHeaders);
                 // Render chart
-                new Chart(document.getElementById('winningsChart').getContext('2d'), {
+                chartInstance = new Chart(document.getElementById('winningsChart').getContext('2d'), {
                     type: 'line',
                     data: {
                         labels: sessionLabels,
