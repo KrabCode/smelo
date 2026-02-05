@@ -5,8 +5,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         html, body {
-            height: 100%;
-            overflow-y: hidden;
+            height: auto;
+            overflow-y: auto;
         }
         .chart-scroll-wrapper {
             width: 100%;
@@ -73,6 +73,42 @@
             color: #444;
             margin-top: 0;
         }
+        #playerTotalsList {
+            margin: 20px auto;
+            max-width: 300px;
+            padding: 0 20px 40px 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .player-total-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 1.1em;
+            color: white;
+        }
+        .player-color-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .player-name {
+            flex: 1;
+            min-width: 0;
+            color: white;
+        }
+        .player-total {
+            font-weight: bold;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+        .player-total.positive {
+            color: #059669;
+        }
+        .player-total.negative {
+            color: #dc2626;
+        }
     </style>
 </head>
 <body>
@@ -85,6 +121,7 @@
     <canvas id="winningsChart" style="display:none;"></canvas>
   </div>
 </div>
+<div id="playerTotalsList"></div>
 <script>
 
     const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv`;
@@ -205,6 +242,63 @@
         chartInstance.update();
     }
 
+    function renderPlayerTotals(datasets) {
+        const container = document.getElementById('playerTotalsList');
+        container.innerHTML = '';
+
+        // Get latest totals for each player
+        const playerTotals = datasets.map(ds => {
+            // Find the last non-null value
+            let lastTotal = 0;
+            for (let i = ds.data.length - 1; i >= 0; i--) {
+                if (ds.data[i] != null) {
+                    lastTotal = ds.data[i];
+                    break;
+                }
+            }
+            return {
+                name: ds.label.split('/')[0].trim(),
+                total: lastTotal,
+                color: ds._origBorderColor
+            };
+        });
+
+        // Sort by total (descending)
+        playerTotals.sort((a, b) => b.total - a.total);
+
+        // Create list items
+        playerTotals.forEach(player => {
+            const item = document.createElement('div');
+            item.className = 'player-total-item';
+
+            const circle = document.createElement('div');
+            circle.className = 'player-color-circle';
+            circle.style.backgroundColor = player.color;
+
+            const name = document.createElement('div');
+            name.className = 'player-name';
+            name.style = 'color: white; text-shadow: 1px 1px 2px black;';
+            name.textContent = player.name;
+
+            const total = document.createElement('div');
+            total.className = 'player-total';
+            if (player.total > 0) {
+                total.classList.add('positive');
+                total.textContent = `+${player.total}`;
+            } else if (player.total < 0) {
+                total.classList.add('negative');
+                total.textContent = player.total;
+            } else {
+                total.textContent = '0';
+            }
+
+            item.appendChild(circle);
+            item.appendChild(name);
+            item.appendChild(total);
+            container.appendChild(item);
+        });
+    }
+
     requestAnimationFrame(() => {
         const spinner = document.getElementById('loadingSpinner');
         const canvas = document.getElementById('winningsChart');
@@ -250,15 +344,15 @@
                         return { row, date: isNaN(ts) ? null : new Date(ts) };
                     });
 
-                const sixMonthsAgo = new Date();
-                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                const yearAgo = new Date();
+                yearAgo.setFullYear(yearAgo.getFullYear() - 1);
 
                 // Filter out columns with empty header
                 const validColumns = headers.map((h, i) => ({h, i})).filter(x => x.h && x.h.trim() !== '');
 
                 // Count appearances only in the last 6 months for filtering
                 const rowsLast6Months = allRowsWithDate
-                    .filter(x => x.date && x.date >= sixMonthsAgo)
+                    .filter(x => x.date && x.date >= yearAgo)
                     .map(x => x.row);
 
                 const playerAppearances = validColumns.map((x, colIdx) => {
@@ -289,7 +383,7 @@
                 // Find the index where 6 months ago starts
                 let cutoffIndex = 0;
                 for (let i = 0; i < allRowsWithDate.length; i++) {
-                    if (allRowsWithDate[i].date && allRowsWithDate[i].date >= sixMonthsAgo) {
+                    if (allRowsWithDate[i].date && allRowsWithDate[i].date >= yearAgo) {
                         cutoffIndex = i;
                         break;
                     }
@@ -493,6 +587,8 @@
                 );
                 // Render player filter
                 renderPlayerFilter(filteredHeaders);
+                // Render player totals
+                renderPlayerTotals(datasets);
                 // Render chart
                 chartInstance = new Chart(document.getElementById('winningsChart').getContext('2d'), {
                     type: 'line',
@@ -591,3 +687,4 @@
 </script>
 </body>
 </html>
+
