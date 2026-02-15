@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Hidden Input — Smelo</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    /* small local tweaks so the input page looks tidy even with the shared site stylesheet */
+    .form-row{display:flex;gap:8px;align-items:center}
+    .form-row > *{flex:1}
+    .player-row{border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;margin-bottom:8px}
+    .player-controls{display:flex;gap:6px;align-items:center}
+    .small{font-size:0.9em;color:#bbb}
+    .muted{color:#999}
+    .btn{padding:6px 10px;border-radius:6px;background:#222;color:#fff;border:1px solid #444;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px dashed #666}
+  </style>
+</head>
+<body>
+  <h2>Hidden input (prototype)</h2>
+  <p class="muted">Enter a date and one or more players (each player: name + amount). Click the chevron to expand a player's note.</p>
+
+  <div class="controls" style="margin-bottom:12px;">
+    <label style="flex:1">
+      <input type="checkbox" id="simulateLocal"> Simulate locally (store in browser)
+    </label>
+    <label style="flex:2">
+      Web app URL (deployed Apps Script):
+      <input id="webappUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    </label>
+  </div>
+
+  <form id="addForm">
+    <div class="form-row" style="margin-bottom:8px;">
+      <label for="entryDate" style="min-width:84px;flex:0 0 160px;">Date</label>
+      <input type="date" id="entryDate" required>
+      <div style="flex:0 0 140px; display:flex; gap:8px; align-items:center;">
+        <button type="button" id="addPlayerBtn" class="btn">Add player</button>
+        <button type="button" id="clearPlayersBtn" class="btn ghost">Clear</button>
+      </div>
+    </div>
+
+    <div id="playersContainer" aria-live="polite">
+      <!-- player rows inserted here -->
+    </div>
+
+    <!-- keep a hidden template/marker so linters that look for static class usage see `.player-row` is used -->
+    <template id="player-row-template"><div class="player-row" style="display:none"></div></template>
+
+    <button type="submit" class="btn" style="margin-top:8px;">Send</button>
+    <div id="status" aria-live="polite" style="margin-top:8px;"></div>
+  </form>
+
+  <section id="localPreview" style="display:none; margin-top:16px;">
+    <h3>Local (simulated) submissions</h3>
+    <div id="previewList"></div>
+    <button id="clearLocal" class="btn ghost" style="margin-top:8px;">Clear local rows</button>
+  </section>
+
+  <script>
+    (function(){
+      // Elements
+      const simulateCheckbox = document.getElementById('simulateLocal');
+      const webappUrlInput = document.getElementById('webappUrl');
+      const form = document.getElementById('addForm');
+      const status = document.getElementById('status');
+      const playersContainer = document.getElementById('playersContainer');
+      const addPlayerBtn = document.getElementById('addPlayerBtn');
+      const clearPlayersBtn = document.getElementById('clearPlayersBtn');
+      const previewSection = document.getElementById('localPreview');
+      const previewList = document.getElementById('previewList');
+      const clearLocalBtn = document.getElementById('clearLocal');
+      const entryDate = document.getElementById('entryDate');
+
+      const LOCAL_KEY = 'smelo_input_rows_v2';
+
+      // Utilities
+      function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
+      function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+      // Player row factory
+      let playerIdCounter = 1;
+      function createPlayerRow(data){
+        const id = 'player_' + (playerIdCounter++);
+        const wrapper = document.createElement('div');
+        wrapper.className = 'player-row';
+        wrapper.dataset.playerId = id;
+
+        wrapper.innerHTML = `
+          <div class="form-row" style="align-items:center;">
+            <div style="flex:1">
+              <label for="${id}_name">Name</label>
+              <input id="${id}_name" class="player-name" value="${data && data.name ? escapeHtml(data.name) : ''}" placeholder="Player name">
+            </div>
+            <div style="flex:0 0 140px;">
+              <label for="${id}_amount">Amount</label>
+              <input id="${id}_amount" class="player-amount" type="number" step="0.01" value="${data && data.amount!=null ? Number(data.amount) : ''}" placeholder="0">
+            </div>
+            <div style="flex:0 0 80px; text-align:right;" class="player-controls">
+              <button type="button" class="btn ghost toggle-details" aria-expanded="false">▸</button>
+              <button type="button" class="btn ghost remove-player">✖</button>
+            </div>
+          </div>
+          <div class="player-details" style="display:none; margin-top:8px;">
+            <label for="${id}_note">Note</label>
+            <textarea id="${id}_note" rows="2" class="player-note">${data && data.note ? escapeHtml(data.note) : ''}</textarea>
+          </div>
+        `;
+
+        // Attach handlers
+        const toggleBtn = wrapper.querySelector('.toggle-details');
+        const details = wrapper.querySelector('.player-details');
+        const removeBtn = wrapper.querySelector('.remove-player');
+        toggleBtn.addEventListener('click', ()=>{
+          const expanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+          toggleBtn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+          toggleBtn.textContent = expanded ? '▸' : '▾';
+          details.style.display = expanded ? 'none' : 'block';
+        });
+        removeBtn.addEventListener('click', ()=>{ wrapper.remove(); });
+
+        return wrapper;
+      }
+
+      function addPlayer(data){
+        const row = createPlayerRow(data);
+        playersContainer.appendChild(row);
+        return row;
+      }
+
+      function clearPlayers(){ playersContainer.innerHTML = ''; }
+
+      // Local storage functions
+      function loadLocalRows(){ try{ const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; }catch(e){ return []; } }
+      function saveLocalRows(rows){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(rows)); }catch(e){ console.error('Failed saving', e); } }
+
+      function renderPreview(){
+        const rows = loadLocalRows();
+        if(!rows || rows.length===0){ previewSection.style.display = 'none'; previewList.innerHTML = ''; return; }
+        previewSection.style.display = 'block';
+        previewList.innerHTML = '';
+        rows.forEach((r)=>{
+          const el = document.createElement('div');
+          el.style.borderTop = '1px solid rgba(255,255,255,0.04)';
+          el.style.padding = '8px 0';
+          const playersHtml = (r.players||[]).map(p=>`${escapeHtml(p.name||'')} (${p.amount})${p.note ? ' — '+escapeHtml(p.note) : ''}`).join('<br>');
+          el.innerHTML = `<strong>${escapeHtml(r.date)}</strong><div class="small">${playersHtml}</div>`;
+          previewList.appendChild(el);
+        });
+      }
+
+      // Initialization: set date and one empty player
+      if(!entryDate.value) entryDate.value = todayISO();
+      addPlayer();
+
+      // Event listeners
+      addPlayerBtn.addEventListener('click', ()=> addPlayer());
+      clearPlayersBtn.addEventListener('click', ()=>{ if(confirm('Clear all player rows?')) clearPlayers(); });
+      clearLocalBtn.addEventListener('click', ()=>{ if(confirm('Clear locally stored rows?')){ localStorage.removeItem(LOCAL_KEY); renderPreview(); } });
+
+      simulateCheckbox.addEventListener('change', ()=>{ renderPreview(); status.textContent = simulateCheckbox.checked ? 'Simulation ON' : ''; });
+
+      form.addEventListener('submit', async (ev)=>{
+        ev.preventDefault();
+        // Gather data
+        const date = entryDate.value;
+        const playerEls = Array.from(playersContainer.querySelectorAll('.player-row'));
+        const players = playerEls.map(el=>{
+           const name = (el.querySelector('.player-name')||{value:''}).value.trim();
+           const amountRaw = (el.querySelector('.player-amount')||{value:''}).value;
+           const amount = amountRaw === '' ? null : Number(amountRaw);
+           const note = (el.querySelector('.player-note')||{value:''}).value.trim();
+           return { name, amount, note };
+         }).filter(p=>p.name || p.amount!=null);
+
+        if(players.length===0){ status.textContent = 'Add at least one player with a name or amount.'; return; }
+
+        const payload = { date, players };
+
+        if(simulateCheckbox.checked){
+          const rows = loadLocalRows();
+          rows.push({ date, players, ts: Date.now() });
+          saveLocalRows(rows);
+          status.textContent = 'Saved locally (simulation).';
+          form.reset();
+          if(!entryDate.value) entryDate.value = todayISO();
+          clearPlayers(); addPlayer(); renderPreview();
+          return;
+        }
+
+        const webappUrl = webappUrlInput.value.trim();
+        if(!webappUrl){ status.textContent = 'Enter web app URL or enable simulation.'; return; }
+
+        status.textContent = 'Sending…';
+        try{
+          const secret = (document.getElementById('secret') || {value:''}).value; // optional global secret field not present here; kept for backward compatibility
+          const res = await fetch(webappUrl, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(Object.assign({ secret: secret }, payload))});
+          const text = await res.text();
+          let json = null; try{ json = JSON.parse(text); }catch(e){}
+          if(res.ok && (!json || json.ok!==false)){
+            status.textContent = 'Row added (server).';
+            form.reset();
+            if(!entryDate.value) entryDate.value = todayISO();
+            clearPlayers(); addPlayer();
+          } else {
+            status.textContent = 'Server error: ' + (json && json.error ? json.error : (text || res.statusText));
+          }
+        }catch(err){ status.textContent = 'Network/error: ' + (err && err.message ? err.message : String(err)); }
+
+      });
+
+      // Initial render of preview
+      renderPreview();
+    })();
+  </script>
+</body>
+</html>

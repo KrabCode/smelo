@@ -1,0 +1,62 @@
+body {
+    background: #181818;
+    color: #eee;
+}
+a { color: #eee; }
+hr { border-color: #333; }
+img {
+    border-radius: 16px;
+}
+.smelotitle, h2 {
+    font-family: 'Staatliches', sans-serif;
+    letter-spacing: 4px;
+    padding-top: 16px;
+}
+.smelkarta {
+    width: 100%;
+    height: auto;
+    margin-top: 16px;
+    border-radius: 16px;
+}
+/* Chart iframe responsive styles */
+.chart-iframe {
+    width: 100%;
+    min-width: 0;
+    height: 100%;
+    max-width: 100vw;
+    border: none;
+    background: none;
+    display: block;
+    overflow-y: hidden;
+}
+@media (max-width: 900px) {
+    .chart-iframe {
+        min-width: 600px;
+        width: 800px;
+        max-width: 100%;
+    }
+}
+.collapsible-title {
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.collapsible-title:hover {
+    color: #ffb300;
+}
+.arrow {
+    display: inline-block;
+    font-size: 1.1em;
+}
+.collapsed-section {
+    height: 0 !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    opacity: 0.01;
+    pointer-events: none;
+}
