@@ -120,17 +120,23 @@ form.addEventListener('submit', async (e) => {
 
     try {
         const payload = { secret, date, entries };
-        await fetch(url, {
+        const res = await fetch(url, {
             method: 'POST',
-            mode: 'no-cors',
             body: JSON.stringify(payload)
         });
-        // no-cors: response is opaque, assume success if no network error
-        setStatus('Odesláno — zkontrolujte sheet.', false);
-        entriesContainer.innerHTML = '';
-        addEntry();
+        const text = await res.text();
+        let json = null;
+        try { json = JSON.parse(text); } catch(e) {}
+
+        if (res.ok && json && json.ok !== false) {
+            setStatus('Záznam přidán.', false);
+            entriesContainer.innerHTML = '';
+            addEntry();
+        } else {
+            setStatus('Chyba: ' + (json && json.error ? json.error : text || res.statusText), true);
+        }
     } catch(err) {
-        setStatus('Chyba sítě: ' + (err.message || err), true);
+        setStatus('Chyba: ' + (err.message || err), true);
     }
 });
 
