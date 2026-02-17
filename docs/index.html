@@ -41,16 +41,17 @@
             border: 1px solid #444 !important;
             border-radius: 6px !important;
             padding: 0 !important;
+            text-align: left !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
             pointer-events: none;
         }
-        .tt { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #ddd; padding: 8px 12px; min-width: 180px; }
-        .tt-header { font-weight: bold; color: #fff; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #444; }
+        .tt { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #ddd; padding: 8px 12px; min-width: 180px; text-align: left; }
+        .tt-header { font-weight: bold; color: #fff; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #444; text-align: left; }
         .tt-row { display: flex; align-items: center; padding: 2px 0; font-family: monospace; font-size: 12px; }
         .tt-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
-        .tt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .tt-val { margin-left: 8px; white-space: nowrap; }
-        .tt-delta { margin-left: 6px; white-space: nowrap; color: #888; }
+        .tt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+        .tt-val { margin-left: 8px; white-space: nowrap; text-align: right; min-width: 30px; }
+        .tt-delta { margin-left: 6px; white-space: nowrap; color: #888; text-align: right; min-width: 40px; }
         .tt-delta.pos { color: #4ade80; }
         .tt-delta.neg { color: #f87171; }
         #statsTableDiv {
