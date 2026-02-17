@@ -2,43 +2,26 @@
 <html lang="en">
 <head>
     <title>Poker Winnings Graph</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
     <style>
         html, body {
             height: auto;
-            overflow-y: auto;
+            overflow: hidden;
+            background: #181818;
+            margin: 0;
         }
-        .chart-scroll-wrapper {
+        #chartDiv {
             width: 100%;
-            height: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
-        .chart-scroll-inner {
-            min-width: 600px;
             max-width: 1200px;
+            min-width: 400px;
+            height: 420px;
             margin: 0 auto;
-            height: 100%;
-            overflow-y: hidden;
-            box-sizing: border-box;
-            padding-bottom: 16px;
         }
         @media (max-width: 700px) {
-            .chart-scroll-inner {
-                min-width: 600px;
-                width: 100vw;
-            }
-        }
-        @media (max-width: 500px) {
-            .chart-scroll-inner {
+            #chartDiv {
                 min-width: 400px;
                 width: 100vw;
             }
-        }
-        #winningsChart {
-            width: 100% !important;
-            height: 100% !important;
-            display: block;
         }
         #loadingSpinner {
             display: flex;
@@ -67,36 +50,85 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .spinner-text {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 1.1em;
-            color: #444;
-            margin-top: 0;
+        .google-visualization-tooltip {
+            background: #222 !important;
+            border: 1px solid #444 !important;
+            border-radius: 6px !important;
+            padding: 0 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+            pointer-events: none;
         }
+        .tt {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 12px;
+            color: #ddd;
+            padding: 8px 12px;
+            min-width: 180px;
+        }
+        .tt-header {
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #444;
+        }
+        .tt-row {
+            display: flex;
+            align-items: center;
+            padding: 2px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .tt-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+        .tt-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .tt-val {
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+        .tt-delta {
+            margin-left: 6px;
+            white-space: nowrap;
+            color: #888;
+        }
+        .tt-delta.pos { color: #4ade80; }
+        .tt-delta.neg { color: #f87171; }
         #playerTotalsList {
             margin: 20px auto;
             max-width: 300px;
-            padding: 0 20px 40px 20px;
+            padding: 0 16px 30px 16px;
             font-family: 'Segoe UI', Arial, sans-serif;
         }
         .player-total-item {
             display: flex;
             align-items: center;
-            padding: 8px 0;
-            font-size: 1.1em;
+            padding: 4px 0;
+            font-size: 0.85em;
             color: white;
         }
         .player-color-circle {
-            width: 16px;
-            height: 16px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            margin-right: 12px;
+            margin-right: 8px;
             flex-shrink: 0;
         }
         .player-name {
             flex: 1;
             min-width: 0;
             color: white;
+            text-shadow: 1px 1px 2px black;
         }
         .player-total {
             font-weight: bold;
@@ -113,216 +145,67 @@
 </head>
 <body>
 <div id="playerFilterContainer" style="margin: 12px 0 0 0; text-align:center;"></div>
-<div class="chart-scroll-wrapper">
-  <div class="chart-scroll-inner">
-    <div id="loadingSpinner">
-      <div class="spinner"></div>
-    </div>
-    <canvas id="winningsChart" style="display:none;"></canvas>
-  </div>
+<div id="loadingSpinner">
+    <div class="spinner"></div>
 </div>
+<div id="chartDiv" style="visibility:hidden;"></div>
 <div id="playerTotalsList"></div>
 <script>
+    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv';
+    const PLAYER_MIN_SESSIONS = 2;
+    const COLORS = [
+        "#E15759", "#4E79A7", "#F28E2B", "#76B7B2", "#59A14F", "#EDC948",
+        "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC", "#1F77B4", "#AEC7E8",
+        "#FF7F0E", "#FFBB78", "#2CA02C", "#98DF8A", "#D62728", "#FF9896",
+        "#9467BD", "#C5B0D5", "#8C564B", "#C49C94", "#E377C2", "#F7B6D2",
+        "#7F7F7F", "#C7C7C7", "#BCBD22", "#DBDB8D", "#17BECF", "#9EDAE5",
+        "#393b79", "#5254a3", "#6b6ecf", "#9c9ede", "#637939", "#8ca252",
+        "#b5cf6b", "#cedb9c", "#8c6d31", "#bd9e39", "#e7ba52", "#e7cb94",
+        "#843c39", "#ad494a", "#d6616b", "#e7969c", "#7b4173", "#a55194",
+        "#ce6dbd", "#de9ed6", "#1b9e77", "#d95f02"
+    ];
 
-    const url = `https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv`;
+    let chart = null;
+    let chartData = null;
+    let playerNames = [];
+    let playerColors = {};
+    let selectedPlayer = '';
 
-    let chartInstance = null;
-    let allDatasets = null;
-    let filteredHeaders = null;
-    let sessionLabels = null;
+    const CACHE_KEY = 'smelo_graph_csv';
+    const CACHE_TS_KEY = 'smelo_graph_csv_ts';
+    const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
-    function renderPlayerFilter(players) {
-        const container = document.getElementById('playerFilterContainer');
-        container.innerHTML = '';
-        const select = document.createElement('select');
-        select.style.fontSize = '1.1em';
-        select.style.padding = '2px 8px';
-        select.id = 'playerFilterSelect';
-        const allOption = document.createElement('option');
-        allOption.value = '';
-        allOption.textContent = 'Všichni';
-        select.appendChild(allOption);
-        // Sort players alphabetically (locale-aware, case-insensitive)
-        const sortedPlayers = [...players].sort((a, b) => a.localeCompare(b, 'cs', {sensitivity: 'base'}));
-        sortedPlayers.forEach(player => {
-            // Only display the part before the first /, trimmed
-            const displayName = player.split('/')[0].trim();
-            const opt = document.createElement('option');
-            opt.value = player;
-            opt.textContent = displayName;
-            select.appendChild(opt);
-        });
-        container.appendChild(select);
-        select.addEventListener('change', () => {
-            updateChartForPlayer(select.value);
-        });
-    }
-
-    function updateChartForPlayer(selectedPlayer = '') {
-        if (!chartInstance || !allDatasets) return;
-        chartInstance.data.datasets = allDatasets.map(ds => {
-            // Deep clone dataset to avoid Chart.js mutation issues
-            const newDs = JSON.parse(JSON.stringify(ds));
-            if (!selectedPlayer || ds.label === selectedPlayer) {
-                // Full color
-                newDs.borderColor = ds._origBorderColor;
-                // Make the selected player's line fully opaque
-                if (selectedPlayer && ds.label === selectedPlayer) {
-                    newDs.segment = {
-                        borderColor: ds._origBorderColor
-                    };
-                } else {
-                    newDs.segment = ds._origSegment;
-                }
-                newDs.pointBackgroundColor = ds._origPointBackgroundColor;
-                newDs.pointBorderColor = ds._origPointBorderColor;
-                newDs.borderWidth = 2;
-                newDs.hidden = false;
-                // Make points bigger if this is the selected player
-                if (selectedPlayer && ds.label === selectedPlayer) {
-                    const origPointRadius = ds.pointRadius;
-                    // Find first non-null, non-zero index
-                    let firstNonNullIdx = -1;
-                    for (let i = 0; i < ds.data.length; i++) {
-                        const curr = ds.data[i];
-                        if (curr != null && curr !== 0) {
-                            firstNonNullIdx = i;
-                            break;
-                        }
-                    }
-                    // Hide all data before firstNonNullIdx by setting to null
-                    if (firstNonNullIdx > 0) {
-                        for (let i = 0; i < firstNonNullIdx; i++) {
-                            newDs.data[i] = null;
-                        }
-                    }
-                    newDs.pointRadius = (ctx) => {
-                        const i = ctx.dataIndex;
-                        const curr = ds.data[i];
-                        const prev = i > 0 ? ds.data[i-1] : 0;
-                        const delta = (curr != null && prev != null) ? curr - prev : null;
-                        if (!isFinite(delta) || delta === 0) return 0;
-                        let base = 3;
-                        if (typeof origPointRadius === 'function') {
-                            base = origPointRadius(ctx);
-                        } else if (typeof origPointRadius === 'number') {
-                            base = origPointRadius;
-                        }
-                        return base > 0 ? base * 1.5 : 0;
-                    };
-                    // Keep hover radius normal
-                    newDs.pointHoverRadius = ds.pointHoverRadius;
-                }
-            } else {
-                // Hide all points for other players when filtered, but keep them in tooltip
-                newDs.borderColor = ds._desatBorderColor;
-                newDs.segment = ds._desatSegment;
-                newDs.pointBackgroundColor = ds._desatPointBackgroundColor;
-                newDs.pointBorderColor = ds._desatPointBorderColor;
-                newDs.borderWidth = 1;
-                newDs.hidden = false;
-                newDs.pointRadius = () => 0;
-            }
-            // For all players: hide line before first non-null, non-zero point
-            let firstNonNullIdx = -1;
-            for (let i = 0; i < newDs.data.length; i++) {
-                const curr = newDs.data[i];
-                if (curr != null && curr !== 0) {
-                    firstNonNullIdx = i;
-                    break;
-                }
-            }
-            if (firstNonNullIdx > 0) {
-                for (let i = 0; i < firstNonNullIdx; i++) {
-                    newDs.data[i] = null;
-                }
-            }
-            return newDs;
-        });
-        chartInstance.update();
-    }
-
-    function renderPlayerTotals(datasets) {
-        const container = document.getElementById('playerTotalsList');
-        container.innerHTML = '';
-
-        // Get latest totals for each player
-        const playerTotals = datasets.map(ds => {
-            // Find the last non-null value
-            let lastTotal = 0;
-            for (let i = ds.data.length - 1; i >= 0; i--) {
-                if (ds.data[i] != null) {
-                    lastTotal = ds.data[i];
-                    break;
-                }
-            }
-            return {
-                name: ds.label.split('/')[0].trim(),
-                total: lastTotal,
-                color: ds._origBorderColor
-            };
-        });
-
-        // Sort by total (descending)
-        playerTotals.sort((a, b) => b.total - a.total);
-
-        // Create list items
-        playerTotals.forEach(player => {
-            const item = document.createElement('div');
-            item.className = 'player-total-item';
-
-            const circle = document.createElement('div');
-            circle.className = 'player-color-circle';
-            circle.style.backgroundColor = player.color;
-
-            const name = document.createElement('div');
-            name.className = 'player-name';
-            name.style = 'color: white; text-shadow: 1px 1px 2px black;';
-            name.textContent = player.name;
-
-            const total = document.createElement('div');
-            total.className = 'player-total';
-            if (player.total > 0) {
-                total.classList.add('positive');
-                total.textContent = `+${player.total}`;
-            } else if (player.total < 0) {
-                total.classList.add('negative');
-                total.textContent = player.total;
-            } else {
-                total.textContent = '0';
-            }
-
-            item.appendChild(circle);
-            item.appendChild(name);
-            item.appendChild(total);
-            container.appendChild(item);
+    function fetchCSV() {
+        const cached = localStorage.getItem(CACHE_KEY);
+        const cachedTs = localStorage.getItem(CACHE_TS_KEY);
+        if (cached && cachedTs && (Date.now() - Number(cachedTs)) < CACHE_TTL) {
+            return Promise.resolve(cached);
+        }
+        return fetch(SHEET_URL).then(r => r.text()).then(csv => {
+            try {
+                localStorage.setItem(CACHE_KEY, csv);
+                localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+            } catch (e) { /* ignore quota errors */ }
+            return csv;
         });
     }
 
-    requestAnimationFrame(() => {
-        const spinner = document.getElementById('loadingSpinner');
-        const canvas = document.getElementById('winningsChart');
-        spinner.style.display = 'flex';
-        canvas.style.display = 'none';
-        // Threshold for minimum number of appearances
-        const PLAYER_MIN_SESSIONS = 2;
-        fetch(url)
-            .then(response => response.text()) // Use text() for CSV
-            .then(csv => {
-                // Simple CSV parsing (assumes no commas in values)
+    google.charts.load('current', { packages: ['corechart'] });
+    google.charts.setOnLoadCallback(fetchAndRender);
+
+    function fetchAndRender() {
+        fetchCSV().then(csv => {
                 const lines = csv.trim().split('\n');
                 const headers = lines[0].split(',');
-                // Start from line 2 if you have a second header row, else use line 1
                 const allDataRows = lines.slice(2).map(line => line.split(','));
 
-                // Parse dates for all rows
+                // Parse dates
                 const allRowsWithDate = allDataRows
                     .filter(row => row[1] && row[1].trim() !== '')
                     .map(row => {
                         const raw = row[1].trim();
                         let ts = Date.parse(raw);
                         if (isNaN(ts)) {
-                            // try common date formats: YYYY-MM-DD, DD.MM.YYYY, MM/DD/YYYY
                             let m = raw.match(/(\d{4}-\d{2}-\d{2})/);
                             if (m) ts = Date.parse(m[1]);
                             else {
@@ -345,42 +228,40 @@
                     });
 
                 const yearAgo = new Date();
-                yearAgo.setFullYear(yearAgo.getFullYear() - 1);
+                yearAgo.setMonth(yearAgo.getMonth() - 6);
 
-                // Filter out columns with empty header
-                const validColumns = headers.map((h, i) => ({h, i})).filter(x => x.h && x.h.trim() !== '');
+                // Filter valid columns (non-empty headers)
+                const validColumns = headers.map((h, i) => ({ h, i })).filter(x => x.h && x.h.trim() !== '');
 
-                // Count appearances only in the last 6 months for filtering
-                const rowsLast6Months = allRowsWithDate
-                    .filter(x => x.date && x.date >= yearAgo)
-                    .map(x => x.row);
-
-                const playerAppearances = validColumns.map((x, colIdx) => {
+                // Count appearances in last year
+                const rowsLastYear = allRowsWithDate.filter(x => x.date && x.date >= yearAgo).map(x => x.row);
+                const playerAppearances = validColumns.map(x => {
                     let count = 0;
-                    for (let row of rowsLast6Months) {
+                    for (const row of rowsLastYear) {
                         const val = row[x.i];
-                        if (val !== undefined && val !== '' && val !== '0' && Number(val) !== 0) {
-                            count++;
-                        }
+                        if (val !== undefined && val !== '' && val !== '0' && Number(val) !== 0) count++;
                     }
                     return count;
                 });
 
-                // Only keep players with at least PLAYER_MIN_SESSIONS appearances in last 6 months
-                const filteredValidColumns = validColumns.filter((x, idx) => playerAppearances[idx] >= PLAYER_MIN_SESSIONS);
-                filteredHeaders = filteredValidColumns.map(x => x.h);
+                const filteredColumns = validColumns.filter((_, idx) => playerAppearances[idx] >= PLAYER_MIN_SESSIONS);
+                playerNames = filteredColumns.map(x => x.h);
 
-                // Calculate cumulative from ALL rows (including before cutoff)
-                const allWinnings = allRowsWithDate.map(x => filteredValidColumns.map(col => x.row[col.i] === '' ? 0 : Number(x.row[col.i])));
-                const allOriginalCells = allRowsWithDate.map(x => filteredValidColumns.map(col => x.row[col.i]));
+                // Assign colors
+                playerNames.forEach((name, i) => {
+                    playerColors[name] = COLORS[i % COLORS.length];
+                });
 
-                // Build cumulative sums from all data
-                const allCumulative = filteredHeaders.map((_, colIdx) => {
+                // Calculate cumulative from ALL rows
+                const allWinnings = allRowsWithDate.map(x => filteredColumns.map(col => x.row[col.i] === '' ? 0 : Number(x.row[col.i])));
+                const allOriginalCells = allRowsWithDate.map(x => filteredColumns.map(col => x.row[col.i]));
+
+                const allCumulative = playerNames.map((_, colIdx) => {
                     let sum = 0;
                     return allWinnings.map(row => sum += (row[colIdx] || 0));
                 });
 
-                // Find the index where 6 months ago starts
+                // Find cutoff index
                 let cutoffIndex = 0;
                 for (let i = 0; i < allRowsWithDate.length; i++) {
                     if (allRowsWithDate[i].date && allRowsWithDate[i].date >= yearAgo) {
@@ -389,14 +270,13 @@
                     }
                 }
 
-                // Extract only the data from cutoff onwards for display
-                const rows = allRowsWithDate.slice(cutoffIndex).map(x => x.row);
+                // Extract display window
+                const rows = allRowsWithDate.slice(cutoffIndex);
                 const cumulative = allCumulative.map(arr => arr.slice(cutoffIndex));
                 const originalCells = allOriginalCells.slice(cutoffIndex);
 
-                // After cumulative is built, set values after last session (non-empty, nonzero) for each player to null
+                // Null-trailing: set values after last active session to null
                 cumulative.forEach((arr, colIdx) => {
-                    // Find last index where the original cell is not empty and not zero
                     let lastIdx = -1;
                     for (let i = arr.length - 1; i >= 0; i--) {
                         const cell = originalCells[i][colIdx];
@@ -406,285 +286,244 @@
                         }
                     }
                     if (lastIdx >= 0 && lastIdx < arr.length - 1) {
-                        for (let i = lastIdx + 1; i < arr.length; i++) {
-                            arr[i] = null;
-                        }
+                        for (let i = lastIdx + 1; i < arr.length; i++) arr[i] = null;
                     }
-                    // Do NOT set points with zero/missing delta to null here, so lines remain continuous
                 });
-                // Helper to determine if a point should be opaque or alpha
-                function isOpaquePoint(data, i) {
-                    const prev = i > 0 ? data[i] !== data[i-1] : false;
-                    const next = i < data.length-1 ? data[i] !== data[i+1] : false;
-                    return prev || next;
-                }
-                const niceColors = [
-                    "#E15759", "#4E79A7", "#F28E2B", "#76B7B2", "#59A14F", "#EDC948",
-                    "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC", "#1F77B4", "#AEC7E8",
-                    "#FF7F0E", "#FFBB78", "#2CA02C", "#98DF8A", "#D62728", "#FF9896",
-                    "#9467BD", "#C5B0D5", "#8C564B", "#C49C94", "#E377C2", "#F7B6D2",
-                    "#7F7F7F", "#C7C7C7", "#BCBD22", "#DBDB8D", "#17BECF", "#9EDAE5",
-                    "#393b79", "#5254a3", "#6b6ecf", "#9c9ede", "#637939", "#8ca252",
-                    "#b5cf6b", "#cedb9c", "#8c6d31", "#bd9e39", "#e7ba52", "#e7cb94",
-                    "#843c39", "#ad494a", "#d6616b", "#e7969c", "#7b4173", "#a55194",
-                    "#ce6dbd", "#de9ed6", "#1b9e77", "#d95f02"
-                ];
-                // Helper to convert hex to rgba with alpha
-                function hexToRgba(hex, alpha) {
-                    // Accepts #RRGGBB or #RGB
-                    if (hex.length === 7) {
-                        const r = parseInt(hex.slice(1, 3), 16);
-                        const g = parseInt(hex.slice(3, 5), 16);
-                        const b = parseInt(hex.slice(5, 7), 16);
-                        return `rgba(${r},${g},${b},${alpha})`;
-                    } else if (hex.length === 4) {
-                        const r = parseInt(hex[1] + hex[1], 16);
-                        const g = parseInt(hex[2] + hex[2], 16);
-                        const b = parseInt(hex[3] + hex[3], 16);
-                        return `rgba(${r},${g},${b},${alpha})`;
+
+                // Null-leading: set values before first non-null non-zero to null
+                cumulative.forEach((arr, colIdx) => {
+                    let firstIdx = -1;
+                    for (let i = 0; i < arr.length; i++) {
+                        if (arr[i] != null && arr[i] !== 0) { firstIdx = i; break; }
                     }
-                    return hex;
-                }
-                // Helper: hex to HSL
-                function hexToHsl(hex) {
-                    // Remove #
-                    hex = hex.replace('#', '');
-                    if (hex.length === 3) {
-                        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                    if (firstIdx > 0) {
+                        for (let i = 0; i < firstIdx; i++) arr[i] = null;
                     }
-                    const r = parseInt(hex.substring(0,2),16)/255;
-                    const g = parseInt(hex.substring(2,4),16)/255;
-                    const b = parseInt(hex.substring(4,6),16)/255;
-                    const max = Math.max(r,g,b), min = Math.min(r,g,b);
-                    let h, s, l = (max+min)/2;
-                    if(max===min){h=s=0;}else{
-                        const d = max-min;
-                        s = l>0.5 ? d/(2-max-min) : d/(max+min);
-                        switch(max){
-                            case r: h=(g-b)/d+(g<b?6:0); break;
-                            case g: h=(b-r)/d+2; break;
-                            case b: h=(r-g)/d+4; break;
-                        }
-                        h/=6;
-                    }
-                    return [h*360, s, l];
-                }
-                // Helper: HSL to rgba
-                function hslToRgba(h, s, l, a) {
-                    let r, g, b;
-                    if(s===0){r=g=b=l;}else{
-                        const hue2rgb = (p,q,t)=>{
-                            if(t<0)t+=1;if(t>1)t-=1;
-                            if(t<1/6)return p+(q-p)*6*t;
-                            if(t<1/2)return q;
-                            if(t<2/3)return p+(q-p)*(2/3-t)*6;
-                            return p;
-                        };
-                        const q = l<0.5?l*(1+s):l+s-l*s;
-                        const p = 2*l-q;
-                        r = hue2rgb(p,q,h/360+1/3);
-                        g = hue2rgb(p,q,h/360);
-                        b = hue2rgb(p,q,h/360-1/3);
-                    }
-                    return `rgba(${Math.round(r*255)},${Math.round(g*255)},${Math.round(b*255)},${a})`;
-                }
-                // Helper: desaturate hex color
-                function desaturateHex(hex, sat=0.15, alpha=0.7) {
-                    const [h, , l] = hexToHsl(hex);
-                    return hslToRgba(h, sat, l, alpha);
-                }
-                // Prepare data for each player (column)
-                const datasets = filteredHeaders.map((player, colIdx) => {
-                    const color = niceColors[colIdx % niceColors.length];
-                    const colorTransparent = hexToRgba(color, 0.3);
-                    const desatColor = desaturateHex(color, 0.15, 0.7);
-                    const desatColorTransparent = desaturateHex(color, 0.10, 0.25);
-                    const ds = {
-                        label: player,
-                        data: cumulative[colIdx],
-                        fill: false,
-                        borderColor: color,
-                        tension: 0.1,
-                        segment: {
-                            borderColor: ctx => {
-                                const i = ctx.p0DataIndex;
-                                const data = cumulative[colIdx];
-                                if (data[i] === data[i + 1]) {
-                                    // Use lower alpha for no-change segments
-                                    return colorTransparent;
-                                }
-                                return color;
-                            }
-                        },
-                        pointRadius: (ctx) => {
-                            const i = ctx.dataIndex;
-                            const data = cumulative[colIdx];
-                            const prev = i > 0 ? data[i-1] : 0;
-                            const curr = data[i];
-                            const delta = (curr != null && prev != null) ? curr - prev : null;
-                            if (!isFinite(delta) || delta === 0) return 0;
-                            return 3;
-                        },
-                        pointHoverRadius: (ctx) => {
-                            const i = ctx.dataIndex;
-                            const data = cumulative[colIdx];
-                            const prev = i > 0 ? data[i-1] : 0;
-                            const curr = data[i];
-                            const delta = (curr != null && prev != null) ? curr - prev : null;
-                            if (!isFinite(delta) || delta === 0) return 0;
-                            return 6;
-                        },
-                        pointBackgroundColor: (ctx) => {
-                            const i = ctx.dataIndex;
-                            const data = cumulative[colIdx];
-                            return isOpaquePoint(data, i) ? color : colorTransparent;
-                        },
-                        pointBorderColor: (ctx) => {
-                            const i = ctx.dataIndex;
-                            const data = cumulative[colIdx];
-                            return isOpaquePoint(data, i) ? color : colorTransparent;
-                        },
-                        // Store desaturated colors for dimming
-                        _desatBorderColor: desatColor,
-                        _desatSegment: {
-                            borderColor: ctx => {
-                                const i = ctx.p0DataIndex;
-                                const data = cumulative[colIdx];
-                                if (data[i] === data[i + 1]) {
-                                    return desatColorTransparent;
-                                }
-                                return desatColor;
-                            }
-                        },
-                        _desatPointBackgroundColor: (ctx) => {
-                            const i = ctx.dataIndex;
-                            const data = cumulative[colIdx];
-                            return isOpaquePoint(data, i) ? desatColor : desatColorTransparent;
-                        },
-                        _desatPointBorderColor: (ctx) => {
-                            const i = ctx.dataIndex;
-                            const data = cumulative[colIdx];
-                            return isOpaquePoint(data, i) ? desatColor : desatColorTransparent;
-                        }
-                    };
-                    // Store original color/segment for dimming logic
-                    ds._origBorderColor = color;
-                    ds._origSegment = ds.segment;
-                    ds._origPointBackgroundColor = ds.pointBackgroundColor;
-                    ds._origPointBorderColor = ds.pointBorderColor;
-                    return ds;
                 });
-                allDatasets = datasets;
-                // X-axis labels: Use the second column (date/session), formatted as Czech date
-                sessionLabels = rows.map((row, i) => row[1]
-                    .replace(/Mon/g, 'Po')
-                    .replace(/Tue/g, 'Út')
-                    .replace(/Wed/g, 'St')
-                    .replace(/Thu/g, 'Čt')
-                    .replace(/Fri/g, 'Pá')
-                    .replace(/Sat/g, 'So')
+
+                // Session labels (Czech day names)
+                const sessionLabels = rows.map(x => x.row[1]
+                    .replace(/Mon/g, 'Po').replace(/Tue/g, 'Út').replace(/Wed/g, 'St')
+                    .replace(/Thu/g, 'Čt').replace(/Fri/g, 'Pá').replace(/Sat/g, 'So')
                     .replace(/Sun/g, 'Ne')
                 );
-                // Render player filter
-                renderPlayerFilter(filteredHeaders);
-                // Render player totals
-                renderPlayerTotals(datasets);
-                // Render chart
-                chartInstance = new Chart(document.getElementById('winningsChart').getContext('2d'), {
-                    type: 'line',
-                    data: {
-                        labels: sessionLabels,
-                        datasets: datasets
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        interaction: {
-                            mode: 'index',
-                            intersect: false
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Kumulativní šmelo'
-                            },
-                            tooltip: {
-                                enabled: true,
-                                bodyFont: {
-                                    family: 'monospace',
-                                    size: 14
-                                },
-                                callbacks: {
-                                    label: function(context) {
-                                        const i = context.dataIndex;
-                                        const data = context.dataset.data;
-                                        let player = context.dataset.label;
-                                        const cumulative = data[i];
-                                        const prev = i > 0 ? data[i-1] : 0;
-                                        const change = cumulative - prev;
-                                        // Always show the hovered dataset, hide others if delta is 0 or not finite
-                                        const tooltip = context.chart.tooltip;
-                                        const hoveredDatasetIndex = tooltip && tooltip.dataPoints && tooltip.dataPoints[0] ? tooltip.dataPoints[0].datasetIndex : null;
-                                        if (context.datasetIndex !== hoveredDatasetIndex && (!isFinite(change) || change === 0)) return '';
-                                        // Truncate player name to 8 chars with ... if longer
-                                        if (player.match('/')) player = player.split('/')[0];
-                                        // Find max player name and total length for alignment
-                                        const allLabels = context.chart.data.datasets.map(ds => {
-                                            let l = ds.label;
-                                            return l.length > 6 ? 8 : l.length;
-                                        });
-                                        const namePad = Math.max(...allLabels) ;
-                                        // Find max cumulative length for alignment
-                                        const allTotals = context.chart.data.datasets.map(ds => {
-                                            const d = ds.data[i];
-                                            return d != null ? d.toString().length : 0;
-                                        });
-                                        const totalPad = Math.max(...allTotals);
-                                        const name = player.padEnd(namePad, ' ');
-                                        const totalStr = cumulative.toString().padStart(totalPad, ' ');
-                                        const sign = change > 0 ? '+' : '';
-                                        const deltaStr = sign + change;
-                                        return ` ${name}${totalStr} (Δ ${deltaStr})`;
-                                    }
-                                },
-                                itemSort: function(a, b) {
-                                    // Sort by cumulative value at hovered index (descending)
-                                    const i = a.dataIndex;
-                                    const aVal = a.dataset.data[i];
-                                    const bVal = b.dataset.data[i];
-                                    // Nulls last
-                                    if (aVal == null && bVal == null) return 0;
-                                    if (aVal == null) return 1;
-                                    if (bVal == null) return -1;
-                                    return bVal - aVal;
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'ztráta | výhra'
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Datum pošmelení'
-                                }
-                            }
-                        }
-                    }
+
+                // Build tooltip HTML for a given row index — only players who played that session
+                function buildTooltip(rowIdx) {
+                    const date = sessionLabels[rowIdx];
+                    const entries = playerNames.map((name, colIdx) => {
+                        const cell = originalCells[rowIdx][colIdx];
+                        const delta = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
+                        if (delta === 0) return null;
+                        const val = cumulative[colIdx][rowIdx];
+                        return { name: name.split('/')[0].trim(), val, delta, color: playerColors[name] };
+                    }).filter(Boolean).sort((a, b) => b.delta - a.delta);
+
+                    let html = `<div class="tt"><div class="tt-header">${date}</div>`;
+                    entries.forEach(e => {
+                        const sign = e.delta > 0 ? '+' : '';
+                        const deltaClass = e.delta > 0 ? 'pos' : e.delta < 0 ? 'neg' : '';
+                        html += `<div class="tt-row">` +
+                            `<span class="tt-dot" style="background:${e.color}"></span>` +
+                            `<span class="tt-name">${e.name}</span>` +
+                            `<span class="tt-val">${e.val}</span>` +
+                            `<span class="tt-delta ${deltaClass}">(${sign}${e.delta})</span>` +
+                            `</div>`;
+                    });
+                    html += '</div>';
+                    return html;
+                }
+
+                // Build Google Charts DataTable
+                // Each data column gets a tooltip column with the same shared HTML
+                chartData = new google.visualization.DataTable();
+                chartData.addColumn('string', 'Datum');
+                playerNames.forEach(name => {
+                    chartData.addColumn('number', name);
+                    chartData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
                 });
-                // Hide spinner, show canvas
-                spinner.style.display = 'none';
-                canvas.style.display = 'block';
+
+                for (let i = 0; i < sessionLabels.length; i++) {
+                    const tooltip = buildTooltip(i);
+                    const row = [sessionLabels[i]];
+                    playerNames.forEach((_, colIdx) => {
+                        row.push(cumulative[colIdx][i]);
+                        row.push(tooltip);
+                    });
+                    chartData.addRow(row);
+                }
+
+                renderPlayerFilter();
+                renderPlayerTotals(cumulative);
+                drawChart();
+
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('chartDiv').style.visibility = 'visible';
             });
-    });
+    }
+
+    function renderPlayerFilter() {
+        const container = document.getElementById('playerFilterContainer');
+        container.innerHTML = '';
+        const select = document.createElement('select');
+        select.style.fontSize = '1.1em';
+        select.style.padding = '2px 8px';
+        select.id = 'playerFilterSelect';
+
+        const allOption = document.createElement('option');
+        allOption.value = '';
+        allOption.textContent = 'Všichni';
+        select.appendChild(allOption);
+
+        const sorted = [...playerNames].sort((a, b) => a.localeCompare(b, 'cs', { sensitivity: 'base' }));
+        sorted.forEach(player => {
+            const opt = document.createElement('option');
+            opt.value = player;
+            opt.textContent = player.split('/')[0].trim();
+            select.appendChild(opt);
+        });
+
+        container.appendChild(select);
+        select.addEventListener('change', () => {
+            selectedPlayer = select.value;
+            drawChart();
+        });
+    }
+
+    function drawChart() {
+        if (!chartData) return;
+
+        const series = {};
+        playerNames.forEach((name, i) => {
+            const color = playerColors[name];
+            if (selectedPlayer && name !== selectedPlayer) {
+                series[i] = {
+                    color: '#555',
+                    lineWidth: 1,
+                    pointSize: 0,
+                    visibleInLegend: false
+                };
+            } else if (selectedPlayer && name === selectedPlayer) {
+                series[i] = {
+                    color: color,
+                    lineWidth: 3,
+                    pointSize: 4,
+                    visibleInLegend: true
+                };
+            } else {
+                series[i] = {
+                    color: color,
+                    lineWidth: 2,
+                    pointSize: 0,
+                    visibleInLegend: true
+                };
+            }
+        });
+
+        const options = {
+            title: 'Kumulativní šmelo',
+            titleTextStyle: { fontSize: 14, color: '#eee' },
+            curveType: 'function',
+            legend: 'none',
+            interpolateNulls: false,
+            dataOpacity: 0.7,
+            series: series,
+            hAxis: {
+                title: 'Datum pošmelení',
+                titleTextStyle: { color: '#aaa', italic: false },
+                textStyle: { fontSize: 10, color: '#aaa' },
+                slantedText: true,
+                slantedTextAngle: 45,
+                gridlines: { color: '#333' },
+                baselineColor: '#444'
+            },
+            vAxis: {
+                title: 'pošmel / výšmel',
+                titleTextStyle: { color: '#aaa', italic: false },
+                textStyle: { color: '#aaa' },
+                gridlines: { color: '#333' },
+                baselineColor: '#444',
+                format: 'short'
+            },
+            chartArea: {
+                left: 60,
+                top: 40,
+                right: 20,
+                bottom: 80,
+                width: '100%',
+                height: '100%',
+                backgroundColor: 'transparent'
+            },
+            tooltip: {
+                isHtml: true,
+                trigger: 'both'
+            },
+            explorer: {
+                actions: ['dragToZoom', 'rightClickToReset'],
+                axis: 'horizontal',
+                keepInBounds: true,
+                maxZoomIn: 0.1
+            },
+            backgroundColor: 'transparent'
+        };
+
+        if (!chart) {
+            chart = new google.visualization.LineChart(document.getElementById('chartDiv'));
+        }
+        chart.draw(chartData, options);
+    }
+
+    function renderPlayerTotals(cumulative) {
+        const container = document.getElementById('playerTotalsList');
+        container.innerHTML = '';
+
+        const playerTotals = playerNames.map((name, i) => {
+            let lastTotal = 0;
+            for (let j = cumulative[i].length - 1; j >= 0; j--) {
+                if (cumulative[i][j] != null) { lastTotal = cumulative[i][j]; break; }
+            }
+            return {
+                name: name.split('/')[0].trim(),
+                total: lastTotal,
+                color: playerColors[name]
+            };
+        });
+
+        playerTotals.sort((a, b) => b.total - a.total);
+
+        playerTotals.forEach(player => {
+            const item = document.createElement('div');
+            item.className = 'player-total-item';
+
+            const circle = document.createElement('div');
+            circle.className = 'player-color-circle';
+            circle.style.backgroundColor = player.color;
+
+            const name = document.createElement('div');
+            name.className = 'player-name';
+            name.textContent = player.name;
+
+            const total = document.createElement('div');
+            total.className = 'player-total';
+            if (player.total > 0) {
+                total.classList.add('positive');
+                total.textContent = `+${player.total}`;
+            } else if (player.total < 0) {
+                total.classList.add('negative');
+                total.textContent = player.total;
+            } else {
+                total.textContent = '0';
+            }
+
+            item.appendChild(circle);
+            item.appendChild(name);
+            item.appendChild(total);
+            container.appendChild(item);
+        });
+    }
+
+    // Redraw on resize
+    window.addEventListener('resize', () => { if (chart && chartData) drawChart(); });
 </script>
 </body>
 </html>
-
