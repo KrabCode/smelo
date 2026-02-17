@@ -1,41 +1,26 @@
+/* === Base === */
 body {
     background: #181818;
     color: #eee;
 }
 a { color: #eee; }
 hr { border-color: #333; }
-img {
-    border-radius: 16px;
-}
+img { border-radius: 16px; }
+
 .smelotitle, h2 {
     font-family: 'Staatliches', sans-serif;
     letter-spacing: 4px;
     padding-top: 16px;
 }
+
 .smelkarta {
     width: 100%;
     height: auto;
     margin-top: 16px;
     border-radius: 16px;
 }
-/* Chart iframe responsive styles */
-.chart-iframe {
-    width: 100%;
-    min-width: 0;
-    height: 100%;
-    max-width: 100vw;
-    border: none;
-    background: none;
-    display: block;
-    overflow-y: hidden;
-}
-@media (max-width: 900px) {
-    .chart-iframe {
-        min-width: 600px;
-        width: 800px;
-        max-width: 100%;
-    }
-}
+
+/* === Collapsible sections === */
 .collapsible-title {
     cursor: pointer;
     user-select: none;
@@ -45,9 +30,7 @@ img {
     justify-content: center;
     gap: 8px;
 }
-.collapsible-title:hover {
-    color: #ffb300;
-}
+.collapsible-title:hover { color: #ffb300; }
 .arrow {
     display: inline-block;
     font-size: 1.1em;
@@ -60,3 +43,108 @@ img {
     opacity: 0.01;
     pointer-events: none;
 }
+
+/* === Chart === */
+#chartDiv {
+    width: 100%;
+    max-width: 1200px;
+    min-width: 400px;
+    height: 420px;
+    margin: 0 auto;
+}
+#graphSpinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 400px;
+    width: 100%;
+}
+#graphSpinner .spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #4E79A7;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* === Chart tooltips === */
+.google-visualization-tooltip {
+    background: #222 !important;
+    border: 1px solid #444 !important;
+    border-radius: 6px !important;
+    padding: 0 !important;
+    text-align: left !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5) !important;
+    pointer-events: none;
+}
+.tt { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #ddd; padding: 8px 12px; min-width: 180px; text-align: left; }
+.tt-header { font-weight: bold; color: #fff; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #444; text-align: left; }
+.tt-row { display: flex; align-items: center; padding: 2px 0; font-family: monospace; font-size: 12px; }
+.tt-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
+.tt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+.tt-val { margin-left: 8px; white-space: nowrap; text-align: right; min-width: 30px; }
+.tt-delta { margin-left: 6px; white-space: nowrap; color: #888; text-align: right; min-width: 40px; }
+.tt-delta.pos { color: #4ade80; }
+.tt-delta.neg { color: #f87171; }
+
+/* === Stats table === */
+#statsTableDiv {
+    max-width: 700px;
+    margin: 10px auto 30px;
+    padding: 0 12px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+#statsTableDiv table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+    color: #ccc;
+    margin: 0;
+}
+#statsTableDiv th {
+    color: #888;
+    font-weight: normal;
+    text-align: right;
+    padding: 4px 8px;
+    border-bottom: 1px solid #333;
+    font-size: 0.85em;
+    cursor: pointer;
+    user-select: none;
+    background: transparent;
+}
+#statsTableDiv th:hover { color: #ccc; }
+#statsTableDiv th:first-child { text-align: left; }
+#statsTableDiv td {
+    padding: 3px 8px;
+    text-align: right;
+    border-bottom: 1px solid #222;
+    background: transparent;
+}
+#statsTableDiv td:first-child { text-align: left; }
+#statsTableDiv tr[data-player] { cursor: pointer; }
+#statsTableDiv tr[data-player]:hover { background: #2a2a2a; }
+#statsTableDiv tr[data-player].selected { background: #333; }
+#statsTableDiv .val-pos { color: #4ade80; }
+#statsTableDiv .val-neg { color: #f87171; }
+
+/* === Range toggle buttons === */
+.range-btn {
+    background: #333;
+    color: #aaa;
+    border: 1px solid #555;
+    padding: 4px 14px;
+    font-size: 0.85em;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 0 3px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    width: auto;
+}
+.range-btn.active { background: #555; color: #eee; border-color: #888; }
+.range-btn:hover { background: #444; }
