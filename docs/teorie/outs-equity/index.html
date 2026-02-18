@@ -106,16 +106,33 @@
         </div>
 
         <h2>Equity vs. pot odds</h2>
-        <p>Tohle je klíčové propojení:</p>
+        <p>Zadej pot a bet soupeře &mdash; kalkulačka porovná pot odds s tvou equity z outů výše.</p>
 
-        <div class="formula">
-            equity > pot odds &rarr; call je +EV<br>
-            equity < pot odds &rarr; call je -EV &rarr; folduj
+        <div class="calc">
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Pot (před betem)</label>
+                    <input type="number" id="pot" placeholder="100" value="100" min="0" step="any">
+                </div>
+                <div class="calc-field">
+                    <label>Bet soupeře</label>
+                    <input type="number" id="bet" placeholder="50" value="50" min="0" step="any">
+                </div>
+            </div>
+
+            <div class="result" id="resultPO">
+                <div class="result-row">
+                    <span class="result-label">Pot odds</span>
+                    <span class="result-value" id="rPO">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Tvá equity (z outů)</span>
+                    <span class="result-value" id="rMyEq">&ndash;</span>
+                </div>
+            </div>
+
+            <div class="note" id="notePO"></div>
         </div>
-
-        <p>
-            Pokud máš 9 outů na flopu (~36% equity) a soupeř betuje 50% potu (pot odds 25%), tvá equity převyšuje pot odds. Call je výdělečný.
-        </p>
 
         <p>
             Pokud pot odds nestačí, podívej se na <a href="../implied-odds/">implied odds</a> &mdash; kolik můžeš vyhrát na dalších streetech.
@@ -129,11 +146,19 @@
         var outsEl = document.getElementById('outs');
         var streetEl = document.getElementById('street');
         var resultEl = document.getElementById('result');
+        var potEl = document.getElementById('pot');
+        var betEl = document.getElementById('bet');
+        var resultPOEl = document.getElementById('resultPO');
+        var notePOEl = document.getElementById('notePO');
 
-        function calc() {
+        var currentExact = null;
+
+        function calcOuts() {
             var outs = parseInt(outsEl.value);
             if (isNaN(outs) || outs < 1 || outs > 20) {
                 resultEl.classList.remove('visible');
+                currentExact = null;
+                calcPO();
                 return;
             }
 
@@ -142,24 +167,64 @@
             if (quick > 100) quick = 100;
 
             var unknown = isFlop ? 47 : 46;
-            var exact;
             if (isFlop) {
                 var missOne = (unknown - outs) / unknown;
                 var missTwo = (unknown - 1 - outs) / (unknown - 1);
-                exact = (1 - missOne * missTwo) * 100;
+                currentExact = (1 - missOne * missTwo) * 100;
             } else {
-                exact = (outs / unknown) * 100;
+                currentExact = (outs / unknown) * 100;
             }
 
             document.getElementById('rQuick').textContent = quick.toFixed(0) + '%';
-            document.getElementById('rExact').textContent = exact.toFixed(1) + '%';
-            document.getElementById('rPotOdds').textContent = exact.toFixed(1) + '%';
+            document.getElementById('rExact').textContent = currentExact.toFixed(1) + '%';
+            document.getElementById('rPotOdds').textContent = currentExact.toFixed(1) + '%';
             resultEl.classList.add('visible');
+            calcPO();
         }
 
-        outsEl.addEventListener('input', calc);
-        streetEl.addEventListener('change', calc);
-        calc();
+        function calcPO() {
+            var pot = parseFloat(potEl.value);
+            var bet = parseFloat(betEl.value);
+
+            if (isNaN(pot) || isNaN(bet) || pot < 0 || bet <= 0) {
+                resultPOEl.classList.remove('visible');
+                notePOEl.classList.remove('visible');
+                return;
+            }
+
+            var totalPot = pot + bet + bet;
+            var odds = (bet / totalPot) * 100;
+
+            document.getElementById('rPO').textContent = odds.toFixed(1) + '%';
+
+            if (currentExact !== null) {
+                document.getElementById('rMyEq').textContent = currentExact.toFixed(1) + '%';
+                resultPOEl.classList.add('visible');
+
+                if (currentExact >= odds) {
+                    notePOEl.textContent = 'Call je +EV. Equity (' + currentExact.toFixed(1) + '%) > pot odds (' + odds.toFixed(1) + '%).';
+                    notePOEl.style.background = '#1a2e1a';
+                    notePOEl.style.borderColor = '#2a4a2a';
+                    notePOEl.style.color = '#8fbc8f';
+                } else {
+                    notePOEl.textContent = 'Call je -EV. Equity (' + currentExact.toFixed(1) + '%) < pot odds (' + odds.toFixed(1) + '%). Folduj (nebo implied odds).';
+                    notePOEl.style.background = '#2e1a1a';
+                    notePOEl.style.borderColor = '#4a2a2a';
+                    notePOEl.style.color = '#bc8f8f';
+                }
+                notePOEl.classList.add('visible');
+            } else {
+                document.getElementById('rMyEq').textContent = '–';
+                resultPOEl.classList.add('visible');
+                notePOEl.classList.remove('visible');
+            }
+        }
+
+        outsEl.addEventListener('input', calcOuts);
+        streetEl.addEventListener('change', calcOuts);
+        potEl.addEventListener('input', calcPO);
+        betEl.addEventListener('input', calcPO);
+        calcOuts();
     </script>
 <script src="../../reveal.js"></script>
 </body>
