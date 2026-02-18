@@ -20,15 +20,21 @@
         hr { border-color: #333; margin: 16px 0; }
         .container { max-width: 700px; margin: 0 auto; padding: 0 20px 60px; }
         h2 { margin: 32px 0 12px; font-size: 1.5em; }
-        h3 { margin: 20px 0 8px; font-size: 1.15em; letter-spacing: 2px; }
         p { margin: 8px 0; color: #ccc; }
 
-        /* Player type grid */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 16px auto; max-width: 400px; }
+        .stats-cell { padding: 16px; text-align: center; border-radius: 6px; }
+        .stats-label { font-size: 0.75em; color: #888; display: block; margin-bottom: 4px; }
+        .stats-val { font-family: 'Staatliches', sans-serif; font-size: 1.3em; letter-spacing: 2px; }
+
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
-        .type-card { background: #222; border: 2px solid #333; border-radius: 10px; padding: 20px; }
-        .type-card h3 { margin-top: 0; }
-        .type-card p { font-size: 0.9em; }
-        .type-tag { display: inline-block; font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+        .type-card { background: #222; border: 2px solid #333; border-radius: 10px; padding: 20px; cursor: pointer; transition: all 0.3s ease; }
+        .type-card:hover { transform: translateY(-2px); }
+        .type-card h3 { margin: 0 0 4px; font-size: 1.1em; letter-spacing: 2px; }
+        .type-card p { font-size: 0.85em; margin: 0; }
+        .type-tag { display: inline-block; font-size: 0.7em; font-family: monospace; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
 
         .tag-tp { background: #1a2e1a; color: #4ade80; border: 1px solid #2a4a2a; }
         .tag-lp { background: #2e2a1a; color: #ffb300; border: 1px solid #4a3a2a; }
@@ -45,46 +51,43 @@
         .card-ta h3 { color: #60a5fa; }
         .card-la h3 { color: #f87171; }
 
-        /* Stats diagram */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 16px auto; max-width: 400px; }
-        .stats-cell { padding: 16px; text-align: center; border-radius: 6px; }
-        .stats-label { font-size: 0.75em; color: #888; display: block; margin-bottom: 4px; }
-        .stats-val { font-family: 'Staatliches', sans-serif; font-size: 1.3em; letter-spacing: 2px; }
+        .card-tp.selected { border-color: #4ade80; box-shadow: 0 0 20px rgba(74,222,128,0.3), 0 0 40px rgba(74,222,128,0.1), inset 0 0 20px rgba(74,222,128,0.05); background: #1a2e1a; }
+        .card-lp.selected { border-color: #ffb300; box-shadow: 0 0 20px rgba(255,179,0,0.3), 0 0 40px rgba(255,179,0,0.1), inset 0 0 20px rgba(255,179,0,0.05); background: #2e2a1a; }
+        .card-ta.selected { border-color: #60a5fa; box-shadow: 0 0 20px rgba(96,165,250,0.3), 0 0 40px rgba(96,165,250,0.1), inset 0 0 20px rgba(96,165,250,0.05); background: #1a1a2e; }
+        .card-la.selected { border-color: #f87171; box-shadow: 0 0 20px rgba(248,113,113,0.3), 0 0 40px rgba(248,113,113,0.1), inset 0 0 20px rgba(248,113,113,0.05); background: #2e1a1a; }
 
-        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .tells ul { padding-left: 20px; margin-top: 8px; }
+        .tells li { margin: 3px 0; color: #999; font-size: 0.8em; }
+        .exploit-line { margin-top: 8px; font-size: 0.8em; }
 
-        .tells { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 12px 0; }
-        .tells li { margin: 4px 0; color: #ccc; font-size: 0.9em; }
-        .tells ul { padding-left: 20px; }
-
-        .exploit { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 12px 0; }
-        .exploit li { margin: 4px 0; color: #ccc; font-size: 0.9em; }
-        .exploit ul { padding-left: 20px; }
+        #examples-section { margin-top: 32px; }
+        .scenario { background: #222; border: 1px solid #333; border-radius: 10px; padding: 20px; margin: 16px 0; }
+        .scenario-title { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1.05em; color: #ffb300; margin-bottom: 12px; }
+        .scenario-num { color: #555; }
+        .street { margin: 8px 0; padding: 10px; background: #1e1e1e; border-radius: 6px; font-size: 0.9em; line-height: 1.6; }
+        .street .lbl { color: #888; }
+        .street .v { color: #ffb300; font-weight: bold; }
+        .street .act { color: #ccc; }
+        .street .note { color: #666; font-style: italic; font-size: 0.9em; }
+        .decision { margin: 14px 0 0; padding: 14px; background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; }
+        .decision-prompt { color: #aab; font-size: 0.95em; margin-bottom: 10px; font-weight: bold; }
+        .choice-btn { display: block; width: 100%; text-align: left; background: #282828; color: #ccc; border: 1px solid #444; padding: 10px 14px; border-radius: 6px; cursor: pointer; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.9em; margin: 6px 0; transition: all 0.2s; }
+        .choice-btn:hover:not(:disabled) { background: #333; border-color: #888; }
+        .choice-btn:disabled { cursor: default; }
+        .choice-btn.best { background: #1a2e1a; border-color: #4ade80; color: #4ade80; }
+        .choice-btn.ok { background: #2e2a1a; border-color: #ffb300; color: #ffb300; }
+        .choice-btn.bad { background: #2e1a1a; border-color: #f87171; color: #f87171; }
+        .outcome { display: none; margin-top: 12px; padding: 12px; background: #1e1e1e; border-radius: 6px; font-size: 0.9em; color: #ccc; line-height: 1.6; }
+        .outcome.visible { display: block; }
+        .outcome .result-label { font-weight: bold; margin-bottom: 4px; }
+        .outcome .result-best { color: #4ade80; }
+        .outcome .result-ok { color: #ffb300; }
+        .outcome .result-bad { color: #f87171; }
 
         .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
         .tip strong { color: #ccc; }
 
-        /* Hand analysis */
-        .hand { background: #222; border: 1px solid #333; border-radius: 10px; padding: 20px; margin: 16px 0; }
-        .hand-title { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1.1em; margin-bottom: 12px; }
-        .hand-win .hand-title { color: #4ade80; }
-        .hand-lose .hand-title { color: #f87171; }
-        .street { margin: 10px 0; padding: 10px; background: #1e1e1e; border-radius: 6px; font-family: monospace; font-size: 0.9em; line-height: 1.6; }
-        .street .label { color: #888; }
-        .street .val { color: #ffb300; font-weight: bold; }
-        .street .action { color: #ccc; }
-        .analysis { color: #888; font-size: 0.85em; font-style: italic; margin-top: 4px; }
-
-        /* Blunder quiz */
-        .quiz { background: #1e1e1e; border: 1px solid #444; border-radius: 10px; padding: 20px; margin: 20px 0; }
-        .quiz-title { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; color: #ffb300; margin-bottom: 12px; }
-        .quiz-btn { background: #333; color: #ccc; border: 1px solid #555; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.9em; margin: 4px; transition: background 0.2s, border-color 0.2s; }
-        .quiz-btn:hover { background: #444; border-color: #888; }
-        .quiz-btn.correct { background: #1a2e1a; border-color: #4ade80; color: #4ade80; }
-        .quiz-btn.wrong { background: #2e1a1a; border-color: #f87171; color: #f87171; }
-        .quiz-btn:disabled { cursor: default; opacity: 0.7; }
-        .quiz-explanation { display: none; margin-top: 12px; padding: 12px; background: #222; border-radius: 6px; font-size: 0.9em; color: #ccc; }
-        .quiz-explanation.visible { display: block; }
+        @media (max-width: 500px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -98,7 +101,7 @@
         <h2>Typy hráčů</h2>
         <p>
             Každý hráč se dá zařadit podle dvou os: jak často hraje ruky (tight vs. loose)
-            a jak agresivně je hraje (passive vs. aggressive). To dává 4 základní typy.
+            a jak agresivně je hraje (passive vs. aggressive).
         </p>
 
         <div class="stats-grid">
@@ -120,222 +123,401 @@
             </div>
         </div>
 
-        <h2>Jak je poznat</h2>
-        <p>Na live pokeru nemáš HUD, ale tyto signály ti pomohou:</p>
-
         <div class="formula">
             VPIP = % ruk, které hráč hraje (voluntary put money in pot)<br>
             PFR = % ruk, se kterými raisuje preflop<br>
             AF = aggression factor (bety + raisy / cally)
         </div>
 
-        <!-- NIT -->
+        <h2>Vyber typ hráče</h2>
+        <p>Klikni na kartu a procvič si situace proti danému typu.</p>
+
         <div class="grid">
-            <div class="type-card card-tp">
+            <div class="type-card card-tp" data-type="nit" onclick="selectType('nit')">
                 <span class="type-tag tag-tp">TIGHT PASSIVE</span>
                 <h3>Nit</h3>
-                <p>Hraje málo ruk a když už hraje, spíš calluje než raisuje. Pokud raisne, má skoro vždy monster.</p>
-                <div class="tells">
-                    <ul>
-                        <li>Folduje 80%+ ruk preflop</li>
-                        <li>Málokdy 3-betuje</li>
-                        <li>Raise na riveru = vždycky nuts</li>
-                        <li>Často limpuje s okrajovými rukami</li>
-                    </ul>
-                </div>
-                <div class="exploit">
-                    <strong style="color:#4ade80;">Jak exploitovat:</strong>
-                    <ul>
-                        <li>Stealuj jeho blindy agresivně</li>
-                        <li>C-betuj flop skoro vždy</li>
-                        <li>Když raisne &mdash; folduj bez nuts</li>
-                        <li>Nebluffuj na riveru</li>
-                    </ul>
-                </div>
+                <p>Hraje málo ruk, spíš calluje. Raise = monster.</p>
+                <div class="tells"><ul>
+                    <li>Folduje 80%+ ruk preflop</li>
+                    <li>Raise na riveru = vždycky nuts</li>
+                    <li>Málokdy 3-betuje</li>
+                </ul></div>
+                <div class="exploit-line"><strong style="color:#4ade80;">Exploit:</strong> <span style="color:#999;font-size:0.8em;">Stealuj blindy, c-betuj, folduj na jeho agresi.</span></div>
             </div>
 
-            <!-- CALLING STATION -->
-            <div class="type-card card-lp">
+            <div class="type-card card-lp" data-type="station" onclick="selectType('station')">
                 <span class="type-tag tag-lp">LOOSE PASSIVE</span>
                 <h3>Calling Station</h3>
-                <p>Hraje hodně ruk a miluje callování. Nefolduje, neraisuje &mdash; prostě calluje.</p>
-                <div class="tells">
-                    <ul>
-                        <li>Hraje 40%+ ruk preflop</li>
-                        <li>Calluje flop a turn s druhým párem</li>
-                        <li>Málokdy bluffuje</li>
-                        <li>Nedokáže pustit žádnou udělnaou ruku</li>
-                    </ul>
-                </div>
-                <div class="exploit">
-                    <strong style="color:#ffb300;">Jak exploitovat:</strong>
-                    <ul>
-                        <li>Value betuj i když máš hovno</li>
-                        <li>Nebluffuj &mdash; zaplatí tě</li>
-                        <li>Zvětši sizing s value rukami</li>
-                        <li>Když raisne &mdash; respektuj to</li>
-                    </ul>
-                </div>
+                <p>Calluje všechno. Nefolduje, nebluffuje.</p>
+                <div class="tells"><ul>
+                    <li>Hraje 40%+ ruk preflop</li>
+                    <li>Calluje s druhým párem na riveru</li>
+                    <li>Pokud raisne &mdash; má to</li>
+                </ul></div>
+                <div class="exploit-line"><strong style="color:#ffb300;">Exploit:</strong> <span style="color:#999;font-size:0.8em;">Value betuj i když máš hovno. Nebluffuj.</span></div>
             </div>
 
-            <!-- TAG -->
-            <div class="type-card card-ta">
+            <div class="type-card card-ta" data-type="tag" onclick="selectType('tag')">
                 <span class="type-tag tag-ta">TIGHT AGGRESSIVE</span>
                 <h3>TAG</h3>
-                <p>Hraje málo ruk, ale hraje je agresivně. Nejběžnější solidní styl. Těžší na exploitování.</p>
-                <div class="tells">
-                    <ul>
-                        <li>Hraje 15&ndash;25% ruk preflop</li>
-                        <li>Raisuje většinu toho, co hraje</li>
-                        <li>C-betuje konzistentně</li>
-                        <li>Dokáže foldovat, když je beat</li>
-                    </ul>
-                </div>
-                <div class="exploit">
-                    <strong style="color:#60a5fa;">Jak exploitovat:</strong>
-                    <ul>
-                        <li>3-betuj ho light v pozici</li>
-                        <li>Floatuj jeho c-bety na suchých boardech</li>
-                        <li>Útočit na jeho fold-to-3bet leak</li>
-                        <li>Vyhýbej se velkým potům bez silné ruky</li>
-                    </ul>
-                </div>
+                <p>Solidní styl. Málo ruk, ale hraje je agresivně.</p>
+                <div class="tells"><ul>
+                    <li>15&ndash;25% ruk preflop</li>
+                    <li>C-betuje konzistentně</li>
+                    <li>Dokáže foldovat</li>
+                </ul></div>
+                <div class="exploit-line"><strong style="color:#60a5fa;">Exploit:</strong> <span style="color:#999;font-size:0.8em;">3-betuj light, floatuj c-bety, hledej leaky.</span></div>
             </div>
 
-            <!-- LAG -->
-            <div class="type-card card-la">
+            <div class="type-card card-la" data-type="lag" onclick="selectType('lag')">
                 <span class="type-tag tag-la">LOOSE AGGRESSIVE</span>
                 <h3>LAG / Maniak</h3>
-                <p>Hraje hodně ruk a hraje je agresivně. Tlačí na tebe v každém potu. Nebezpečný, ale exploitable.</p>
-                <div class="tells">
-                    <ul>
-                        <li>Hraje 30%+ ruk preflop</li>
-                        <li>Často 3-betuje a squeezuje</li>
-                        <li>Velké bety a overbety jsou běžné</li>
-                        <li>Bluffuje na všech streetech</li>
-                    </ul>
-                </div>
-                <div class="exploit">
-                    <strong style="color:#f87171;">Jak exploitovat:</strong>
-                    <ul>
-                        <li>Rozšiř svůj calling range</li>
-                        <li>Trapuj s premium rukami</li>
-                        <li>Nech ho bluffovat &mdash; call down s top párem+</li>
-                        <li>Vyhni se marginalním bluffům proti němu</li>
-                    </ul>
-                </div>
+                <p>Hraje hodně, tlačí v každém potu. Nebezpečný.</p>
+                <div class="tells"><ul>
+                    <li>30%+ ruk preflop</li>
+                    <li>Často 3-betuje a squeezuje</li>
+                    <li>Bluffuje na všech streetech</li>
+                </ul></div>
+                <div class="exploit-line"><strong style="color:#f87171;">Exploit:</strong> <span style="color:#999;font-size:0.8em;">Rozšiř calling range, trapuj s premium.</span></div>
             </div>
         </div>
 
-        <h2>Analýza ruky: Výhra</h2>
-        <p>Exploitujeme calling station &mdash; wide value betting.</p>
-
-        <div class="hand hand-win">
-            <div class="hand-title">Hero na BTN vs. Calling Station v BB</div>
-
-            <div class="street">
-                <span class="label">Preflop:</span> Hero má <span class="val">A&#9829; J&#9829;</span>.<br>
-                <span class="action">Foldne se k nám, openujeme 2.5bb. Calling station calluje z BB.</span><br>
-                <span class="analysis">Standardní open. Station callne s čímkoli broadwayovým, suited, párem.</span>
-            </div>
-
-            <div class="street">
-                <span class="label">Flop:</span> <span class="val">A&#9827; 7&#9830; 2&#9824;</span> &mdash; pot 5.5bb<br>
-                <span class="action">Station checkuje. Hero betuje 3.5bb. Station calluje.</span><br>
-                <span class="analysis">Suchý board, máme top pár s dobrým kickerem. Betujeme pro value. Station callne s jakýmkoli párem, gutšotem, backdoor drawy.</span>
-            </div>
-
-            <div class="street">
-                <span class="label">Turn:</span> <span class="val">5&#9829;</span> &mdash; pot 12.5bb<br>
-                <span class="action">Station checkuje. Hero betuje 8bb. Station calluje.</span><br>
-                <span class="analysis">Blank. Pokračujeme ve value betu. Station drží A-low, páry, možná 67s. Proti nitovi bychom slowdownovali &mdash; proti station pokračujeme.</span>
-            </div>
-
-            <div class="street">
-                <span class="label">River:</span> <span class="val">3&#9827;</span> &mdash; pot 28.5bb<br>
-                <span class="action">Station checkuje. Hero betuje 18bb. Station calluje.</span><br>
-                <span class="analysis">Další blank. Value bet. Station callne i se slabým Ax. Proti tomuhle hráči betujeme river se vším, co poráží jeho calling range. Showdown: station ukazuje A&#9824; 4&#9824;.</span>
-            </div>
-
-            <div class="tip" style="margin-top:16px;">
-                <strong>Klíčový moment:</strong> Proti nitovi bychom turnový bet vynechali a kontrolovali pot. Proti calling station betujeme všechny tři streety, protože zaplatí se slabšími rukami.
-            </div>
-        </div>
-
-        <h2>Analýza ruky: Prohra</h2>
-        <p>Zkus najít blunder sám, než klikneš na odpověď.</p>
-
-        <div class="hand hand-lose">
-            <div class="hand-title">Hero na CO vs. LAG na BTN</div>
-
-            <div class="street">
-                <span class="label">Preflop:</span> Hero má <span class="val">K&#9824; Q&#9824;</span>.<br>
-                <span class="action">Hero openuje 2.5bb. LAG na BTN 3-betuje na 8bb. Blindy foldují. Hero calluje.</span><br>
-                <span class="analysis">KQs je dost silná na call 3-betu v pozici... ale nejsme v pozici. Jsme OOP proti LAGovi.</span>
-            </div>
-
-            <div class="street">
-                <span class="label">Flop:</span> <span class="val">K&#9829; 9&#9830; 4&#9827;</span> &mdash; pot 17.5bb<br>
-                <span class="action">Hero checkuje. LAG betuje 9bb. Hero calluje.</span><br>
-                <span class="analysis">Top pár, dobrý kicker. Proti LAGovi to vypadá dobře. Check-call je standardní.</span>
-            </div>
-
-            <div class="street">
-                <span class="label">Turn:</span> <span class="val">6&#9829;</span> &mdash; pot 35.5bb<br>
-                <span class="action">Hero checkuje. LAG betuje 25bb. Hero calluje.</span><br>
-                <span class="analysis">LAG tlačí. Velký bet. Máme top pár, ale OOP proti agresivnímu hráči. Call je costly &mdash; ale foldovat top pár proti LAGovi?</span>
-            </div>
-
-            <div class="street">
-                <span class="label">River:</span> <span class="val">2&#9829;</span> &mdash; pot 85.5bb<br>
-                <span class="action">Hero checkuje. LAG dává all-in za 60bb. Hero calluje.</span><br>
-                <span class="analysis">Tři hearty na boardu. LAG dává all-in. Hero calluje s top párem... LAG ukazuje <span class="val">T&#9829; 8&#9829;</span>. Flush.</span>
-            </div>
-        </div>
-
-        <div class="quiz" id="quiz1">
-            <div class="quiz-title">Kde byl blunder?</div>
-            <p style="color:#888; font-size:0.9em; margin-bottom:12px;">Najdi hlavní chybu v této ruce.</p>
-            <button class="quiz-btn" onclick="answer(this, false)">Preflop call 3-betu OOP</button>
-            <button class="quiz-btn" onclick="answer(this, false)">Flop check-call</button>
-            <button class="quiz-btn" onclick="answer(this, false)">Turn call velkého betu</button>
-            <button class="quiz-btn" onclick="answer(this, true)">River call all-in</button>
-            <div class="quiz-explanation" id="quiz1-exp">
-                <strong style="color:#ffb300;">River call.</strong> Preflop call je borderline ale obhajitelný s KQs.
-                Flop check-call s top párem je standardní. Turn call je tough ale OK proti LAGovi.
-                Ale river mění vše &mdash; třetí heart padl a LAG dává all-in. I proti maniakoví je tenhle all-in
-                na scareboardu weighted k hodnotě. LAG bluffuje často, ale na flushy riveru s overbetem
-                je jeho range výrazně užší. Správný play: foldnout river a ztratit 42bb místo 102bb.
-                Proti calling station bychom callovali. Proti LAGovi na flushovém boardu foldujeme.
-            </div>
-        </div>
+        <div id="examples-section"></div>
 
         <div class="tip" style="margin-top:24px;">
             <strong>Závěr:</strong> Nejde jen o to, jakou máš ruku. Jde o to, proti komu ji hraješ.
-            Identifikuj typ soupeře a přizpůsob strategii. Proti calling station value betuj.
-            Proti LAGovi trapuj. Proti nitovi folduj, když projeví sílu. Proti TAGovi hledej leaky.
         </div>
     </div>
 
-    <script>
-        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
-    </script>
-    <script>
-        var answered = false;
-        function answer(btn, isCorrect) {
-            if (answered) return;
-            answered = true;
-            var buttons = document.querySelectorAll('.quiz-btn');
-            for (var i = 0; i < buttons.length; i++) {
-                buttons[i].disabled = true;
+<script>
+var DATA = {
+    nit: {
+        title: 'Nit',
+        color: '#4ade80',
+        scenarios: [
+            {
+                title: 'Nit raisne tvůj river bet',
+                streets: [
+                    {label:'Preflop', cards:'A\u2660 T\u2660', text:'Hero openuje 2.5bb z CO. Nit calluje z BB.'},
+                    {label:'Flop', cards:'A\u2663 8\u2666 3\u2660', text:'Nit checkuje. Hero betuje 3bb. Nit calluje.', note:'Top pár, slušný kicker. Value bet na suchém boardu.'},
+                    {label:'Turn', cards:'5\u2665', text:'Nit checkuje. Hero betuje 7bb. Nit calluje.', note:'Blank. Pokračujeme ve value. Nit drží asi slabší Ax nebo pár.'},
+                    {label:'River', cards:'2\u2663', text:'Nit checkuje. Hero betuje 16bb. Nit RAISNE na 45bb.', note:'Další blank. Betneš river pro value... a nit raisne. Co teď?'}
+                ],
+                prompt: 'Nit raisnul tvůj river value bet. Co uděláš?',
+                choices: [
+                    {text:'Call \u2014 mám top pár s dobrým kickerem', grade:'bad', outcome:'Nit ukazuje 33 \u2014 set trojek. Nitův raise na riveru je VŽDYCKY value. Tenhle hráč neraisne river jako bluff. Nikdy. Zaplatil jsi zbytečně 29bb navíc.'},
+                    {text:'Fold \u2014 nitův raise na riveru = nuts', grade:'best', outcome:'Správně. Nit ukazuje 33 \u2014 set trojek. Nitův river raise je prakticky vždycky set, dva páry, nebo lepší. Ušetřil jsi 29bb tím, že jsi respektoval jeho agresi.'},
+                    {text:'Re-raise all-in \u2014 mám silnou ruku', grade:'bad', outcome:'Nit okamžitě calluje a ukazuje 33 \u2014 set trojek. Re-raisnul jsi hráče, který raisne river jen s nutsem. Přišel jsi o celý stack.'}
+                ]
+            },
+            {
+                title: 'Stealování nitových blindů',
+                streets: [
+                    {label:'Preflop', cards:'J\u2666 9\u2666', text:'Foldne se k tobě na BTN. V blindech sedí nit (SB) a random (BB).', note:'J9s není premium, ale na buttonu je to solidní open. Nit folduje blindy extrémně často.'}
+                ],
+                prompt: 'Máš J9s na BTN. Nit je na SB. Co uděláš?',
+                choices: [
+                    {text:'Open raise 2.5bb', grade:'best', outcome:'Nit folduje z SB. BB taky folduje. Bereš blindy zadarmo. Nit folduje SB přes 85% času \u2014 tohle je free money. Proti nitovi stealuj agresivně z late position.'},
+                    {text:'Limp', grade:'bad', outcome:'Limping na buttonu je slabý play. Nit může completnout a uvidíš flop z pozice, ale nevybuduješ pot a nenastavíš tlak. Přijdeš o většinu fold equity.'},
+                    {text:'Fold', grade:'bad', outcome:'J9s na buttonu je jasný open. Foldovat tuhle ruku na BTN je jako pálit peníze. Zvlášť když nit folduje blindy skoro vždy.'}
+                ]
+            },
+            {
+                title: 'Nit 3-betuje preflop',
+                streets: [
+                    {label:'Preflop', cards:'A\u2660 Q\u2665', text:'Hero openuje 2.5bb z HJ. Nit 3-betuje na 8bb z CO.', note:'AQo je normálně silná ruka. Ale nit 3-betuje jen s top range \u2014 QQ+, AKs, možná AKo.'}
+                ],
+                prompt: 'Nit tě 3-betnul. Máš AQo. Co uděláš?',
+                choices: [
+                    {text:'Call a hrát postflop', grade:'ok', outcome:'Callneš a vidíš flop OOP. Flop: K\u266372. Nit c-betne. Máš air. Foldneš a prohráváš 8bb. Call je borderline \u2014 jsi OOP proti tight range, kde většinou dominuješ s AQ jen proti AK (a prohrávás), nebo jsi coin flip proti QQ.'},
+                    {text:'Fold', grade:'best', outcome:'Správně. Nitův 3-bet range je extrémně tight: QQ+, AK. Proti tomuhle range je AQo ve špatné pozici \u2014 proti AK máš špatný kicker, proti QQ+ jsi behind. Ušetřil jsi 8bb+ na špatný spot.'},
+                    {text:'4-bet na 20bb', grade:'bad', outcome:'Nit 5-betne all-in. Ukazuje AA. Nitova 3-betovací frekvence je tak nízká, že 4-bet s AQo je sebevražda. Proti jeho range máš ~25% equity.'}
+                ]
+            },
+            {
+                title: 'Nit checkuje dva streety',
+                streets: [
+                    {label:'Preflop', cards:'K\u2660 J\u2660', text:'Hero openuje z CO. Nit calluje z BB.'},
+                    {label:'Flop', cards:'K\u2663 7\u2666 4\u2660', text:'Nit checkuje. Hero betuje 3bb. Nit calluje.', note:'Top pár, dobrý kicker. Standard c-bet.'},
+                    {label:'Turn', cards:'9\u2665', text:'Nit checkuje. Hero checkuje.', note:'Zpomalil jsi na turnu pro pot control.'},
+                    {label:'River', cards:'2\u2666', text:'Nit checkuje.', note:'Board: K\u26637\u26664\u26609\u26652\u2666. Nit checkoval všechny tři streety.'}
+                ],
+                prompt: 'Nit checkoval celou dobu. Betneš river?',
+                choices: [
+                    {text:'Bet malý (30% potu)', grade:'best', outcome:'Nit calluje s A7s. Bereš value. Nit checkoval celou dobu = jeho range je slabý (malé páry, Ax). Malý bet dostane zaplaceno od těhle ruk. Velký bet by je vystrašil.'},
+                    {text:'Check', grade:'ok', outcome:'Vyhrál jsi pot na showdownu. Nit ukazuje A7s. Ale mohl jsi dostat zaplaceno \u2014 nitovy slabé ruky by zaplatily malý river bet. Vynechal jsi value.'},
+                    {text:'Bet velký (80% potu)', grade:'bad', outcome:'Nit folduje. Bereš pot, ale mohl jsi dostat víc. Velký bet vystraší všechny slabé ruky z nitova range. Callne tě jen lepší \u2014 a to nechceš.'}
+                ]
             }
-            btn.classList.add(isCorrect ? 'correct' : 'wrong');
-            if (!isCorrect) {
-                // highlight correct
-                buttons[3].classList.add('correct');
+        ]
+    },
+    station: {
+        title: 'Calling Station',
+        color: '#ffb300',
+        scenarios: [
+            {
+                title: 'Value bet na riveru s top párem',
+                streets: [
+                    {label:'Preflop', cards:'A\u2665 8\u2665', text:'Hero openuje z CO. Station calluje z BB.'},
+                    {label:'Flop', cards:'A\u2666 9\u2663 5\u2660', text:'Station checkuje. Hero betuje 3.5bb. Station calluje.', note:'Top pár. Station callne s jakýmkoli párem, gutšotem, backdoor drawy.'},
+                    {label:'Turn', cards:'3\u2665', text:'Station checkuje. Hero betuje 8bb. Station calluje.', note:'Blank. Pokračujeme ve value. Station drží cokoli.'},
+                    {label:'River', cards:'7\u2666', text:'Station checkuje.', note:'Board: A\u26669\u26635\u26603\u26657\u2666. Suchý board, žádný draw nedorazil.'}
+                ],
+                prompt: 'River. Máš top pár s průměrným kickerem. Sizing?',
+                choices: [
+                    {text:'Check \u2014 mám slabý kicker', grade:'bad', outcome:'Station ukazuje A\u26604\u2663. Měl horší kicker! Checknutím jsi nechal 15-20bb na stole. Proti calling station VŽDYCKY value betuj s top párem. Zaplatí tě s horšími Ax, páry, i s K-high.'},
+                    {text:'Bet 50% potu', grade:'ok', outcome:'Station calluje s A\u26604\u2663. Bereš value. Ale mohl jsi dostat víc \u2014 station by zaplatil i větší bet.'},
+                    {text:'Bet 80% potu', grade:'best', outcome:'Station calluje s A\u26604\u2663 bez přemýšlení. Maximální value. Calling station nechápe sizingy \u2014 callne 80% stejně snadno jako 50%. Vždycky betuj velký pro value.'}
+                ]
+            },
+            {
+                title: 'Missed draw \u2014 bluffovat?',
+                streets: [
+                    {label:'Preflop', cards:'Q\u2660 J\u2660', text:'Hero openuje z BTN. Station calluje z BB.'},
+                    {label:'Flop', cards:'T\u2660 5\u2660 2\u2663', text:'Station checkuje. Hero betuje 3bb. Station calluje.', note:'Flush draw + overkarty. Semi-bluff.'},
+                    {label:'Turn', cards:'K\u2666', text:'Station checkuje. Hero betuje 7bb. Station calluje.', note:'Přidal se gutshot (A pro straight). Pokračuješ v tlaku.'},
+                    {label:'River', cards:'3\u2665', text:'Station checkuje.', note:'Nic netrefil. Máš queen high. Zero showdown value.'}
+                ],
+                prompt: 'Minul jsi všechny drawy. River proti calling station?',
+                choices: [
+                    {text:'Give up \u2014 station nikdy nefoldne', grade:'best', outcome:'Správně. Station ukazuje 8\u26607\u2660 \u2014 měl jen slabý flush draw a spodní pár. A stejně by callnul tvůj river bet. Bluffovat calling station je jako pálit peníze. Prostě to nedělej.'},
+                    {text:'Bet 50% potu', grade:'bad', outcome:'Station calluje s 8\u26607\u2660 \u2014 spodní pár. Prohrál jsi dalších 12bb na bluff proti hráči, který nikdy nefoldne. Klasická chyba.'},
+                    {text:'Overbet all-in', grade:'bad', outcome:'Station tanknul 10 sekund a callnul s 8\u26607\u2660. Bottom pár. Prohrál jsi celý stack. Station nechápe, co overbet znamená. Vidí karty, má pár, callne.'}
+                ]
+            },
+            {
+                title: 'Station raisne turn',
+                streets: [
+                    {label:'Preflop', cards:'T\u2660 T\u2663', text:'Hero openuje z MP. Station calluje z BTN.'},
+                    {label:'Flop', cards:'J\u2665 T\u2666 6\u2663', text:'Hero betuje 4bb. Station calluje.', note:'Střední set! Value bet.'},
+                    {label:'Turn', cards:'8\u2660', text:'Hero betuje 10bb. Station RAISNE na 28bb.', note:'Station \u2014 hráč, který NIKDY neraisuje \u2014 právě raisnul tvůj turn bet.'}
+                ],
+                prompt: 'Calling station raisnul turn. Máš set desítek. Co teď?',
+                choices: [
+                    {text:'Call a vyhodnotit river', grade:'ok', outcome:'River: 2\u2666. Checkneš. Station betne 40bb. Callneš. Station ukazuje 97o \u2014 straight. Prohrál jsi. Call na turnu nebyl špatný se setem, ale měl jsi být opatrnější na riveru. Board 8-J má spoustu straightů.'},
+                    {text:'Re-raise all-in', grade:'bad', outcome:'Station okamžitě callne a ukazuje 97o \u2014 straight. Když calling station raisne, MÁ TO. Tenhle hráč nechápne koncept bluffu. Jeho raise = nuts. Re-raise s pouhým setem na connected boardu je katastrofa.'},
+                    {text:'Fold \u2014 station neraisuje bez nutsů', grade:'best', outcome:'Heroický fold, ale správný. Station ukazuje 97o \u2014 straight. Calling station raisne jednou za 100 ruk. A když to udělá, má VŽDYCKY minimálně dva páry, většinou straight nebo lepší. Ušetřil jsi 50bb+.'}
+                ]
+            },
+            {
+                title: 'Set na mokrém boardu \u2014 sizing',
+                streets: [
+                    {label:'Preflop', cards:'7\u2660 7\u2663', text:'Hero limpuje z SB. Station checkuje BB.'},
+                    {label:'Flop', cards:'7\u2665 8\u2660 9\u2663', text:'Board je extrémně mokrý. Máš bottom set, ale JT, T6, 56, 65 \u2014 spousta straightů a drawů.', note:'Station hraje všechny suited connectory a one-gapy. Potřebuješ chránit svou ruku.'}
+                ],
+                prompt: 'Máš set na mokrém boardu. Jaký sizing?',
+                choices: [
+                    {text:'Check \u2014 trapnu ho', grade:'bad', outcome:'Station checkuje za tebou. Turn: T\u2663. Teď má kdokoli s J nebo 6 straight. Free karta proti hráči plného drawů je katastrofální. Na mokrém boardu NIKDY necheckuj set.'},
+                    {text:'Bet 33% potu \u2014 malý, aby callnul', grade:'bad', outcome:'Station calluje s 6\u26655\u2665. Dáváš mu 4.5:1 odds na open-ended straight draw (potřebuje ~5:1). Skoro break-even call! Tvůj sizing je příliš malý \u2014 nedáváš mu dost špatné odds na drawy.'},
+                    {text:'Bet 80%+ potu \u2014 musí zaplatit za drawy', grade:'best', outcome:'Station calluje s 6\u26655\u2665. Ale platí 1.5:1 na draw, který potřebuje 5:1. Masivně -EV call pro něj. A station zaplatí, protože je calling station. Turn: 2\u2666. Pokračuješ v betu. Station znovu zaplatí a mine. Maximum value, maximum protection.'}
+                ]
             }
-            document.getElementById('quiz1-exp').classList.add('visible');
+        ]
+    },
+    tag: {
+        title: 'TAG',
+        color: '#60a5fa',
+        scenarios: [
+            {
+                title: 'TAG c-betuje suchý flop',
+                streets: [
+                    {label:'Preflop', cards:'8\u2660 7\u2660', text:'TAG openuje z CO. Hero calluje z BTN.'},
+                    {label:'Flop', cards:'A\u2663 5\u2666 2\u2665', text:'TAG c-betuje 33% potu.', note:'Suchý ace-high board. TAG c-betuje tenhle flop s vysokou frekvencí \u2014 i s rukami, které minuly.'}
+                ],
+                prompt: 'TAG c-betnul suchý flop. Máš 87s \u2014 nic. Co uděláš?',
+                choices: [
+                    {text:'Fold', grade:'ok', outcome:'Bezpečná volba. Ale propouštíš profitabilní spot. TAG c-betuje tenhle board se 70%+ range \u2014 většinou nemá eso. Float a turn steal jsou proti TAGovi velmi profitabilní.'},
+                    {text:'Call (float) \u2014 přeberu pot na turnu', grade:'best', outcome:'Turn: J\u2660. TAG checkuje (nemá eso, vzdává). Betneš 60% potu. TAG folduje. Float funguje proti TAGům, protože oni dokážou foldovat. Zapamatuj: floatuješ proto, že TAG UMÍ foldnout.'},
+                    {text:'Raise', grade:'ok', outcome:'TAG přemýšlí a folduje. Funguje to, ale je to riskantnější než float. Pokud TAG 3-betne tvůj flop raise, nemáš kam jít. Float je elegantnější a levnější.'}
+                ]
+            },
+            {
+                title: 'TAG checkne turn po c-betu',
+                streets: [
+                    {label:'Preflop', cards:'K\u2660 Q\u2663', text:'Hero openuje z HJ. TAG calluje z BTN.'},
+                    {label:'Flop', cards:'J\u2665 8\u2666 3\u2663', text:'Hero c-betuje 50% potu. TAG calluje.', note:'C-bet s dvěma overcartami. Standard.'},
+                    {label:'Turn', cards:'2\u2660', text:'Hero checkuje. TAG checkuje za tebou.', note:'Check-check. TAGův range je capped \u2014 se silnou rukou by betnul v pozici.'}
+                ],
+                prompt: 'TAG checkoval turn v pozici. Co na riveru?',
+                choices: [
+                    {text:'Check \u2014 nemám nic, vzdám to', grade:'bad', outcome:'TAG checkuje za tebou. Ukazuje A\u26605\u2660. Ace high bere pot. Měl jsi betovat \u2014 TAGův check na turnu v pozici znamená slabost. S silnou rukou by betnul pro value a protection.'},
+                    {text:'Bet 60% potu \u2014 jeho range je slabý', grade:'best', outcome:'TAG folduje T\u26609\u2660. TAGův check na turnu v pozici prakticky vylučuje silné ruky. Se setem, dvěma páry, nebo silným top párem by betnul. Bluffuješ do cappedného range \u2014 +EV.'},
+                    {text:'Bet velký (pot) \u2014 tlačím ho pryč', grade:'ok', outcome:'TAG přemýšlí déle, ale folduje. Fungovalo to, ale pot-sized bet riskuješ víc za stejný výsledek. Menší sizing dosáhne foldu se stejnou frekvencí a riskuješ míň.'}
+                ]
+            },
+            {
+                title: 'TAG 3-betne z blindů',
+                streets: [
+                    {label:'Preflop', cards:'A\u2660 J\u2666', text:'Hero openuje 2.5bb z HJ. TAG v BB 3-betuje na 9bb.', note:'TAG 3-betuje z BB. Jeho 3-bet range z BB je tight: JJ+, AQs+, AKo. Možná AJs na dolním konci.'}
+                ],
+                prompt: 'TAG 3-betnul z BB. Máš AJo. Co uděláš?',
+                choices: [
+                    {text:'Call \u2014 AJ je dost silná', grade:'ok', outcome:'Flop: Q\u266582\u2663. TAG c-betne 4bb. Máš ace high. Foldneš. Prohrál jsi 9bb. Call je hratelný, ale jsi OOP proti tight 3-bet range. Většina flopů ti nepomůže.'},
+                    {text:'Fold \u2014 respektuju tight 3-bet', grade:'best', outcome:'Správně. TAGův 3-bet range z BB je extrémně silný. S AJo jsi proti jeho range skoro vždy dominovaný (AQ, AK) nebo behind (JJ+). Ušetřil jsi 9bb na špatný spot.'},
+                    {text:'4-bet na 22bb', grade:'bad', outcome:'TAG 5-betne all-in s QQ. TAGové ne3-betují z BB jako bluff. 4-bet s AJo je burning money. Přišel jsi o 100bb.'}
+                ]
+            },
+            {
+                title: 'TAG triple-bareluje',
+                streets: [
+                    {label:'Preflop', cards:'Q\u2660 Q\u2663', text:'Hero openuje z CO. TAG calluje z BTN.'},
+                    {label:'Flop', cards:'K\u2665 8\u2666 3\u2663', text:'Hero c-betuje 50%. TAG calluje.', note:'King-high board. TAG callne s broadwayem, páry, drawy.'},
+                    {label:'Turn', cards:'5\u2660', text:'Hero betuje 66%. TAG calluje.', note:'Blank. Pokračuješ ve value/protection. TAG pořád calluje.'},
+                    {label:'River', cards:'4\u2665', text:'Hero checkuje. TAG betuje 80% potu.', note:'Checkneš river. TAG betne velký. Má Kx, nebo bluffuje missed draw?'}
+                ],
+                prompt: 'TAG betne 80% potu na riveru po tvém check. Máš QQ (underpair k boardu). Co uděláš?',
+                choices: [
+                    {text:'Call \u2014 TAG bluffuje missed drawy', grade:'best', outcome:'TAG ukazuje J\u2660T\u2660 \u2014 missed straight draw. Tvůj call je správný. TAG calloval flop a turn s drawy a zkusil bluffovat river. Solidní TAGové bluffují river rozumnou frekvencí \u2014 QQ je dost silná na bluff catch.'},
+                    {text:'Fold \u2014 nemůžu porazit Kx', grade:'ok', outcome:'TAG ukazuje J\u2660T\u2660 \u2014 bluffoval. Foldnul jsi winner. Fold není katastrofální (někdy má Kx), ale proti TAGovi, který passivně calloval dvě streets a pak betne river po tvém check, je jeho range hodně bluff-heavy.'},
+                    {text:'Raise \u2014 mám overpair', grade:'bad', outcome:'TAG folduje bluff. Ale kdyby měl Kx, callne a prohráváš víc. Raise s QQ na K-high boardu je no man\'s land \u2014 folduješ bluffové ruky a calluješ value ruky. Nejhorší akce.'}
+                ]
+            }
+        ]
+    },
+    lag: {
+        title: 'LAG / Maniak',
+        color: '#f87171',
+        scenarios: [
+            {
+                title: 'LAG tě 3-betne',
+                streets: [
+                    {label:'Preflop', cards:'J\u2660 J\u2665', text:'Hero openuje 2.5bb z CO. LAG na BTN 3-betuje na 8bb.', note:'LAG 3-betuje často \u2014 30%+ z BTN vs CO open. JJ je daleko ahead jeho range.'}
+                ],
+                prompt: 'LAG tě 3-betnul z BTN. Máš JJ. Co uděláš?',
+                choices: [
+                    {text:'Call \u2014 trap, nechám ho bluffovat postflop', grade:'best', outcome:'Flop: 9\u266352\u2666. Checkneš. LAG c-betne 5bb. Callneš. Turn: 4\u2665. Checkneš. LAG betne 14bb. Callneš. River: 3\u2660. Checkneš. LAG dá all-in. Callneš. LAG ukazuje A\u26605\u2666 \u2014 air. JJ bere obrovský pot. Trapování LAGa = nech ho střelit všechny tři barely.'},
+                    {text:'4-bet na 20bb', grade:'ok', outcome:'LAG calluje. Flop: 9\u266352\u2666. Betneš 12bb. LAG folduje. Bereš pot, ale menší. 4-bet funguje, ale LAG ví, že tvůj 4-bet range je silný, a nechá tě v klidu. Flatem bys dostal víc.'},
+                    {text:'Fold \u2014 3-bet je síla', grade:'bad', outcome:'Foldnul jsi JJ proti hráči, který 3-betuje s A5o, K9s, a 67s. LAGova 3-bet frekvence je tak vysoká, že JJ crushuje jeho range. Tohle je fold jen proti nitovi.'}
+                ]
+            },
+            {
+                title: 'LAG betuje 3 streety',
+                streets: [
+                    {label:'Preflop', cards:'A\u2663 K\u2660', text:'Hero openuje z MP. LAG calluje z BTN.'},
+                    {label:'Flop', cards:'A\u2666 5\u2665 2\u2663', text:'Hero betuje 4bb. LAG calluje.', note:'Top pár, top kicker. Dream flop.'},
+                    {label:'Turn', cards:'8\u2660', text:'Hero betuje 10bb. LAG calluje.', note:'Blank. Pokračuješ ve value.'},
+                    {label:'River', cards:'J\u2663', text:'Hero checkuje. LAG betne pot (48bb).', note:'Checkneš river. LAG okamžitě betne pot. S čím?'}
+                ],
+                prompt: 'LAG betne pot na riveru po tvém check. Máš AK (top pár, top kicker). Co uděláš?',
+                choices: [
+                    {text:'Call \u2014 LAG bluffuje dost často', grade:'best', outcome:'LAG ukazuje T\u26609\u2660 \u2014 missed gutshot. AK bere pot. Proti LAGovi musíš rozšířit svůj calling range. On ví, že většina hráčů foldne na velký river bet. Proto to dělá. Tvůj call s top párem/top kicker je povinný.'},
+                    {text:'Fold \u2014 pot-sized bet je silný', grade:'bad', outcome:'LAG bere pot a pravděpodobně měl air. Foldnul jsi AK na A-high boardu proti maniakoví. Pokud folduješ top pár/top kicker proti LAGovi, on tě bude bluffovat do konce života.'},
+                    {text:'Raise all-in', grade:'ok', outcome:'LAG folduje. Bereš pot, ale vytlačil jsi všechny jeho bluffové ruky. Kdybys jen calloval, dostal bys zaplaceno i od jeho horších value betů (Ax). Raise je zbytečně agresivní.'}
+                ]
+            },
+            {
+                title: 'LAG checkne flop',
+                streets: [
+                    {label:'Preflop', cards:'T\u2660 T\u2663', text:'Hero openuje z CO. LAG calluje z BB.'},
+                    {label:'Flop', cards:'K\u2665 7\u2666 3\u2663', text:'LAG checkuje.', note:'K-high board. LAG checkuje. Normálně by c-betnul (i z BB), protože je agresivní. Check je podezřelý.'}
+                ],
+                prompt: 'LAG \u2014 hráč, který betuje skoro vždy \u2014 checkoval flop. Máš TT. Co uděláš?',
+                choices: [
+                    {text:'Bet \u2014 mám overpair pod králem', grade:'bad', outcome:'LAG check-raisne na 3x. Máš TT na K-high boardu proti check-raise. Foldneš a ztratíš zbytečný bet. Když LAG checkne \u2014 hráč, který VŽDYCKY betuje \u2014 znamená to, že chce check-raisnout. Trap detected.'},
+                    {text:'Check back \u2014 pot control, podezřelý check', grade:'best', outcome:'Turn: 2\u2660. LAG betne 60% potu. Callneš. River: 4\u2665. LAG checkuje. Checkneš. LAG ukazuje K\u2660J\u2666 \u2014 top pár. Prohrál jsi, ale jen malý pot. Checknutí flopu ti ušetřilo spoustu peněz. Kdyby LAG neměl K, turnový bet bys vyhrál.'},
+                    {text:'Bet velký \u2014 chráním ruku', grade:'bad', outcome:'LAG check-raisne all-in. Máš TT na K-high boardu. Nemůžeš callnout. Přišel jsi o 15bb na zbytečný bet do trappy LAGa.'}
+                ]
+            },
+            {
+                title: 'LAG overbetne river na flush boardu',
+                streets: [
+                    {label:'Preflop', cards:'K\u2660 K\u2665', text:'Hero openuje z UTG. LAG calluje z BTN.'},
+                    {label:'Flop', cards:'Q\u2660 8\u2660 3\u2666', text:'Hero betuje 4bb. LAG calluje.', note:'Overpair na queen-high boardu. Jeden spade.'},
+                    {label:'Turn', cards:'7\u2663', text:'Hero betuje 10bb. LAG calluje.', note:'Blank. Pokračuješ ve value.'},
+                    {label:'River', cards:'2\u2660', text:'Třetí spade. Hero checkuje. LAG overbetne 1.5x pot.', note:'Flush completing card. LAG okamžitě overbetne. Trap, nebo má flush?'}
+                ],
+                prompt: 'Flush dorazil na riveru. LAG overbetne. Máš KK bez spade. Co uděláš?',
+                choices: [
+                    {text:'Call \u2014 LAG vždycky bluffuje', grade:'bad', outcome:'LAG ukazuje A\u26604\u2660 \u2014 nut flush. I LAG má někdy ruku. Na flush completing boardu s overbetem je i maniak weighted k value. Prohrál jsi celý stack, protože jsi zapomněl, že i LAGové trefí drawy.'},
+                    {text:'Fold \u2014 i LAG má na flush boardu flush', grade:'best', outcome:'Správně. LAG ukazuje A\u26604\u2660. Overbet na flush completing riveru je value i od LAGa. Klíčový koncept: LAG bluffuje často na SUCHÝCH boardech. Na wet/completing boardech jeho overbet = value. Ušetřil jsi 70bb+.'},
+                    {text:'Raise all-in', grade:'bad', outcome:'LAG snap-callne s A\u26604\u2660 \u2014 nut flush. Re-raise na flush board s holým KK je nejdražší chyba v pokeru. I proti maniakoví.'}
+                ]
+            }
+        ]
+    }
+};
+
+var selectedType = null;
+
+function selectType(type) {
+    selectedType = type;
+    var cards = document.querySelectorAll('.type-card');
+    cards.forEach(function(c) {
+        c.classList.toggle('selected', c.getAttribute('data-type') === type);
+    });
+    renderExamples();
+}
+
+function renderExamples() {
+    var sec = document.getElementById('examples-section');
+    if (!selectedType) { sec.innerHTML = ''; return; }
+    var d = DATA[selectedType];
+    var html = '<h2 style="color:' + d.color + '">Situace proti: ' + d.title + '</h2>';
+    d.scenarios.forEach(function(sc, si) {
+        var sid = selectedType + '-' + si;
+        html += '<div class="scenario">';
+        html += '<div class="scenario-title"><span class="scenario-num">#' + (si+1) + '</span> ' + sc.title + '</div>';
+        sc.streets.forEach(function(st) {
+            html += '<div class="street">';
+            html += '<span class="lbl">' + st.label + ':</span>';
+            if (st.cards) html += ' <span class="v">' + st.cards + '</span>';
+            html += '<br><span class="act">' + st.text + '</span>';
+            if (st.note) html += '<br><span class="note">' + st.note + '</span>';
+            html += '</div>';
+        });
+        html += '<div class="decision">';
+        html += '<div class="decision-prompt">' + sc.prompt + '</div>';
+        sc.choices.forEach(function(ch, ci) {
+            html += '<button class="choice-btn" data-scenario="' + sid + '" data-idx="' + ci + '" onclick="choose(\'' + sid + '\',' + ci + ')">' + ch.text + '</button>';
+        });
+        html += '<div class="outcome" id="outcome-' + sid + '"></div>';
+        html += '</div></div>';
+    });
+    sec.innerHTML = html;
+    colorSuits();
+}
+
+function choose(sid, idx) {
+    var parts = sid.split('-');
+    var type = parts[0];
+    var si = parseInt(parts[1]);
+    var sc = DATA[type].scenarios[si];
+    var btns = document.querySelectorAll('[data-scenario="' + sid + '"]');
+    btns.forEach(function(b, i) {
+        b.disabled = true;
+        var grade = sc.choices[i].grade;
+        if (i === idx) b.classList.add(grade);
+        else if (grade === 'best') b.classList.add('best');
+    });
+    var out = document.getElementById('outcome-' + sid);
+    var ch = sc.choices[idx];
+    var labelClass = ch.grade === 'best' ? 'result-best' : ch.grade === 'ok' ? 'result-ok' : 'result-bad';
+    var labelText = ch.grade === 'best' ? 'Správně!' : ch.grade === 'ok' ? 'OK, ale ne optimální.' : 'Špatně.';
+    out.innerHTML = '<div class="result-label ' + labelClass + '">' + labelText + '</div>' + ch.outcome;
+    out.classList.add('visible');
+    colorSuits();
+}
+
+function colorSuits() {
+    var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    var nodes = [];
+    while (w.nextNode()) nodes.push(w.currentNode);
+    nodes.forEach(function(t) {
+        if (/[\u2660\u2665\u2663\u2666]/.test(t.textContent) && !t.parentNode.classList.contains('suit-done')) {
+            var s = document.createElement('span');
+            s.classList.add('suit-done');
+            s.innerHTML = t.textContent
+                .replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>')
+                .replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>')
+                .replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>')
+                .replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');
+            t.parentNode.replaceChild(s, t);
         }
-    </script>
+    });
+}
+
+colorSuits();
+selectType('nit');
+</script>
 </body>
 </html>
