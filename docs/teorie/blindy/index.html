@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blindy – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+
+        .rant { background: #2a1010; border: 2px solid #f87171; border-radius: 10px; padding: 20px; margin: 20px 0; color: #f87171; font-size: 1.1em; line-height: 1.8; }
+        .rant strong { color: #fff; }
+        .rant em { color: #ffb300; font-style: normal; font-weight: bold; }
+
+        .calm { background: #222; border: 1px solid #333; border-radius: 10px; padding: 20px; margin: 20px 0; color: #ccc; font-size: 0.95em; line-height: 1.7; }
+        .calm .label { color: #888; }
+        .calm .val { color: #ffb300; font-weight: bold; }
+
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+
+        .offender { display: flex; align-items: center; gap: 16px; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 14px 0; }
+        .offender-icon { font-size: 2em; flex-shrink: 0; }
+        .offender-text { font-size: 0.9em; color: #ccc; }
+        .offender-text strong { color: #f87171; }
+
+        .counter-wrap { text-align: center; margin: 24px 0; }
+        .counter-label { color: #888; font-size: 0.85em; margin-bottom: 8px; }
+        .counter { font-family: 'Staatliches', sans-serif; font-size: 4em; letter-spacing: 6px; color: #4ade80; transition: all 0.3s; }
+        .counter.angry { color: #f87171; animation: shake 0.3s ease-in-out; }
+        @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        .counter-btn { display: inline-block; margin-top: 12px; padding: 10px 28px; background: #f87171; color: #181818; font-family: 'Staatliches', sans-serif; font-size: 1.1em; letter-spacing: 3px; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .counter-btn:hover { background: #ff9090; }
+
+        .finale { text-align: center; margin: 32px 0; padding: 24px; background: #0a2a10; border: 2px solid #4ade80; border-radius: 10px; }
+        .finale-text { font-family: 'Staatliches', sans-serif; font-size: 1.8em; letter-spacing: 6px; color: #4ade80; }
+        .finale-sub { color: #4ade80; font-size: 0.85em; margin-top: 6px; opacity: 0.7; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Dej ty BLINDY</h2>
+
+        <p>
+            Ze všech pokerových konceptů je tohle ten absolutně nejjednodušší.
+            A přesto ho lidi nedokážou pochopit.
+        </p>
+
+        <div class="rant">
+            Když sedíš na <strong>small blindu</strong>, dáváš <em>small blind</em>.<br>
+            Když sedíš na <strong>big blindu</strong>, dáváš <em>big blind</em>.<br><br>
+            Každou ruku. Bez výjimky. Bez debaty. Bez "počkej, já myslel že jsem dealer".<br><br>
+            <strong>Dej. Ty. Blindy.</strong>
+        </div>
+
+        <h2>Co jsou blindy</h2>
+
+        <p>
+            Blindy jsou povinné sázky, které zajišťují, že v každém potu jsou peníze.
+            Bez nich by nikdo nehrál &mdash; všichni by seděli a čekali na AA.
+        </p>
+
+        <div class="formula">
+            Small blind = polovina minimálního betu<br>
+            Big blind = minimální bet<br><br>
+            Na NL50: SB = 25 Kč, BB = 50 Kč<br>
+            Na NL100: SB = 50 Kč, BB = 100 Kč
+        </div>
+
+        <h2>Jak poznáš, kde jsou blindy</h2>
+
+        <p>
+            Na stole leží velký bílý kulatý žeton s písmenem <strong>D</strong>. To je dealer button.
+            Blindy jsou vždycky první dva hráči nalevo od něj.
+        </p>
+
+        <div style="text-align:center; margin: 20px 0;">
+            <svg viewBox="0 0 480 260" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-width:480px;">
+                <ellipse cx="240" cy="130" rx="190" ry="100" fill="#1a3a1a" stroke="#2a5a2a" stroke-width="3"/>
+                <ellipse cx="240" cy="130" rx="170" ry="85" fill="none" stroke="#3a6a3a" stroke-width="1" stroke-dasharray="4,4"/>
+
+                <!-- Dealer -->
+                <circle cx="400" cy="170" r="26" fill="#222" stroke="#eee" stroke-width="2"/>
+                <text x="400" y="168" text-anchor="middle" fill="#eee" font-size="10" font-family="monospace">DEALER</text>
+                <circle cx="400" cy="182" r="8" fill="#eee" stroke="none"/>
+                <text x="400" y="186" text-anchor="middle" fill="#181818" font-size="11" font-weight="bold" font-family="monospace">D</text>
+
+                <!-- SB -->
+                <circle cx="300" cy="230" r="26" fill="#222" stroke="#ffb300" stroke-width="2.5"/>
+                <text x="300" y="228" text-anchor="middle" fill="#ffb300" font-size="11" font-weight="bold" font-family="monospace">SB</text>
+                <text x="300" y="242" text-anchor="middle" fill="#ffb300" font-size="8" font-family="monospace">DEJ BLIND</text>
+
+                <!-- BB -->
+                <circle cx="180" cy="230" r="26" fill="#222" stroke="#f87171" stroke-width="2.5"/>
+                <text x="180" y="228" text-anchor="middle" fill="#f87171" font-size="11" font-weight="bold" font-family="monospace">BB</text>
+                <text x="180" y="242" text-anchor="middle" fill="#f87171" font-size="8" font-family="monospace">DEJ BLIND</text>
+
+                <!-- Others -->
+                <circle cx="80" cy="170" r="26" fill="#222" stroke="#555" stroke-width="1.5"/>
+                <text x="80" y="174" text-anchor="middle" fill="#666" font-size="11" font-family="monospace">UTG</text>
+
+                <circle cx="110" cy="60" r="26" fill="#222" stroke="#555" stroke-width="1.5"/>
+                <text x="110" y="64" text-anchor="middle" fill="#666" font-size="11" font-family="monospace">HJ</text>
+
+                <circle cx="370" cy="60" r="26" fill="#222" stroke="#555" stroke-width="1.5"/>
+                <text x="370" y="64" text-anchor="middle" fill="#666" font-size="11" font-family="monospace">CO</text>
+
+                <!-- Arrow from D to SB -->
+                <path d="M380 190 Q340 220 322 224" fill="none" stroke="#eee" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <polygon points="322,220 328,228 318,226" fill="#eee"/>
+
+                <!-- Arrow from SB to BB -->
+                <path d="M275 234 Q240 240 210 234" fill="none" stroke="#ffb300" stroke-width="1.5" stroke-dasharray="4,3"/>
+                <polygon points="210,230 216,238 206,236" fill="#ffb300"/>
+
+                <!-- Label -->
+                <text x="240" y="130" text-anchor="middle" fill="#3a6a3a" font-size="12" font-family="Staatliches" letter-spacing="3">VELKÝ BÍLÝ D</text>
+                <text x="240" y="145" text-anchor="middle" fill="#3a6a3a" font-size="10" font-family="sans-serif">najdi ho a koukej doleva</text>
+            </svg>
+        </div>
+
+        <div class="tip">
+            Najdi <strong style="color:#eee;">velký bílý D</strong> na stole. První hráč nalevo = SB. Druhý nalevo = BB.
+            Každou ruku se D posune o jednoho hráče doleva. A s ním blindy. Automaticky. Prostě zaplať.
+        </div>
+
+        <h2>Nejčastější blindoví delikventi</h2>
+
+        <div class="offender">
+            <div class="offender-icon">🧓</div>
+            <div class="offender-text">
+                <strong>"Já jsem dával minule"</strong><br>
+                Ne, nedával. Dealer button se posunul. Teď jsi na blindu ty. Dej blind.
+            </div>
+        </div>
+
+        <div class="offender">
+            <div class="offender-icon">📱</div>
+            <div class="offender-text">
+                <strong>"Moment, neviděl jsem..."</strong><br>
+                Koukáš do mobilu místo na hru. Dej blind a schovej ten telefon.
+            </div>
+        </div>
+
+        <div class="offender">
+            <div class="offender-icon">🤔</div>
+            <div class="offender-text">
+                <strong>"Kolik je blind? A kolik mám chipů?"</strong><br>
+                Blind je napsanej na stole. Na čipech. Na tabuli. Na tvém screenu. Všude.
+                Přečti si to a zaplať.
+            </div>
+        </div>
+
+        <div class="offender">
+            <div class="offender-icon">🦀</div>
+            <div class="offender-text">
+                <strong>"Ale já nechci hrát tuhle ruku"</strong><br>
+                Blind není bet. Blind je daň za to, že sedíš u stolu.
+                Můžeš foldnout. ALE NEJDŘÍV DEJ BLIND.
+            </div>
+        </div>
+
+        <h2>Kolikrát dneska někdo zapomněl dát blind</h2>
+
+        <div class="counter-wrap">
+            <div class="counter-label">počítadlo zločinů proti pokeru</div>
+            <div class="counter" id="counter">0</div>
+            <br>
+            <button class="counter-btn" id="counter-btn">POPROSIM BLINDY</button>
+        </div>
+
+        <h2>Shrnutí</h2>
+
+        <div class="finale">
+            <div class="finale-text">DEJ TY BLINDY</div>
+            <div class="finale-sub">a nikdo nebude pošmelen</div>
+        </div>
+    </div>
+    <script>
+        !function(){
+            var count = parseInt(localStorage.getItem('smelo-blind-count') || '0');
+            var el = document.getElementById('counter');
+            el.textContent = count;
+            document.getElementById('counter-btn').addEventListener('click', function() {
+                count++;
+                localStorage.setItem('smelo-blind-count', count);
+                el.textContent = count;
+                el.classList.add('angry');
+                setTimeout(function(){ el.classList.remove('angry'); }, 400);
+            });
+        }();
+    </script>
+</body>
+</html>
