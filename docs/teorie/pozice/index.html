@@ -40,6 +40,9 @@
         .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
         .example .label { color: #888; }
         .example .val { color: #ffb300; font-weight: bold; }
+        .table-btn { background: #282828; color: #888; border: 1px solid #444; padding: 6px 16px; border-radius: 6px; cursor: pointer; font-family: 'Staatliches', sans-serif; font-size: 0.95em; letter-spacing: 2px; transition: all 0.2s; }
+        .table-btn:hover { background: #333; color: #ccc; }
+        .table-btn.active { background: #ffb300; color: #181818; border-color: #ffb300; }
     </style>
 </head>
 <body>
@@ -117,35 +120,17 @@
         </div>
 
         <h2>Open-Raise Range podle pozice</h2>
-        <p>Přibližné % ruk, se kterými openujeme (6-max, 100bb deep):</p>
+        <p>Přibližné % ruk, se kterými openujeme (100bb deep). Klikni na velikost stolu:</p>
 
-        <div class="range-section">
-            <div class="range-bar-wrap">
-                <span class="range-name">UTG</span>
-                <div class="range-bar-bg"><div class="range-bar" style="width:12%; background:#f87171;"></div></div>
-                <span class="range-pct">~12%</span>
-            </div>
-            <div class="range-bar-wrap">
-                <span class="range-name">HJ</span>
-                <div class="range-bar-bg"><div class="range-bar" style="width:18%; background:#ffb300;"></div></div>
-                <span class="range-pct">~18%</span>
-            </div>
-            <div class="range-bar-wrap">
-                <span class="range-name">CO</span>
-                <div class="range-bar-bg"><div class="range-bar" style="width:27%; background:#4ade80;"></div></div>
-                <span class="range-pct">~27%</span>
-            </div>
-            <div class="range-bar-wrap">
-                <span class="range-name">BTN</span>
-                <div class="range-bar-bg"><div class="range-bar" style="width:40%; background:#4ade80;"></div></div>
-                <span class="range-pct">~40%</span>
-            </div>
-            <div class="range-bar-wrap">
-                <span class="range-name">SB</span>
-                <div class="range-bar-bg"><div class="range-bar" style="width:35%; background:#888;"></div></div>
-                <span class="range-pct">~35%</span>
-            </div>
+        <div style="display:flex; gap:8px; margin:12px 0; flex-wrap:wrap;">
+            <button class="table-btn" onclick="showTable(4)" id="tb4">4-max</button>
+            <button class="table-btn active" onclick="showTable(6)" id="tb6">6-max</button>
+            <button class="table-btn" onclick="showTable(8)" id="tb8">8-max</button>
+            <button class="table-btn" onclick="showTable(10)" id="tb10">10-max</button>
         </div>
+
+        <div class="range-section" id="range-bars"></div>
+        <div class="tip" id="range-note" style="margin-top:8px;"></div>
 
         <h2>Pozice v praxi</h2>
 
@@ -179,6 +164,71 @@
             <strong>Pravidlo:</strong> když nevíš &mdash; na pozici spíš calluj nebo raisuj. Mimo pozici spíš folduj. Pozice vydělá víc peněz než jakýkoli jiný jednotlivý faktor.
         </div>
     </div>
+    <script>
+        var TABLES = {
+            4: {
+                positions: [
+                    {name:'BTN', pct:55, color:'#4ade80'},
+                    {name:'SB', pct:45, color:'#888'},
+                    {name:'BB', pct:0, color:'#888'}
+                ],
+                note: '4-max je akce. Každá pozice je late position. Otevíráš extrémně široce, protože za tebou sedí jen 2-3 hráči.'
+            },
+            6: {
+                positions: [
+                    {name:'UTG', pct:12, color:'#f87171'},
+                    {name:'HJ', pct:18, color:'#ffb300'},
+                    {name:'CO', pct:27, color:'#4ade80'},
+                    {name:'BTN', pct:40, color:'#4ade80'},
+                    {name:'SB', pct:35, color:'#888'}
+                ],
+                note: '6-max je nejběžnější online formát. Dobrý balanc mezi akcí a strategickou hloubkou.'
+            },
+            8: {
+                positions: [
+                    {name:'UTG', pct:9, color:'#f87171'},
+                    {name:'UTG+1', pct:11, color:'#f87171'},
+                    {name:'MP', pct:14, color:'#ffb300'},
+                    {name:'HJ', pct:18, color:'#ffb300'},
+                    {name:'CO', pct:25, color:'#4ade80'},
+                    {name:'BTN', pct:38, color:'#4ade80'},
+                    {name:'SB', pct:32, color:'#888'}
+                ],
+                note: '8-max je běžný v live kasínech. Early pozice jsou extrémně tight \u2014 za tebou sedí 6 hráčů.'
+            },
+            10: {
+                positions: [
+                    {name:'UTG', pct:7, color:'#f87171'},
+                    {name:'UTG+1', pct:8, color:'#f87171'},
+                    {name:'UTG+2', pct:10, color:'#f87171'},
+                    {name:'MP', pct:12, color:'#ffb300'},
+                    {name:'MP+1', pct:14, color:'#ffb300'},
+                    {name:'HJ', pct:17, color:'#ffb300'},
+                    {name:'CO', pct:24, color:'#4ade80'},
+                    {name:'BTN', pct:36, color:'#4ade80'},
+                    {name:'SB', pct:30, color:'#888'}
+                ],
+                note: 'Full ring (10-max). UTG je jako trezor \u2014 openuj jen premium. Většina peněz se dělá z late pozice.'
+            }
+        };
+
+        function showTable(size) {
+            var btns = document.querySelectorAll('.table-btn');
+            btns.forEach(function(b){ b.classList.remove('active'); });
+            document.getElementById('tb'+size).classList.add('active');
+            var data = TABLES[size];
+            var html = '';
+            data.positions.forEach(function(p) {
+                html += '<div class="range-bar-wrap">' +
+                    '<span class="range-name">' + p.name + '</span>' +
+                    '<div class="range-bar-bg"><div class="range-bar" style="width:' + p.pct + '%; background:' + p.color + ';"></div></div>' +
+                    '<span class="range-pct">~' + p.pct + '%</span></div>';
+            });
+            document.getElementById('range-bars').innerHTML = html;
+            document.getElementById('range-note').innerHTML = data.note;
+        }
+        showTable(6);
+    </script>
     <script>
         !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
     </script>
