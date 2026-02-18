@@ -291,7 +291,7 @@ var DATA = {
                 ],
                 prompt: 'Calling station raisnul turn. Máš set desítek. Co teď?',
                 choices: [
-                    {text:'Call a vyhodnotit river', grade:'ok', outcome:'River: 2\u2666. Checkneš. Station betne 40bb. Callneš. Station ukazuje 97o \u2014 straight. Prohrál jsi. Call na turnu nebyl špatný se setem, ale měl jsi být opatrnější na riveru. Board 8-J má spoustu straightů.'},
+                    {text:'Call a vyhodnotit river', grade:'ok', outcome:'River: 2\u2666. Checkneš. Station betne 40bb. Callneš. Station ukazuje 97o \u2014 straight. Prohrál jsi. Call na turnu nebyl špatný se setem, ale stationův raise na connected boardu 8-J měl být varovný signál — má spoustu straightů.'},
                     {text:'Re-raise all-in', grade:'bad', outcome:'Station okamžitě callne a ukazuje 97o \u2014 straight. Když calling station raisne, MÁ TO. Tenhle hráč nechápne koncept bluffu. Jeho raise = nuts. Re-raise s pouhým setem na connected boardu je katastrofa.'},
                     {text:'Fold \u2014 station neraisuje bez nuts', grade:'best', outcome:'Heroický fold, ale správný. Station ukazuje 97o \u2014 straight. Calling station raisne jednou za 100 ruk. A když to udělá, má VŽDYCKY minimálně dva páry, většinou straight nebo lepší. Ušetřil jsi 50bb+.'}
                 ]
@@ -481,7 +481,7 @@ function choose(sid, idx) {
     var sc = DATA[type].scenarios[si];
     var btns = document.querySelectorAll('[data-scenario="' + sid + '"]');
     btns.forEach(function(b, i) {
-        b.disabled = true;
+        b.classList.remove('best', 'ok', 'bad');
         var grade = sc.choices[i].grade;
         if (i === idx) b.classList.add(grade);
         else if (grade === 'best') b.classList.add('best');
