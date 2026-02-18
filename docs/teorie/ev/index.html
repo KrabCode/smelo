@@ -56,36 +56,67 @@
             <span class="label">Když callne:</span> <span class="val">&minus;150</span> (ztratíš bet)<br><br>
             <span class="label">EV bluffu:</span> (0.60 &times; 200) &minus; (0.40 &times; 150)<br>
             = 120 &minus; 60 = <span class="val">+60</span><br><br>
-            Bluff je +EV. I když 40% času prohraješ 150, celkově vyděláváš.
+            Bluff je +EV. I když ve 40% případů prohraješ 150, celkově vyděláváš.
         </div>
 
-        <h2>Kalkulačka EV</h2>
+        <h2>EV Callu</h2>
         <div class="calc">
             <div class="calc-row">
                 <div class="calc-field">
-                    <label>Šance na výhru (%)</label>
-                    <input type="number" id="winPct" placeholder="36" value="36" min="0" max="100" step="any">
+                    <label>Pot (před betem)</label>
+                    <input type="number" id="cPot" placeholder="100" value="100" min="0" step="any">
+                </div>
+                <div class="calc-field">
+                    <label>Bet soupeře (= tvůj call)</label>
+                    <input type="number" id="cCall" placeholder="50" value="50" min="0" step="any">
                 </div>
             </div>
             <div class="calc-row">
                 <div class="calc-field">
-                    <label>Kolik vyhraješ</label>
-                    <input type="number" id="winAmt" placeholder="150" value="150" min="0" step="any">
+                    <label>Equity (%)</label>
+                    <input type="number" id="cEq" placeholder="36" value="36" min="0" max="100" step="any">
+                </div>
+            </div>
+
+            <div class="result" id="cResult">
+                <div class="result-row">
+                    <span class="result-label">EV callu</span>
+                    <span class="result-value" id="cEV">&ndash;</span>
+                </div>
+            </div>
+            <div class="note" id="cNote"></div>
+        </div>
+
+        <h2>EV Bluffu</h2>
+        <div class="calc">
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Pot (před betem)</label>
+                    <input type="number" id="bPot" placeholder="200" value="200" min="0" step="any">
                 </div>
                 <div class="calc-field">
-                    <label>Kolik prohraješ</label>
-                    <input type="number" id="loseAmt" placeholder="50" value="50" min="0" step="any">
+                    <label>Tvůj bet</label>
+                    <input type="number" id="bBet" placeholder="150" value="150" min="0" step="any">
+                </div>
+            </div>
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Fold equity (%)</label>
+                    <input type="number" id="bFold" placeholder="60" value="60" min="0" max="100" step="any">
                 </div>
             </div>
 
-            <div class="result" id="result">
+            <div class="result" id="bResult">
                 <div class="result-row">
-                    <span class="result-label">EV</span>
-                    <span class="result-value" id="rEV">&ndash;</span>
+                    <span class="result-label">EV bluffu</span>
+                    <span class="result-value" id="bEV">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Min. fold equity</span>
+                    <span class="result-value" id="bMinFold">&ndash;</span>
                 </div>
             </div>
-
-            <div class="note" id="note"></div>
+            <div class="note" id="bNote"></div>
         </div>
 
         <h2>EV a poker strategie</h2>
@@ -104,50 +135,55 @@
     </div>
 
     <script>
-        var winPctEl = document.getElementById('winPct');
-        var winAmtEl = document.getElementById('winAmt');
-        var loseAmtEl = document.getElementById('loseAmt');
-        var resultEl = document.getElementById('result');
-        var noteEl = document.getElementById('note');
-
-        function calc() {
-            var wp = parseFloat(winPctEl.value);
-            var wa = parseFloat(winAmtEl.value);
-            var la = parseFloat(loseAmtEl.value);
-
-            if (isNaN(wp) || isNaN(wa) || isNaN(la) || wp < 0 || wp > 100) {
-                resultEl.classList.remove('visible');
-                noteEl.classList.remove('visible');
-                return;
-            }
-
-            var ev = (wp / 100) * wa - ((100 - wp) / 100) * la;
-            document.getElementById('rEV').textContent = (ev >= 0 ? '+' : '') + ev.toFixed(1);
-            resultEl.classList.add('visible');
-
+        function styleNote(el, ev) {
             if (ev > 0) {
-                noteEl.textContent = '+EV. Toto rozhodnutí je dlouhodobě výdělečné.';
-                noteEl.style.background = '#1a2e1a';
-                noteEl.style.borderColor = '#2a4a2a';
-                noteEl.style.color = '#8fbc8f';
+                el.textContent = '+EV. Dlouhodobě výdělečné.';
+                el.style.background = '#1a2e1a'; el.style.borderColor = '#2a4a2a'; el.style.color = '#8fbc8f';
             } else if (ev < 0) {
-                noteEl.textContent = '-EV. Toto rozhodnutí je dlouhodobě ztrátové.';
-                noteEl.style.background = '#2e1a1a';
-                noteEl.style.borderColor = '#4a2a2a';
-                noteEl.style.color = '#bc8f8f';
+                el.textContent = '-EV. Dlouhodobě ztrátové.';
+                el.style.background = '#2e1a1a'; el.style.borderColor = '#4a2a2a'; el.style.color = '#bc8f8f';
             } else {
-                noteEl.textContent = 'Break-even. Ani výdělek, ani ztráta.';
-                noteEl.style.background = '#1a1a2e';
-                noteEl.style.borderColor = '#2a2a4e';
-                noteEl.style.color = '#aab';
+                el.textContent = 'Break-even.';
+                el.style.background = '#1a1a2e'; el.style.borderColor = '#2a2a4e'; el.style.color = '#aab';
             }
-            noteEl.classList.add('visible');
+            el.classList.add('visible');
         }
 
-        winPctEl.addEventListener('input', calc);
-        winAmtEl.addEventListener('input', calc);
-        loseAmtEl.addEventListener('input', calc);
-        calc();
+        var cPot = document.getElementById('cPot'), cCall = document.getElementById('cCall'), cEq = document.getElementById('cEq');
+        var cResult = document.getElementById('cResult'), cNote = document.getElementById('cNote');
+
+        function calcCall() {
+            var pot = parseFloat(cPot.value), call = parseFloat(cCall.value), eq = parseFloat(cEq.value);
+            if (isNaN(pot) || isNaN(call) || isNaN(eq) || pot < 0 || call <= 0 || eq < 0 || eq > 100) {
+                cResult.classList.remove('visible'); cNote.classList.remove('visible'); return;
+            }
+            var ev = (eq / 100) * (pot + call) - ((100 - eq) / 100) * call;
+            document.getElementById('cEV').textContent = (ev >= 0 ? '+' : '') + ev.toFixed(1);
+            cResult.classList.add('visible');
+            styleNote(cNote, ev);
+        }
+
+        cPot.addEventListener('input', calcCall); cCall.addEventListener('input', calcCall); cEq.addEventListener('input', calcCall);
+        calcCall();
+
+        var bPot = document.getElementById('bPot'), bBet = document.getElementById('bBet'), bFold = document.getElementById('bFold');
+        var bResult = document.getElementById('bResult'), bNote = document.getElementById('bNote');
+
+        function calcBluff() {
+            var pot = parseFloat(bPot.value), bet = parseFloat(bBet.value), fold = parseFloat(bFold.value);
+            if (isNaN(pot) || isNaN(bet) || isNaN(fold) || pot < 0 || bet <= 0 || fold < 0 || fold > 100) {
+                bResult.classList.remove('visible'); bNote.classList.remove('visible'); return;
+            }
+            var ev = (fold / 100) * pot - ((100 - fold) / 100) * bet;
+            var minFold = bet / (pot + bet) * 100;
+            document.getElementById('bEV').textContent = (ev >= 0 ? '+' : '') + ev.toFixed(1);
+            document.getElementById('bMinFold').textContent = minFold.toFixed(1) + '%';
+            bResult.classList.add('visible');
+            styleNote(bNote, ev);
+        }
+
+        bPot.addEventListener('input', calcBluff); bBet.addEventListener('input', calcBluff); bFold.addEventListener('input', calcBluff);
+        calcBluff();
     </script>
 <script src="../../reveal.js"></script>
 </body>

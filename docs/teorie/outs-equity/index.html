@@ -14,7 +14,34 @@
         .outs-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
         .outs-table td { padding: 6px 10px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9em; }
         .outs-table td:first-child { font-family: monospace; color: #ffb300; font-weight: bold; }
+        .outs-table tr[data-outs] { cursor: pointer; transition: background 0.15s; }
+        .outs-table tr[data-outs]:hover { background: #2a2a2a; }
+        .outs-table tr[data-outs].selected { background: #332b00; }
         .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .street-toggle { display: flex; gap: 0; }
+        .street-toggle input { display: none; }
+        .street-toggle label {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            background: var(--bg-input, #1a1a1a);
+            border: 1px solid #333;
+            color: #888;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .street-toggle label:first-of-type { border-radius: 8px 0 0 8px; }
+        .street-toggle label:last-of-type { border-radius: 0 8px 8px 0; border-left: none; }
+        .street-toggle input:checked + label {
+            background: #ffb300;
+            color: #000;
+            border-color: #ffb300;
+            font-weight: 700;
+        }
+        .street-toggle label:hover { background: #2a2a2a; }
+        .street-toggle input:checked + label:hover { background: #ffc033; }
+        .street-sub { display: block; font-size: 0.75em; font-weight: 400; opacity: 0.7; margin-top: 2px; }
     </style>
 </head>
 <body>
@@ -33,17 +60,6 @@
 
         <h2>Počítání outů</h2>
         <p>V balíčku je 52 karet. Vidíš své 2 + karty na boardu. Zbytek je neznámý.</p>
-
-        <table class="outs-table">
-            <tr><th>Outy</th><th>Draw</th><th>Příklad</th></tr>
-            <tr><td>2</td><td>Pocket pair → set</td><td>Máš 77, flop K92</td></tr>
-            <tr><td>4</td><td>Gutshot (inside straight draw)</td><td>Máš 89, flop 67K</td></tr>
-            <tr><td>6</td><td>Dva overcards</td><td>Máš AK, flop 952</td></tr>
-            <tr><td>8</td><td>OESD (open-ended straight draw)</td><td>Máš 89, flop 67K</td></tr>
-            <tr><td>9</td><td>Flush draw</td><td>Máš A&#9829;5&#9829;, flop K&#9829;8&#9829;2&#9827;</td></tr>
-            <tr><td>12</td><td>Flush draw + gutshot</td><td>Máš A&#9829;T&#9829;, flop K&#9829;Q&#9827;3&#9829;</td></tr>
-            <tr><td>15</td><td>Flush draw + OESD</td><td>Máš 7&#9829;8&#9829;, flop 6&#9829;9&#9827;2&#9829;</td></tr>
-        </table>
 
         <h2>Pravidlo 2 a 4</h2>
         <p>Rychlý způsob, jak převést outy na equity:</p>
@@ -74,6 +90,19 @@
         </div>
 
         <h2>Kalkulačka outů</h2>
+        <p>Klikni na řádek nebo zadej outy ručně:</p>
+
+        <table class="outs-table" id="outsTable">
+            <tr><th>Outy</th><th>Draw</th><th>Příklad</th></tr>
+            <tr data-outs="2"><td>2</td><td>Pocket pair → set</td><td>Máš 77, flop K92</td></tr>
+            <tr data-outs="4"><td>4</td><td>Gutshot (inside straight draw)</td><td>Máš 89, flop 67K</td></tr>
+            <tr data-outs="6"><td>6</td><td>Dva overcards</td><td>Máš AK, flop 952</td></tr>
+            <tr data-outs="8"><td>8</td><td>OESD (open-ended straight draw)</td><td>Máš 89, flop 67K</td></tr>
+            <tr data-outs="9"><td>9</td><td>Flush draw</td><td>Máš A&#9829;5&#9829;, flop K&#9829;8&#9829;2&#9827;</td></tr>
+            <tr data-outs="12"><td>12</td><td>Flush draw + gutshot</td><td>Máš A&#9829;T&#9829;, flop K&#9829;Q&#9827;3&#9829;</td></tr>
+            <tr data-outs="15"><td>15</td><td>Flush draw + OESD</td><td>Máš 7&#9829;8&#9829;, flop 6&#9829;9&#9827;2&#9829;</td></tr>
+        </table>
+
         <div class="calc">
             <div class="calc-row">
                 <div class="calc-field">
@@ -82,10 +111,12 @@
                 </div>
                 <div class="calc-field">
                     <label>Street</label>
-                    <select id="street">
-                        <option value="flop">Flop (2 karty přijdou)</option>
-                        <option value="turn">Turn (1 karta přijde)</option>
-                    </select>
+                    <div class="street-toggle">
+                        <input type="radio" name="street" id="streetFlop" value="flop" checked>
+                        <label for="streetFlop">Flop <span class="street-sub">2 karty</span></label>
+                        <input type="radio" name="street" id="streetTurn" value="turn">
+                        <label for="streetTurn">Turn <span class="street-sub">1 karta</span></label>
+                    </div>
                 </div>
             </div>
 
@@ -126,8 +157,12 @@
                     <span class="result-value" id="rPO">&ndash;</span>
                 </div>
                 <div class="result-row">
-                    <span class="result-label">Tvá equity (z outů)</span>
+                    <span class="result-label">Equity</span>
                     <span class="result-value" id="rMyEq">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Hraniční bet</span>
+                    <span class="result-value" id="rBreakBet">&ndash;</span>
                 </div>
             </div>
 
@@ -144,7 +179,7 @@
     </script>
     <script>
         var outsEl = document.getElementById('outs');
-        var streetEl = document.getElementById('street');
+        var streetRadios = document.querySelectorAll('input[name="street"]');
         var resultEl = document.getElementById('result');
         var potEl = document.getElementById('pot');
         var betEl = document.getElementById('bet');
@@ -159,10 +194,11 @@
                 resultEl.classList.remove('visible');
                 currentExact = null;
                 calcPO();
+                if (typeof syncSelected === 'function') syncSelected();
                 return;
             }
 
-            var isFlop = streetEl.value === 'flop';
+            var isFlop = document.querySelector('input[name="street"]:checked').value === 'flop';
             var quick = outs * (isFlop ? 4 : 2);
             if (quick > 100) quick = 100;
 
@@ -180,6 +216,7 @@
             document.getElementById('rPotOdds').textContent = currentExact.toFixed(1) + '%';
             resultEl.classList.add('visible');
             calcPO();
+            if (typeof syncSelected === 'function') syncSelected();
         }
 
         function calcPO() {
@@ -199,6 +236,13 @@
 
             if (currentExact !== null) {
                 document.getElementById('rMyEq').textContent = currentExact.toFixed(1) + '%';
+                var eq = currentExact / 100;
+                if (eq >= 0.5) {
+                    document.getElementById('rBreakBet').textContent = 'libovolný';
+                } else {
+                    var breakBet = eq * pot / (1 - 2 * eq);
+                    document.getElementById('rBreakBet').textContent = Math.floor(breakBet).toLocaleString('cs');
+                }
                 resultPOEl.classList.add('visible');
 
                 if (currentExact >= odds) {
@@ -215,13 +259,30 @@
                 notePOEl.classList.add('visible');
             } else {
                 document.getElementById('rMyEq').textContent = '–';
+                document.getElementById('rBreakBet').textContent = '–';
                 resultPOEl.classList.add('visible');
                 notePOEl.classList.remove('visible');
             }
         }
 
-        outsEl.addEventListener('input', calcOuts);
-        streetEl.addEventListener('change', calcOuts);
+        var outsRows = document.querySelectorAll('#outsTable tr[data-outs]');
+
+        function syncSelected() {
+            var v = parseInt(outsEl.value);
+            outsRows.forEach(function(r) {
+                r.classList.toggle('selected', parseInt(r.getAttribute('data-outs')) === v);
+            });
+        }
+
+        outsRows.forEach(function(row) {
+            row.addEventListener('click', function() {
+                outsEl.value = row.getAttribute('data-outs');
+                calcOuts();
+            });
+        });
+
+        outsEl.addEventListener('input', function() { calcOuts(); });
+        streetRadios.forEach(function(r) { r.addEventListener('change', calcOuts); });
         potEl.addEventListener('input', calcPO);
         betEl.addEventListener('input', calcPO);
         calcOuts();
