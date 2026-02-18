@@ -1,0 +1,167 @@
+/* === CSS Custom Properties === */
+:root {
+    --bg: #181818;
+    --bg-card: #222;
+    --bg-card-hover: #282828;
+    --bg-input: #181818;
+    --bg-formula: #1e1e1e;
+    --bg-result: #1a1a2e;
+    --border: #333;
+    --border-light: #444;
+    --text: #eee;
+    --text-secondary: #ccc;
+    --text-muted: #888;
+    --text-faint: #666;
+    --accent: #ffb300;
+    --green: #4ade80;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+
+/* === Base reset & typography === */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+}
+a { color: var(--accent); }
+h1, h2 {
+    font-family: 'Staatliches', sans-serif;
+    letter-spacing: 4px;
+}
+
+/* === Header & nav === */
+.header { text-align: center; padding: 24px 16px 0; }
+.header h1 a { color: var(--text); text-decoration: none; }
+.header h1 a:hover { color: var(--accent); text-decoration: underline; }
+.header h1 a:first-child:hover { color: var(--text); }
+hr { border-color: var(--border); margin: 16px 0; }
+
+/* === Layout === */
+.container { max-width: 700px; margin: 0 auto; padding: 0 20px 60px; }
+h2 { margin: 28px 0 12px; font-size: 1.5em; }
+p { margin: 8px 0; color: var(--text-secondary); }
+
+/* === Formula box === */
+.formula {
+    color: #aaa;
+    font-family: monospace;
+    background: var(--bg-formula);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 12px 0;
+    border-left: 3px solid var(--accent);
+}
+
+/* === Example block (shadow instead of flat border) === */
+.example {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    font-size: 0.95em;
+    line-height: 1.7;
+}
+.example .label { color: var(--text-muted); }
+.example .val { color: var(--accent); font-weight: bold; }
+
+/* === Tip box === */
+.tip {
+    background: var(--bg-result);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    padding: 14px;
+    color: #aab;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 0.9em;
+}
+
+/* === Calculator === */
+.calc {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 24px 0;
+}
+.calc-row { display: flex; gap: 16px; margin: 12px 0; }
+.calc-field { flex: 1; }
+.calc-field label { display: block; color: var(--text-muted); font-size: 0.85em; margin-bottom: 4px; }
+.calc-field input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 1em;
+    font-family: monospace;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.calc-field input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,179,0,0.15);
+}
+
+/* === Result box === */
+.result {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--bg-result);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    border-radius: 8px;
+    display: none;
+}
+.result.visible { display: block; }
+.result-row { display: flex; justify-content: space-between; padding: 4px 0; }
+.result-label { color: var(--text-muted); }
+.result-value { color: var(--accent); font-weight: bold; font-family: monospace; }
+
+/* === Note box === */
+.note {
+    margin-top: 12px;
+    padding: 12px;
+    background: #1a2e1a;
+    border: 1px solid #2a4a2a;
+    border-radius: 8px;
+    font-size: 0.9em;
+    color: #8fbc8f;
+    display: none;
+}
+.note.visible { display: block; }
+
+/* === Q&A blocks === */
+.qa {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+/* === Card list (teorie index) === */
+.card {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    border-radius: 10px;
+    padding: 20px 24px;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+    border-color: var(--accent);
+    background: var(--bg-card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+}
