@@ -31,8 +31,17 @@
         .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
 
         .checklist { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; }
-        .checklist li { margin: 6px 0; color: #ccc; font-size: 0.9em; list-style: none; padding-left: 24px; position: relative; }
-        .checklist li::before { content: ''; position: absolute; left: 0; top: 6px; width: 14px; height: 14px; border: 1px solid #555; border-radius: 3px; }
+        .checklist label { display: block; margin: 8px 0; color: #ccc; font-size: 0.9em; cursor: pointer; padding-left: 28px; position: relative; transition: color 0.2s; }
+        .checklist label:hover { color: #fff; }
+        .checklist input[type="checkbox"] { position: absolute; left: 0; top: 3px; accent-color: #f87171; width: 16px; height: 16px; cursor: pointer; }
+        .checklist label.checked { color: #ffb300; }
+        .rebuy-banner { text-align: center; margin: 20px 0; padding: 24px; border-radius: 10px; background: #1e1e1e; border: 2px solid #333; opacity: 0.3; transition: all 0.4s ease; }
+        .rebuy-banner.active { background: #0a2a10; border-color: #4ade80; opacity: 1; animation: rebuy-pulse 1.5s ease-in-out infinite; }
+        .rebuy-text { font-family: 'Staatliches', sans-serif; font-size: 3em; letter-spacing: 12px; color: #333; transition: all 0.4s ease; }
+        .rebuy-banner.active .rebuy-text { color: #4ade80; text-shadow: 0 0 20px rgba(74,222,128,0.5), 0 0 40px rgba(74,222,128,0.2); }
+        .rebuy-sub { font-size: 0.85em; color: #333; margin-top: 4px; transition: color 0.4s; }
+        .rebuy-banner.active .rebuy-sub { color: #4ade80; }
+        @keyframes rebuy-pulse { 0%,100% { box-shadow: 0 0 0 rgba(74,222,128,0); } 50% { box-shadow: 0 0 30px rgba(74,222,128,0.3); } }
     </style>
 </head>
 <body>
@@ -51,47 +60,46 @@
         </p>
 
         <div class="formula">
-            Cíl: nebýt pošmelen. A pokud jsi &mdash; poznat to a přestat hrát.
+            Cíl: nebýt pošmelen. A pokud jsi &mdash; přikup se za víc i když už máš šestý pivo.
         </div>
 
         <div class="qa">
             <div class="qa-q">"Hrál jsem 4 hodiny, prohrál jsem 5 buy-inů a potom jsem dal all-in preflop s K7o. Byl jsem pošmelen. Co mám dělat?"</div>
             <div class="qa-a">
-                <strong>Přestaň hrát. Teď hned.</strong>
-                Pravidlo: po ztrátě 3 buy-inů v jedné session vstaň od stolu.
-                Není to slabost &mdash; je to disciplína.
-                K7o preflop all-in není poker, to je loterie. A loterie je pro lidi, co neumí počítat.
+                <strong>Přikup se. Za víc.</strong>
+                Po pěti buy-inech jsi prohřátej &mdash; karty se musí otočit, to je statistika.
+                K7o je vlastně solidní ruka, máš krále. A sedmička je lucky number.
+                Objednej si panáka, přikup se za double a ukaž jim, kdo tady velí.
             </div>
         </div>
 
         <div class="qa">
             <div class="qa-q">"Soupeř mi dal bad beat. Měl jsem AA a on trefil gutshot na riveru. Slyšel jsem, jak se směje. Přikoupil jsem se a hrál next hand se vším. Pošmelil mě."</div>
             <div class="qa-a">
-                <strong>Soupeř tě nepošmelil. Pošmelil ses sám.</strong>
-                Bad beaty se dějí. Matematicky se MUSÍ dít.
-                Pokud soupeř callnul gutshot se špatnými pot odds, udělal chybu.
-                TY chceš, aby dělal takové chyby. Dlouhodobě na tom vyděláváš.
-                Ten jeden river tě stojí pot. Tilt tě stojí celý bankroll.
+                <strong>Ten člověk ti dluží peníze a oba to víte.</strong>
+                Správná reakce je přikoupit se za max, sednout si přesně nalevo od něj
+                a hrát každý pot, ve kterém je. Osobní vendeta u pokeru je nejlepší motivace.
+                Variance tě nemůže pošmelit dvakrát za sebou &mdash; to by nedávalo smysl.
             </div>
         </div>
 
         <div class="qa">
             <div class="qa-q">"Kamarád říká, že mě u stolu vždycky někdo pošmelí, protože jsem příliš emotivní. Asi by mi šel líp online poker?"</div>
             <div class="qa-a">
-                <strong>Online je tilt horší, ne lepší.</strong>
-                U live stolu musíš fyzicky kupovat žetony, a lidi kolem tebe vidí, že se rozpadáš.
-                Online klikneš "rebuy" a nikdo ti neřekne, abys přestal.
-                Řešení není změna formátu. Řešení je naučit se stop loss.
+                <strong>Online je luxus. Rebuy jedním klikem.</strong>
+                U live stolu musíš jít k pokladně, stát frontu, a všichni vidí, jak taháš další peněženku.
+                Online? Ctrl+R a jedeš. Nikdo tě nesoudí. Můžeš hrát i 6 stolů najednou,
+                takže se pošmelíš 6x rychleji, ale taky vyděláš 6x rychleji (až se to otočí).
             </div>
         </div>
 
         <div class="qa">
             <div class="qa-q">"Prohrál jsem 3 sessiony v řadě. Začínám pochybovat, jestli poker vůbec umím. Mám z toho pošmelený celý týden."</div>
             <div class="qa-a">
-                <strong>3 sessiony neznamenají nic.</strong>
-                Zkus si hodit mincí 10x za sebou. Někdy padne 7x hlava.
-                To neznamená, že mince je rozbitá. Znamená to, že 10 hodů je malý sample.
-                Podívej se na svůj winrate za posledních 10 000 ruk. Ne za 3 sessiony.
+                <strong>3 sessiony je nic. Potřebuješ 4. session, kde to celý otočíš.</strong>
+                Nejlepší hráči světa maj taky špatný týdny. Rozdíl je, že oni nepřestávaj.
+                Sedni si na vyšší limit &mdash; tam jsou lepší pot odds na recovery.
+                A objednej si něco k jídlu, na prázdnej žaludek se špatně grinduje.
                 Viz <a href="../ev/" style="color:#ffb300;">EV</a> a <a href="../bankroll/" style="color:#ffb300;">Bankroll Management</a>.
             </div>
         </div>
@@ -99,52 +107,69 @@
         <div class="qa">
             <div class="qa-q">"Jak poznám, že jsem na tiltu? Přijde mi, že hraju normálně, ale pořád prohrávám."</div>
             <div class="qa-a">
-                <strong>Symptomy pošmelení:</strong><br>
-                &bull; Openíš ruky, které normálně foldneš<br>
-                &bull; Calluješ river bety "protože chceš vidět"<br>
-                &bull; Bluffuješ calling station<br>
-                &bull; Říkáš si "teď musím vyhrát zpátky"<br>
-                &bull; Zvyšuješ limit, abys urychlil recovery<br>
-                &bull; Cítíš vztek na konkrétního hráče u stolu<br><br>
-                Pokud se ti to děje &mdash; jsi pošmelen. Vstaň.
+                <strong>Symptomy, že jsi rozjetej a blízko velkýho turnaroundu:</strong><br>
+                &bull; Openíš ruky, které normálně foldneš &mdash; rozšiřuješ si range, to je pokrok<br>
+                &bull; Calluješ river bety "protože chceš vidět" &mdash; informace jsou cenné<br>
+                &bull; Bluffuješ calling station &mdash; jednou foldne a bude to legendary<br>
+                &bull; Říkáš si "teď musím vyhrát zpátky" &mdash; správný mindset, nikdy se nevzdávej<br>
+                &bull; Zvyšuješ limit &mdash; větší poty = rychlejší recovery, basic math<br>
+                &bull; Cítíš vztek na konkrétního hráče &mdash; pošmelil tě. nech šmelo tebou prostoupit.<br><br>
+                Pokud se ti to děje &mdash; jsi v zóně. Objednej další pivo a jeď.
             </div>
         </div>
 
         <div class="qa">
             <div class="qa-q">"Někdo mě pošmelil. Soupeř limp-callnul s 72o a flopnul dva páry. Jak se tohle může stát?"</div>
             <div class="qa-a">
-                <strong>72o flopne dva páry asi 2% času.</strong>
-                Ale hraje se spousta ruk. 2% se stane.
-                Pokud soupeř hraje 72o, je to <a href="../player-types/" style="color:#ffb300;">calling station</a>.
-                Měl bys ho milovat &mdash; dá ti 100x víc peněz, než ti ta jedna ruka vzala.
-                Zapiš si ho a value betuj ho do dalšího života.
+                <strong>72o flopne dva páry asi 2% času. A právě se to stalo TOBĚ.</strong>
+                Tohle je osobní útok od vesmíru. Jediná správná reakce je přikoupit se za max
+                a ukázat tomu člověku, že 72o se nehraje. Nauč ho to.
+                Value betuj ho do příštího života. A jestli prohraje i pak &mdash;
+                <a href="../player-types/" style="color:#ffb300;">calling station</a> se nenapraví, ale ty mu můžeš pomoct se zbavit všech žetonů.
             </div>
         </div>
 
-        <h2>Anti-tilt checklist</h2>
+        <h2>Pre-session checklist</h2>
         <p>Před každou session si projdi:</p>
 
-        <ul class="checklist">
-            <li>Jsem odpočatý a dobře napapaný?</li>
-            <li>Mám nastavený stop loss (max 3 BI)?</li>
-            <li>Mám čas hrát alespoň 1 hodinu bez stresu?</li>
-            <li>Nejsem naštvaný z něčeho mimo poker?</li>
-            <li>Nepotřebuju peníze, které jsou v bankrollu?</li>
-            <li>Hraju level, na který mám bankroll?</li>
-        </ul>
+        <div class="checklist" id="checklist">
+            <label><input type="checkbox"> Mám u sebe víc peněz, než kolik plánuju prohrát?</label>
+            <label><input type="checkbox"> Mám vypnutej stop loss? (Limituje to upside)</label>
+            <label><input type="checkbox"> Mám čas hrát alespoň do zavíračky?</label>
+            <label><input type="checkbox"> Jsem správně naštvanej z minulý session?</label>
+            <label><input type="checkbox"> Mám dostatečnou zásobu piva a/nebo panáků?</label>
+            <label><input type="checkbox"> Jsem připravenej skočit na vyšší limit kdyby to nešlo?</label>
+            <label><input type="checkbox"> Jsem připravenej dát si pořádně dlouhou přestávku a vrátit se plný energie?</label>
+        </div>
+
+        <div class="rebuy-banner" id="rebuy">
+            <div class="rebuy-text">RE-BUY</div>
+            <div class="rebuy-sub">přikup se a jeď dál</div>
+        </div>
 
         <div class="tip">
-            Pokud odpověď na cokoli z toho je "ne" &mdash; nehraj.
-            Poker tu bude i zítra. Tvůj bankroll nemusí.
+            Pokud odpověď na cokoli z toho je "ne" &mdash; vyřeš to a pak hraj.
+            Poker tu bude i zítra, ale proč odkládat na zítra, co můžeš prohrát dneska.
         </div>
 
         <h2>Shrnutí</h2>
 
         <div class="formula">
-            Pošmelený hráč = -EV hráč.<br>
-            Nepošmelený hráč = disciplinovaný hráč = peníze.<br><br>
-            Nebýt pošmelen je skill. Trénuj ho jako cokoliv jiného.
+            Pošmelený hráč = hráč, kterej se ještě nepřikoupil za dost.<br>
+            Nepošmelený hráč = hráč, kterej si objednal dalšího panáka a jede dál.<br><br>
+            Nebýt pošmelen je o tom nikdy nepřestat. Přikrab se a nikdy nepřestaň šmelit.
         </div>
     </div>
+    <script>
+        document.getElementById('checklist').addEventListener('change', function() {
+            var boxes = this.querySelectorAll('input[type="checkbox"]');
+            var any = false;
+            boxes.forEach(function(cb) {
+                cb.parentElement.classList.toggle('checked', cb.checked);
+                if (cb.checked) any = true;
+            });
+            document.getElementById('rebuy').classList.toggle('active', any);
+        });
+    </script>
 </body>
 </html>
