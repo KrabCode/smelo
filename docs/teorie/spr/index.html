@@ -114,17 +114,17 @@
             <div class="calc-row">
                 <div class="calc-field">
                     <label>Tvůj stack</label>
-                    <input type="number" id="myStack" placeholder="500" min="0" step="any">
+                    <input type="number" id="myStack" placeholder="500" value="500" min="0" step="any">
                 </div>
                 <div class="calc-field">
                     <label>Stack soupeře</label>
-                    <input type="number" id="oppStack" placeholder="800" min="0" step="any">
+                    <input type="number" id="oppStack" placeholder="800" value="800" min="0" step="any">
                 </div>
             </div>
             <div class="calc-row">
                 <div class="calc-field">
                     <label>Pot na flopu</label>
-                    <input type="number" id="pot" placeholder="100" min="0" step="any">
+                    <input type="number" id="pot" placeholder="100" value="100" min="0" step="any">
                 </div>
             </div>
 
@@ -199,6 +199,7 @@
         myStackEl.addEventListener('input', calc);
         oppStackEl.addEventListener('input', calc);
         potEl.addEventListener('input', calc);
+        calc();
     </script>
 </body>
 </html>

@@ -102,21 +102,21 @@
             <div class="calc-row">
                 <div class="calc-field">
                     <label>Pot (před betem)</label>
-                    <input type="number" id="pot" placeholder="200" min="0" step="any">
+                    <input type="number" id="pot" placeholder="200" value="200" min="0" step="any">
                 </div>
                 <div class="calc-field">
                     <label>Bet soupeře</label>
-                    <input type="number" id="bet" placeholder="150" min="0" step="any">
+                    <input type="number" id="bet" placeholder="150" value="150" min="0" step="any">
                 </div>
             </div>
             <div class="calc-row">
                 <div class="calc-field">
                     <label>Tvá equity %</label>
-                    <input type="number" id="equity" placeholder="32" min="0.1" max="100" step="any">
+                    <input type="number" id="equity" placeholder="32" value="32" min="0.1" max="100" step="any">
                 </div>
                 <div class="calc-field">
                     <label>Zbývající stack soupeře</label>
-                    <input type="number" id="remaining" placeholder="1500" min="0" step="any">
+                    <input type="number" id="remaining" placeholder="1500" value="1500" min="0" step="any">
                 </div>
             </div>
 
@@ -220,6 +220,7 @@
         betEl.addEventListener('input', calc);
         equityEl.addEventListener('input', calc);
         remainEl.addEventListener('input', calc);
+        calc();
     </script>
 </body>
 </html>
