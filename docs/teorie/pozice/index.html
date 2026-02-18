@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pozice – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .table-wrap { display: flex; justify-content: center; margin: 24px 0; }
+        .table-svg { width: 100%; max-width: 480px; }
+        .pos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+        .pos-card { background: #222; border: 1px solid #333; border-radius: 8px; padding: 14px 16px; }
+        .pos-card h3 { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1em; margin-bottom: 4px; }
+        .pos-card p { font-size: 0.85em; color: #999; margin: 0; }
+        .pos-early h3 { color: #f87171; }
+        .pos-mid h3 { color: #ffb300; }
+        .pos-late h3 { color: #4ade80; }
+        .pos-blind h3 { color: #888; }
+        .range-section { margin: 16px 0; }
+        .range-bar-wrap { display: flex; align-items: center; gap: 10px; margin: 4px 0; }
+        .range-name { width: 40px; font-family: monospace; font-size: 0.9em; color: #ccc; text-align: right; }
+        .range-bar-bg { flex: 1; height: 20px; background: #1e1e1e; border-radius: 4px; overflow: hidden; }
+        .range-bar { height: 100%; border-radius: 4px; }
+        .range-pct { width: 40px; font-family: monospace; font-size: 0.85em; color: #888; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .tip strong { color: #ccc; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Pozice</h2>
+        <p>
+            Pozice je nejdůležitější nekartový faktor v pokeru.
+            Hráč, který hraje jako poslední, má víc informací a víc kontroly nad potem.
+        </p>
+
+        <div class="formula">
+            víc informací = lepší rozhodnutí = víc peněz
+        </div>
+
+        <h2>6-Max Stůl</h2>
+
+        <div class="table-wrap">
+            <svg class="table-svg" viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="240" cy="150" rx="190" ry="110" fill="#1a3a1a" stroke="#2a5a2a" stroke-width="3"/>
+                <ellipse cx="240" cy="150" rx="170" ry="95" fill="none" stroke="#3a6a3a" stroke-width="1" stroke-dasharray="4,4"/>
+                <text x="240" y="155" text-anchor="middle" fill="#3a6a3a" font-size="14" font-family="Staatliches" letter-spacing="4">DEALER</text>
+                <circle cx="400" cy="210" r="28" fill="#222" stroke="#4ade80" stroke-width="2"/>
+                <text x="400" y="214" text-anchor="middle" fill="#4ade80" font-size="13" font-weight="bold" font-family="monospace">BTN</text>
+                <circle cx="410" cy="110" r="28" fill="#222" stroke="#4ade80" stroke-width="2"/>
+                <text x="410" y="114" text-anchor="middle" fill="#4ade80" font-size="13" font-weight="bold" font-family="monospace">CO</text>
+                <circle cx="300" cy="35" r="28" fill="#222" stroke="#ffb300" stroke-width="2"/>
+                <text x="300" y="39" text-anchor="middle" fill="#ffb300" font-size="13" font-weight="bold" font-family="monospace">HJ</text>
+                <circle cx="180" cy="35" r="28" fill="#222" stroke="#f87171" stroke-width="2"/>
+                <text x="180" y="39" text-anchor="middle" fill="#f87171" font-size="13" font-weight="bold" font-family="monospace">UTG</text>
+                <circle cx="70" cy="110" r="28" fill="#222" stroke="#888" stroke-width="2"/>
+                <text x="70" y="114" text-anchor="middle" fill="#888" font-size="13" font-weight="bold" font-family="monospace">SB</text>
+                <circle cx="80" cy="210" r="28" fill="#222" stroke="#888" stroke-width="2"/>
+                <text x="80" y="214" text-anchor="middle" fill="#888" font-size="13" font-weight="bold" font-family="monospace">BB</text>
+                <circle cx="150" cy="275" r="6" fill="#f87171"/>
+                <text x="162" y="280" fill="#999" font-size="11" font-family="sans-serif">Early</text>
+                <circle cx="220" cy="275" r="6" fill="#ffb300"/>
+                <text x="232" y="280" fill="#999" font-size="11" font-family="sans-serif">Middle</text>
+                <circle cx="300" cy="275" r="6" fill="#4ade80"/>
+                <text x="312" y="280" fill="#999" font-size="11" font-family="sans-serif">Late</text>
+                <circle cx="370" cy="275" r="6" fill="#888"/>
+                <text x="382" y="280" fill="#999" font-size="11" font-family="sans-serif">Blindy</text>
+            </svg>
+        </div>
+
+        <div class="pos-grid">
+            <div class="pos-card pos-blind">
+                <h3>SB (Small Blind)</h3>
+                <p>Povinný bet. Nejhorší postflop pozice &mdash; vždy hraje první.</p>
+            </div>
+            <div class="pos-card pos-blind">
+                <h3>BB (Big Blind)</h3>
+                <p>Povinný bet s discountetem na call. Defenzivní spot.</p>
+            </div>
+            <div class="pos-card pos-early">
+                <h3>UTG (Under the Gun)</h3>
+                <p>První na řadě preflop. Hraj tight &mdash; za tebou je ještě 5 hráčů.</p>
+            </div>
+            <div class="pos-card pos-mid">
+                <h3>HJ (Hijack)</h3>
+                <p>Střední pozice. O něco širší range než UTG, ale pořád disciplinovaně.</p>
+            </div>
+            <div class="pos-card pos-late">
+                <h3>CO (Cutoff)</h3>
+                <p>Druhá nejlepší pozice. Široký open range, hodně steal příležitostí.</p>
+            </div>
+            <div class="pos-card pos-late">
+                <h3>BTN (Button)</h3>
+                <p>Nejlepší pozice. Postflop vždy hraje poslední. Nejširší range.</p>
+            </div>
+        </div>
+
+        <h2>Open-Raise Range podle pozice</h2>
+        <p>Přibližné % ruk, se kterými openujeme (6-max, 100bb deep):</p>
+
+        <div class="range-section">
+            <div class="range-bar-wrap">
+                <span class="range-name">UTG</span>
+                <div class="range-bar-bg"><div class="range-bar" style="width:12%; background:#f87171;"></div></div>
+                <span class="range-pct">~12%</span>
+            </div>
+            <div class="range-bar-wrap">
+                <span class="range-name">HJ</span>
+                <div class="range-bar-bg"><div class="range-bar" style="width:18%; background:#ffb300;"></div></div>
+                <span class="range-pct">~18%</span>
+            </div>
+            <div class="range-bar-wrap">
+                <span class="range-name">CO</span>
+                <div class="range-bar-bg"><div class="range-bar" style="width:27%; background:#4ade80;"></div></div>
+                <span class="range-pct">~27%</span>
+            </div>
+            <div class="range-bar-wrap">
+                <span class="range-name">BTN</span>
+                <div class="range-bar-bg"><div class="range-bar" style="width:40%; background:#4ade80;"></div></div>
+                <span class="range-pct">~40%</span>
+            </div>
+            <div class="range-bar-wrap">
+                <span class="range-name">SB</span>
+                <div class="range-bar-bg"><div class="range-bar" style="width:35%; background:#888;"></div></div>
+                <span class="range-pct">~35%</span>
+            </div>
+        </div>
+
+        <h2>Pozice v praxi</h2>
+
+        <div class="example">
+            <span class="label">Pot control</span><br><br>
+            Držíš <span class="val">A&#9824; Q&#9829;</span> na BTN. Flop: <span class="val">A&#9827; 8&#9830; 3&#9824;</span><br>
+            Soupeř (OOP) checkuje. Betneš.<br>
+            Turn: <span class="val">K&#9829;</span>. Soupeř checkuje. Checkneš back.<br><br>
+            Na pozici si vybíráš, kdy pot nafouknout a kdy ho kontrolovat.
+        </div>
+
+        <div class="example">
+            <span class="label">Efektivita bluffů</span><br><br>
+            Držíš <span class="val">9&#9824; T&#9824;</span> na CO. Flop: <span class="val">K&#9827; 7&#9830; 2&#9829;</span><br>
+            Soupeř checkuje. C-betneš jako bluff.<br>
+            Soupeř folduje většinu svého range.<br><br>
+            Na pozici tvoje bluffy fungují líp, protože reaguješ na slabost soupeře.
+        </div>
+
+        <h2>Klíčové koncepty</h2>
+
+        <div class="tip">
+            <strong>IP (In Position)</strong> &mdash; hraješ poslední. Kontroluješ velikost potu, vidíš akci soupeřů jako první, tvoje bluffy i value bety jsou efektivnější.
+        </div>
+
+        <div class="tip">
+            <strong>OOP (Out of Position)</strong> &mdash; hraješ první. Hádáš, co soupeř udělá. Kompenzuješ check-raisy a donk bety, ale strukturálně jsi v nevýhodě.
+        </div>
+
+        <div class="tip">
+            <strong>Pravidlo:</strong> když nevíš &mdash; na pozici spíš calluj nebo raisuj. Mimo pozici spíš folduj. Pozice vydělá víc peněz než jakýkoli jiný jednotlivý faktor.
+        </div>
+    </div>
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+</body>
+</html>

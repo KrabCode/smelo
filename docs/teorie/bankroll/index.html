@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bankroll Management – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .brm-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .brm-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
+        .brm-table td { padding: 8px 10px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9em; }
+        .brm-table td:first-child { font-family: monospace; color: #ffb300; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Bankroll Management</h2>
+        <p>
+            Bankroll management (BRM) je disciplína, která zajistí, že nepřijdeš o peníze kvůli varianci,
+            i když hraješ dobře. Poker je hra s obrovským krátkodobým štěstím &mdash; BRM tě chrání
+            před downswingem.
+        </p>
+
+        <h2>Variance</h2>
+        <p>
+            I nejlepší hráč může prohrávat tisíce ruk v řadě. To není chyba &mdash; to je variance.
+            Karty nemají paměť. Tvá edge se projeví až po obrovském množství ruk.
+        </p>
+
+        <div class="formula">
+            Winning player s 5bb/100 winrate může mít<br>
+            downswing 30+ buy-inů, i když hraje perfektně.
+        </div>
+
+        <h2>Kolik buy-inů potřebuješ</h2>
+
+        <table class="brm-table">
+            <tr><th>Formát</th><th>Konzervativní</th><th>Agresivní</th></tr>
+            <tr><td>Cash game</td><td>30 buy-inů</td><td>20 buy-inů</td></tr>
+            <tr><td>MTT (turnaje)</td><td>100 buy-inů</td><td>50 buy-inů</td></tr>
+            <tr><td>SNG</td><td>50 buy-inů</td><td>30 buy-inů</td></tr>
+            <tr><td>Spin &amp; Go</td><td>100+ buy-inů</td><td>50 buy-inů</td></tr>
+        </table>
+
+        <div class="tip">
+            Buy-in = 100bb pro cash game. Pokud hraješ NL50 (blindy 0.25/0.50), buy-in je 50.
+            Konzervativní BRM: 30 &times; 50 = <strong style="color:#ffb300;">1 500</strong> bankroll.
+        </div>
+
+        <h2>Příklad</h2>
+        <div class="example">
+            <span class="label">Bankroll:</span> <span class="val">1 000</span><br>
+            <span class="label">Konzervativní BRM (30 BI):</span> max buy-in = 1000/30 = <span class="val">~33</span><br>
+            <span class="label">Měl bys hrát:</span> <span class="val">NL25</span> nebo nižší<br><br>
+            <span class="label">Bankroll:</span> <span class="val">5 000</span><br>
+            <span class="label">Konzervativní BRM (30 BI):</span> max buy-in = 5000/30 = <span class="val">~166</span><br>
+            <span class="label">Měl bys hrát:</span> <span class="val">NL100</span>
+        </div>
+
+        <h2>Move Up / Move Down</h2>
+
+        <div class="formula">
+            Move up: když máš 30+ BI pro vyšší level<br>
+            Move down: když klesneš pod 20 BI pro aktuální level
+        </div>
+
+        <p>
+            Ego nemá v BRM místo. Pokud máš downswing, sestup o level. Protect the roll.
+            Lepší hrát NL25 s čistou hlavou než NL100 v panice.
+        </p>
+
+        <h2>Proč to lidi nedodržují</h2>
+
+        <div class="tip">
+            <strong>"Jsem lepší než tohle."</strong> Možná. Ale variance to nezajímá. I Phil Ivey může prohrát 20 buy-inů v řadě.
+        </div>
+
+        <div class="tip">
+            <strong>"Na nízkých levelech se nedá hrát."</strong> Pokud nedokážeš porazit NL25, neporazíš ani NL100. Fix leaky, pak move up.
+        </div>
+
+        <div class="tip">
+            <strong>"Potřebuju rychle vydělat."</strong> Poker není sprint. Je to maraton. Kdo přežije varianci, vyhraje.
+        </div>
+
+        <div class="tip">
+            BRM souvisí přímo s <a href="../ev/" style="color:#ffb300;">EV</a> &mdash; i s +EV strategií potřebuješ dostatečný bankroll,
+            abys přežil záporné swings, než se EV realizuje.
+        </div>
+    </div>
+</body>
+</html>

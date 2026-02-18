@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bet Sizing – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-family: monospace; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .size-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .size-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
+        .size-table td { padding: 8px 10px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9em; }
+        .size-table td:first-child { font-family: monospace; color: #ffb300; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Bet Sizing</h2>
+        <p>
+            Velikost betu je nástroj. Různé sizingy dosahují různých věcí.
+            Špatný sizing stojí peníze &mdash; buď nedostaneš zaplaceno, nebo dáš soupeři příliš dobré pot odds.
+        </p>
+
+        <h2>Proč betujeme</h2>
+        <p>Každý bet má jeden nebo více důvodů:</p>
+
+        <div class="formula">
+            Value &mdash; chceš, aby zaplatil s horší rukou<br>
+            Bluff &mdash; chceš, aby foldnul lepší ruku<br>
+            Protection &mdash; chceš zabránit realizaci equity drawů
+        </div>
+
+        <h2>Sizing podle účelu</h2>
+
+        <table class="size-table">
+            <tr><th>Sizing</th><th>Kdy</th><th>Proč</th></tr>
+            <tr>
+                <td>25-33% potu</td>
+                <td>Suchý board, silná ruka</td>
+                <td>Malý bet, velká frekvence. Soupeř callne široce. Maximalizuješ value i když máš hovno.</td>
+            </tr>
+            <tr>
+                <td>50-66% potu</td>
+                <td>Standardní c-bet, value + protection</td>
+                <td>Nejběžnější sizing. Dobrý poměr value/protection. Dává soupeři ~25-28% pot odds.</td>
+            </tr>
+            <tr>
+                <td>75-100% potu</td>
+                <td>Wet board, silný value nebo polarizovaný range</td>
+                <td>Tlačíš drawy ven, nebo polarizuješ na nuts/bluff. Soupeř potřebuje ~30-33% equity.</td>
+            </tr>
+            <tr>
+                <td>Overbet (>100%)</td>
+                <td>Polarizovaný spot, nuts vs. bluff</td>
+                <td>Maximální tlak. Funguje, když máš nut advantage a soupeř nemá silné ruky v range.</td>
+            </tr>
+        </table>
+
+        <h2>Příklad: Sizing na value</h2>
+        <div class="example">
+            <span class="label">Ruka:</span> <span class="val">A&#9829; A&#9824;</span><br>
+            <span class="label">Board:</span> <span class="val">A&#9827; 7&#9830; 2&#9824; 5&#9827; 9&#9829;</span><br>
+            <span class="label">Pot:</span> <span class="val">200</span><br><br>
+            Máš set. Board je suchý, bez flush. Soupeř pravděpodobně má slabý pár nebo nic.<br><br>
+            <span class="label">Malý bet (60):</span> Soupeř callne s K-high, malými páry. Víc callů.<br>
+            <span class="label">Velký bet (180):</span> Soupeř foldne slabé ruky. Méně callů, ale víc za každý call.<br><br>
+            Proti calling station &rarr; velký bet (zaplatí tě).<br>
+            Proti tight hráči &rarr; malý bet (aby vůbec callnul).
+        </div>
+
+        <h2>Příklad: Sizing na bluff</h2>
+        <div class="example">
+            <span class="label">Pot:</span> <span class="val">200</span><br>
+            <span class="label">Potřebuješ, aby soupeř foldnul:</span><br><br>
+            <span class="label">Bet 66 (33% potu):</span> Soupeř musí foldnout jen <span class="val">25%</span> &rarr; profitabilní<br>
+            <span class="label">Bet 100 (50% potu):</span> Soupeř musí foldnout <span class="val">33%</span><br>
+            <span class="label">Bet 150 (75% potu):</span> Soupeř musí foldnout <span class="val">43%</span><br>
+            <span class="label">Bet 200 (100% potu):</span> Soupeř musí foldnout <span class="val">50%</span><br><br>
+            Při bluffování chceš nejmenší sizing, který ještě dosáhne foldu.
+            Riskuješ méně za stejný výsledek.
+        </div>
+
+        <div class="formula">
+            Break-even fold% = bet / (pot + bet)
+        </div>
+
+        <h2>Geometrický sizing</h2>
+        <p>
+            Pokud chceš na třech streetech dostat celý stack do potu, potřebuješ
+            konzistentní sizing, který pot geometricky roste.
+        </p>
+
+        <div class="example">
+            <span class="label">Stack:</span> <span class="val">300</span><br>
+            <span class="label">Pot na flopu:</span> <span class="val">40</span><br><br>
+            Potřebuješ dostat 300 do 40 za 3 bety.<br>
+            Přibližně <span class="val">~75% potu</span> na každém streetu to zvládne:<br><br>
+            <span class="label">Flop:</span> pot 40, bet 30 &rarr; pot 100<br>
+            <span class="label">Turn:</span> pot 100, bet 75 &rarr; pot 250<br>
+            <span class="label">River:</span> pot 250, all-in 195 (~78%)<br><br>
+            Celkem investováno: 30 + 75 + 195 = <span class="val">300</span> ✓
+        </div>
+
+        <div class="tip">
+            Souvisí s <a href="../spr/" style="color:#ffb300;">SPR</a>. Nízký SPR = jednoduchý sizing (jeden nebo dva bety). Vysoký SPR = potřebuješ víc streetů a menší sizing na začátku.
+        </div>
+
+        <div class="tip">
+            <strong>Hlavní chyba:</strong> příliš malý bet s value rukou ("aby zaplatil") a příliš velký bet jako bluff ("aby foldnul"). Mělo by to být přesně naopak.
+        </div>
+    </div>
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+</body>
+</html>

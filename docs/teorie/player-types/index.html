@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typy hráčů – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2, h3 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 700px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 32px 0 12px; font-size: 1.5em; }
+        h3 { margin: 20px 0 8px; font-size: 1.15em; letter-spacing: 2px; }
+        p { margin: 8px 0; color: #ccc; }
+
+        /* Player type grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+        .type-card { background: #222; border: 2px solid #333; border-radius: 10px; padding: 20px; }
+        .type-card h3 { margin-top: 0; }
+        .type-card p { font-size: 0.9em; }
+        .type-tag { display: inline-block; font-size: 0.75em; font-family: monospace; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+
+        .tag-tp { background: #1a2e1a; color: #4ade80; border: 1px solid #2a4a2a; }
+        .tag-lp { background: #2e2a1a; color: #ffb300; border: 1px solid #4a3a2a; }
+        .tag-ta { background: #1a1a2e; color: #60a5fa; border: 1px solid #2a2a4e; }
+        .tag-la { background: #2e1a1a; color: #f87171; border: 1px solid #4a2a2a; }
+
+        .card-tp { border-color: #2a4a2a; }
+        .card-lp { border-color: #4a3a2a; }
+        .card-ta { border-color: #2a2a4e; }
+        .card-la { border-color: #4a2a2a; }
+
+        .card-tp h3 { color: #4ade80; }
+        .card-lp h3 { color: #ffb300; }
+        .card-ta h3 { color: #60a5fa; }
+        .card-la h3 { color: #f87171; }
+
+        /* Stats diagram */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 16px auto; max-width: 400px; }
+        .stats-cell { padding: 16px; text-align: center; border-radius: 6px; }
+        .stats-label { font-size: 0.75em; color: #888; display: block; margin-bottom: 4px; }
+        .stats-val { font-family: 'Staatliches', sans-serif; font-size: 1.3em; letter-spacing: 2px; }
+
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+
+        .tells { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 12px 0; }
+        .tells li { margin: 4px 0; color: #ccc; font-size: 0.9em; }
+        .tells ul { padding-left: 20px; }
+
+        .exploit { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 12px 0; }
+        .exploit li { margin: 4px 0; color: #ccc; font-size: 0.9em; }
+        .exploit ul { padding-left: 20px; }
+
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .tip strong { color: #ccc; }
+
+        /* Hand analysis */
+        .hand { background: #222; border: 1px solid #333; border-radius: 10px; padding: 20px; margin: 16px 0; }
+        .hand-title { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1.1em; margin-bottom: 12px; }
+        .hand-win .hand-title { color: #4ade80; }
+        .hand-lose .hand-title { color: #f87171; }
+        .street { margin: 10px 0; padding: 10px; background: #1e1e1e; border-radius: 6px; font-family: monospace; font-size: 0.9em; line-height: 1.6; }
+        .street .label { color: #888; }
+        .street .val { color: #ffb300; font-weight: bold; }
+        .street .action { color: #ccc; }
+        .analysis { color: #888; font-size: 0.85em; font-style: italic; margin-top: 4px; }
+
+        /* Blunder quiz */
+        .quiz { background: #1e1e1e; border: 1px solid #444; border-radius: 10px; padding: 20px; margin: 20px 0; }
+        .quiz-title { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; color: #ffb300; margin-bottom: 12px; }
+        .quiz-btn { background: #333; color: #ccc; border: 1px solid #555; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.9em; margin: 4px; transition: background 0.2s, border-color 0.2s; }
+        .quiz-btn:hover { background: #444; border-color: #888; }
+        .quiz-btn.correct { background: #1a2e1a; border-color: #4ade80; color: #4ade80; }
+        .quiz-btn.wrong { background: #2e1a1a; border-color: #f87171; color: #f87171; }
+        .quiz-btn:disabled { cursor: default; opacity: 0.7; }
+        .quiz-explanation { display: none; margin-top: 12px; padding: 12px; background: #222; border-radius: 6px; font-size: 0.9em; color: #ccc; }
+        .quiz-explanation.visible { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Typy hráčů</h2>
+        <p>
+            Každý hráč se dá zařadit podle dvou os: jak často hraje ruky (tight vs. loose)
+            a jak agresivně je hraje (passive vs. aggressive). To dává 4 základní typy.
+        </p>
+
+        <div class="stats-grid">
+            <div class="stats-cell" style="background:#1a2e1a;">
+                <span class="stats-label">Tight + Passive</span>
+                <span class="stats-val" style="color:#4ade80;">Nit</span>
+            </div>
+            <div class="stats-cell" style="background:#1a1a2e;">
+                <span class="stats-label">Tight + Aggressive</span>
+                <span class="stats-val" style="color:#60a5fa;">TAG</span>
+            </div>
+            <div class="stats-cell" style="background:#2e2a1a;">
+                <span class="stats-label">Loose + Passive</span>
+                <span class="stats-val" style="color:#ffb300;">Calling Station</span>
+            </div>
+            <div class="stats-cell" style="background:#2e1a1a;">
+                <span class="stats-label">Loose + Aggressive</span>
+                <span class="stats-val" style="color:#f87171;">LAG / Maniak</span>
+            </div>
+        </div>
+
+        <h2>Jak je poznat</h2>
+        <p>Na live pokeru nemáš HUD, ale tyto signály ti pomohou:</p>
+
+        <div class="formula">
+            VPIP = % ruk, které hráč hraje (voluntary put money in pot)<br>
+            PFR = % ruk, se kterými raisuje preflop<br>
+            AF = aggression factor (bety + raisy / cally)
+        </div>
+
+        <!-- NIT -->
+        <div class="grid">
+            <div class="type-card card-tp">
+                <span class="type-tag tag-tp">TIGHT PASSIVE</span>
+                <h3>Nit</h3>
+                <p>Hraje málo ruk a když už hraje, spíš calluje než raisuje. Pokud raisne, má skoro vždy monster.</p>
+                <div class="tells">
+                    <ul>
+                        <li>Folduje 80%+ ruk preflop</li>
+                        <li>Málokdy 3-betuje</li>
+                        <li>Raise na riveru = vždycky nuts</li>
+                        <li>Často limpuje s okrajovými rukami</li>
+                    </ul>
+                </div>
+                <div class="exploit">
+                    <strong style="color:#4ade80;">Jak exploitovat:</strong>
+                    <ul>
+                        <li>Stealuj jeho blindy agresivně</li>
+                        <li>C-betuj flop skoro vždy</li>
+                        <li>Když raisne &mdash; folduj bez nuts</li>
+                        <li>Nebluffuj na riveru</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- CALLING STATION -->
+            <div class="type-card card-lp">
+                <span class="type-tag tag-lp">LOOSE PASSIVE</span>
+                <h3>Calling Station</h3>
+                <p>Hraje hodně ruk a miluje callování. Nefolduje, neraisuje &mdash; prostě calluje.</p>
+                <div class="tells">
+                    <ul>
+                        <li>Hraje 40%+ ruk preflop</li>
+                        <li>Calluje flop a turn s druhým párem</li>
+                        <li>Málokdy bluffuje</li>
+                        <li>Nedokáže pustit žádnou udělnaou ruku</li>
+                    </ul>
+                </div>
+                <div class="exploit">
+                    <strong style="color:#ffb300;">Jak exploitovat:</strong>
+                    <ul>
+                        <li>Value betuj i když máš hovno</li>
+                        <li>Nebluffuj &mdash; zaplatí tě</li>
+                        <li>Zvětši sizing s value rukami</li>
+                        <li>Když raisne &mdash; respektuj to</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAG -->
+            <div class="type-card card-ta">
+                <span class="type-tag tag-ta">TIGHT AGGRESSIVE</span>
+                <h3>TAG</h3>
+                <p>Hraje málo ruk, ale hraje je agresivně. Nejběžnější solidní styl. Těžší na exploitování.</p>
+                <div class="tells">
+                    <ul>
+                        <li>Hraje 15&ndash;25% ruk preflop</li>
+                        <li>Raisuje většinu toho, co hraje</li>
+                        <li>C-betuje konzistentně</li>
+                        <li>Dokáže foldovat, když je beat</li>
+                    </ul>
+                </div>
+                <div class="exploit">
+                    <strong style="color:#60a5fa;">Jak exploitovat:</strong>
+                    <ul>
+                        <li>3-betuj ho light v pozici</li>
+                        <li>Floatuj jeho c-bety na suchých boardech</li>
+                        <li>Útočit na jeho fold-to-3bet leak</li>
+                        <li>Vyhýbej se velkým potům bez silné ruky</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- LAG -->
+            <div class="type-card card-la">
+                <span class="type-tag tag-la">LOOSE AGGRESSIVE</span>
+                <h3>LAG / Maniak</h3>
+                <p>Hraje hodně ruk a hraje je agresivně. Tlačí na tebe v každém potu. Nebezpečný, ale exploitable.</p>
+                <div class="tells">
+                    <ul>
+                        <li>Hraje 30%+ ruk preflop</li>
+                        <li>Často 3-betuje a squeezuje</li>
+                        <li>Velké bety a overbety jsou běžné</li>
+                        <li>Bluffuje na všech streetech</li>
+                    </ul>
+                </div>
+                <div class="exploit">
+                    <strong style="color:#f87171;">Jak exploitovat:</strong>
+                    <ul>
+                        <li>Rozšiř svůj calling range</li>
+                        <li>Trapuj s premium rukami</li>
+                        <li>Nech ho bluffovat &mdash; call down s top párem+</li>
+                        <li>Vyhni se marginalním bluffům proti němu</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <h2>Analýza ruky: Výhra</h2>
+        <p>Exploitujeme calling station &mdash; wide value betting.</p>
+
+        <div class="hand hand-win">
+            <div class="hand-title">Hero na BTN vs. Calling Station v BB</div>
+
+            <div class="street">
+                <span class="label">Preflop:</span> Hero má <span class="val">A&#9829; J&#9829;</span>.<br>
+                <span class="action">Foldne se k nám, openujeme 2.5bb. Calling station calluje z BB.</span><br>
+                <span class="analysis">Standardní open. Station callne s čímkoli broadwayovým, suited, párem.</span>
+            </div>
+
+            <div class="street">
+                <span class="label">Flop:</span> <span class="val">A&#9827; 7&#9830; 2&#9824;</span> &mdash; pot 5.5bb<br>
+                <span class="action">Station checkuje. Hero betuje 3.5bb. Station calluje.</span><br>
+                <span class="analysis">Suchý board, máme top pár s dobrým kickerem. Betujeme pro value. Station callne s jakýmkoli párem, gutšotem, backdoor drawy.</span>
+            </div>
+
+            <div class="street">
+                <span class="label">Turn:</span> <span class="val">5&#9829;</span> &mdash; pot 12.5bb<br>
+                <span class="action">Station checkuje. Hero betuje 8bb. Station calluje.</span><br>
+                <span class="analysis">Blank. Pokračujeme ve value betu. Station drží A-low, páry, možná 67s. Proti nitovi bychom slowdownovali &mdash; proti station pokračujeme.</span>
+            </div>
+
+            <div class="street">
+                <span class="label">River:</span> <span class="val">3&#9827;</span> &mdash; pot 28.5bb<br>
+                <span class="action">Station checkuje. Hero betuje 18bb. Station calluje.</span><br>
+                <span class="analysis">Další blank. Value bet. Station callne i se slabým Ax. Proti tomuhle hráči betujeme river se vším, co poráží jeho calling range. Showdown: station ukazuje A&#9824; 4&#9824;.</span>
+            </div>
+
+            <div class="tip" style="margin-top:16px;">
+                <strong>Klíčový moment:</strong> Proti nitovi bychom turnový bet vynechali a kontrolovali pot. Proti calling station betujeme všechny tři streety, protože zaplatí se slabšími rukami.
+            </div>
+        </div>
+
+        <h2>Analýza ruky: Prohra</h2>
+        <p>Zkus najít blunder sám, než klikneš na odpověď.</p>
+
+        <div class="hand hand-lose">
+            <div class="hand-title">Hero na CO vs. LAG na BTN</div>
+
+            <div class="street">
+                <span class="label">Preflop:</span> Hero má <span class="val">K&#9824; Q&#9824;</span>.<br>
+                <span class="action">Hero openuje 2.5bb. LAG na BTN 3-betuje na 8bb. Blindy foldují. Hero calluje.</span><br>
+                <span class="analysis">KQs je dost silná na call 3-betu v pozici... ale nejsme v pozici. Jsme OOP proti LAGovi.</span>
+            </div>
+
+            <div class="street">
+                <span class="label">Flop:</span> <span class="val">K&#9829; 9&#9830; 4&#9827;</span> &mdash; pot 17.5bb<br>
+                <span class="action">Hero checkuje. LAG betuje 9bb. Hero calluje.</span><br>
+                <span class="analysis">Top pár, dobrý kicker. Proti LAGovi to vypadá dobře. Check-call je standardní.</span>
+            </div>
+
+            <div class="street">
+                <span class="label">Turn:</span> <span class="val">6&#9829;</span> &mdash; pot 35.5bb<br>
+                <span class="action">Hero checkuje. LAG betuje 25bb. Hero calluje.</span><br>
+                <span class="analysis">LAG tlačí. Velký bet. Máme top pár, ale OOP proti agresivnímu hráči. Call je costly &mdash; ale foldovat top pár proti LAGovi?</span>
+            </div>
+
+            <div class="street">
+                <span class="label">River:</span> <span class="val">2&#9829;</span> &mdash; pot 85.5bb<br>
+                <span class="action">Hero checkuje. LAG dává all-in za 60bb. Hero calluje.</span><br>
+                <span class="analysis">Tři hearty na boardu. LAG dává all-in. Hero calluje s top párem... LAG ukazuje <span class="val">T&#9829; 8&#9829;</span>. Flush.</span>
+            </div>
+        </div>
+
+        <div class="quiz" id="quiz1">
+            <div class="quiz-title">Kde byl blunder?</div>
+            <p style="color:#888; font-size:0.9em; margin-bottom:12px;">Najdi hlavní chybu v této ruce.</p>
+            <button class="quiz-btn" onclick="answer(this, false)">Preflop call 3-betu OOP</button>
+            <button class="quiz-btn" onclick="answer(this, false)">Flop check-call</button>
+            <button class="quiz-btn" onclick="answer(this, false)">Turn call velkého betu</button>
+            <button class="quiz-btn" onclick="answer(this, true)">River call all-in</button>
+            <div class="quiz-explanation" id="quiz1-exp">
+                <strong style="color:#ffb300;">River call.</strong> Preflop call je borderline ale obhajitelný s KQs.
+                Flop check-call s top párem je standardní. Turn call je tough ale OK proti LAGovi.
+                Ale river mění vše &mdash; třetí heart padl a LAG dává all-in. I proti maniakoví je tenhle all-in
+                na scareboardu weighted k hodnotě. LAG bluffuje často, ale na flushy riveru s overbetem
+                je jeho range výrazně užší. Správný play: foldnout river a ztratit 42bb místo 102bb.
+                Proti calling station bychom callovali. Proti LAGovi na flushovém boardu foldujeme.
+            </div>
+        </div>
+
+        <div class="tip" style="margin-top:24px;">
+            <strong>Závěr:</strong> Nejde jen o to, jakou máš ruku. Jde o to, proti komu ji hraješ.
+            Identifikuj typ soupeře a přizpůsob strategii. Proti calling station value betuj.
+            Proti LAGovi trapuj. Proti nitovi folduj, když projeví sílu. Proti TAGovi hledej leaky.
+        </div>
+    </div>
+
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+    <script>
+        var answered = false;
+        function answer(btn, isCorrect) {
+            if (answered) return;
+            answered = true;
+            var buttons = document.querySelectorAll('.quiz-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+            }
+            btn.classList.add(isCorrect ? 'correct' : 'wrong');
+            if (!isCorrect) {
+                // highlight correct
+                buttons[3].classList.add('correct');
+            }
+            document.getElementById('quiz1-exp').classList.add('visible');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outs &amp; Equity – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-family: monospace; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .outs-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .outs-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
+        .outs-table td { padding: 6px 10px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9em; }
+        .outs-table td:first-child { font-family: monospace; color: #ffb300; font-weight: bold; }
+        .calc { background: #222; border: 1px solid #333; border-radius: 12px; padding: 24px; margin: 24px 0; }
+        .calc-row { display: flex; gap: 16px; margin: 12px 0; }
+        .calc-field { flex: 1; }
+        .calc-field label { display: block; color: #888; font-size: 0.85em; margin-bottom: 4px; }
+        .calc-field input, .calc-field select { width: 100%; background: #181818; border: 1px solid #444; border-radius: 6px; color: #eee; padding: 10px 12px; font-size: 1em; font-family: monospace; }
+        .calc-field input:focus, .calc-field select:focus { outline: none; border-color: #ffb300; }
+        .result { margin-top: 16px; padding: 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; display: none; }
+        .result.visible { display: block; }
+        .result-row { display: flex; justify-content: space-between; padding: 4px 0; }
+        .result-label { color: #888; }
+        .result-value { color: #ffb300; font-weight: bold; font-family: monospace; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Outs &amp; Equity</h2>
+        <p>
+            Out je karta, která vylepší tvou ruku na pravděpodobně nejlepší.
+            Equity je tvá šance na výhru vyjádřená v procentech.
+            Obě věci potřebuješ, abys mohl porovnat se svými <a href="../pot-odds/">pot odds</a>.
+        </p>
+
+        <h2>Počítání outů</h2>
+        <p>V balíčku je 52 karet. Vidíš své 2 + karty na boardu. Zbytek je neznámý.</p>
+
+        <table class="outs-table">
+            <tr><th>Outy</th><th>Draw</th><th>Příklad</th></tr>
+            <tr><td>2</td><td>Pocket pair → set</td><td>Máš 77, flop K92</td></tr>
+            <tr><td>4</td><td>Gutshot (inside straight draw)</td><td>Máš 89, flop 67K</td></tr>
+            <tr><td>6</td><td>Dva overcards</td><td>Máš AK, flop 952</td></tr>
+            <tr><td>8</td><td>OESD (open-ended straight draw)</td><td>Máš 89, flop 67K</td></tr>
+            <tr><td>9</td><td>Flush draw</td><td>Máš A&#9829;5&#9829;, flop K&#9829;8&#9829;2&#9827;</td></tr>
+            <tr><td>12</td><td>Flush draw + gutshot</td><td>Máš A&#9829;T&#9829;, flop K&#9829;Q&#9827;3&#9829;</td></tr>
+            <tr><td>15</td><td>Flush draw + OESD</td><td>Máš 7&#9829;8&#9829;, flop 6&#9829;9&#9827;2&#9829;</td></tr>
+        </table>
+
+        <h2>Pravidlo 2 a 4</h2>
+        <p>Rychlý způsob, jak převést outy na equity:</p>
+
+        <div class="formula">
+            Flop (2 karty přijdou): outy &times; 4 &asymp; equity %<br>
+            Turn (1 karta přijde): outy &times; 2 &asymp; equity %
+        </div>
+
+        <div class="tip">
+            Pravidlo je přesné do ~12 outů. S víc outy mírně nadhodnocuje.
+            Pro 15 outů je přesná equity ~54%, ne 60%.
+        </div>
+
+        <h2>Příklad</h2>
+        <div class="example">
+            <span class="label">Ruka:</span> <span class="val">J&#9829; T&#9829;</span><br>
+            <span class="label">Flop:</span> <span class="val">Q&#9829; 3&#9829; 7&#9824;</span><br><br>
+            <span class="label">Flush draw:</span> 9 outů (zbylé hearty)<br>
+            <span class="label">+ gutshot na straight:</span> 3 outy (tři K, bez K&#9829; co už je v flush outech)<br>
+            <span class="label">Celkem:</span> <span class="val">12 outů</span><br><br>
+            <span class="label">Equity (flop):</span> 12 &times; 4 = <span class="val">~48%</span><br>
+            <span class="label">Equity (turn):</span> 12 &times; 2 = <span class="val">~24%</span>
+        </div>
+
+        <div class="tip">
+            Pozor na double counting. Pokud K&#9829; už počítáš jako flush out, nepočítej ho znovu jako straight out.
+        </div>
+
+        <h2>Kalkulačka outů</h2>
+        <div class="calc">
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Počet outů</label>
+                    <input type="number" id="outs" placeholder="9" min="1" max="20" step="1">
+                </div>
+                <div class="calc-field">
+                    <label>Street</label>
+                    <select id="street">
+                        <option value="flop">Flop (2 karty přijdou)</option>
+                        <option value="turn">Turn (1 karta přijde)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="result" id="result">
+                <div class="result-row">
+                    <span class="result-label">Equity (pravidlo 2&amp;4)</span>
+                    <span class="result-value" id="rQuick">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Equity (přesná)</span>
+                    <span class="result-value" id="rExact">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Min. pot odds pro call</span>
+                    <span class="result-value" id="rPotOdds">&ndash;</span>
+                </div>
+            </div>
+        </div>
+
+        <h2>Equity vs. pot odds</h2>
+        <p>Tohle je klíčové propojení:</p>
+
+        <div class="formula">
+            equity > pot odds &rarr; call je +EV<br>
+            equity < pot odds &rarr; call je -EV &rarr; folduj
+        </div>
+
+        <p>
+            Pokud máš 9 outů na flopu (~36% equity) a soupeř betuje 50% potu (pot odds 25%), tvá equity převyšuje pot odds. Call je výdělečný.
+        </p>
+
+        <p>
+            Pokud pot odds nestačí, podívej se na <a href="../implied-odds/">implied odds</a> &mdash; kolik můžeš vyhrát na dalších streetech.
+        </p>
+    </div>
+
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+    <script>
+        var outsEl = document.getElementById('outs');
+        var streetEl = document.getElementById('street');
+        var resultEl = document.getElementById('result');
+
+        function calc() {
+            var outs = parseInt(outsEl.value);
+            if (isNaN(outs) || outs < 1 || outs > 20) {
+                resultEl.classList.remove('visible');
+                return;
+            }
+
+            var isFlop = streetEl.value === 'flop';
+            var quick = outs * (isFlop ? 4 : 2);
+            if (quick > 100) quick = 100;
+
+            var unknown = isFlop ? 47 : 46;
+            var exact;
+            if (isFlop) {
+                var missOne = (unknown - outs) / unknown;
+                var missTwo = (unknown - 1 - outs) / (unknown - 1);
+                exact = (1 - missOne * missTwo) * 100;
+            } else {
+                exact = (outs / unknown) * 100;
+            }
+
+            document.getElementById('rQuick').textContent = quick.toFixed(0) + '%';
+            document.getElementById('rExact').textContent = exact.toFixed(1) + '%';
+            document.getElementById('rPotOdds').textContent = exact.toFixed(1) + '%';
+            resultEl.classList.add('visible');
+        }
+
+        outsEl.addEventListener('input', calc);
+        streetEl.addEventListener('change', calc);
+    </script>
+</body>
+</html>

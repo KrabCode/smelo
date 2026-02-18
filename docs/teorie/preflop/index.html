@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preflop Strategie – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .act-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .act-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
+        .act-table td { padding: 8px 10px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Preflop Strategie</h2>
+        <p>
+            Preflop je základ. Špatné preflop rozhodnutí vede ke špatným postflop situacím.
+            Většina peněz se ztratí tím, že hráči hrají příliš mnoho ruk z příliš špatných pozic.
+        </p>
+
+        <h2>Open Raise</h2>
+        <p>Základní pravidla pro otevírání potu:</p>
+
+        <div class="formula">
+            Nikdy nelimpuj. Pokud je ruka dost dobrá na hraní, je dost dobrá na raise.
+        </div>
+
+        <p>Standardní open sizing: <strong>2.2&ndash;3bb</strong>. V pozici menší (2.2bb), mimo pozici větší (2.5&ndash;3bb).</p>
+
+        <div class="tip">
+            Viz <a href="../pozice/" style="color:#ffb300;">Pozice</a> pro open range podle seatu. Z UTG ~12%, z BTN ~40%.
+        </div>
+
+        <h2>Facing a Raise</h2>
+        <p>Někdo otevřel. Máš tři možnosti:</p>
+
+        <table class="act-table">
+            <tr><th>Akce</th><th>Kdy</th><th>Range</th></tr>
+            <tr>
+                <td style="color:#ffb300; font-weight:bold;">3-bet</td>
+                <td>Silná ruka nebo bluff s blockerem</td>
+                <td>AA-QQ, AK, AKs-AJs (value) + A5s-A2s, suited connectors (bluff)</td>
+            </tr>
+            <tr>
+                <td style="color:#4ade80; font-weight:bold;">Call</td>
+                <td>Hratelná ruka, dobrá cena</td>
+                <td>Střední páry, suited connectors, broadwayové suited karty</td>
+            </tr>
+            <tr>
+                <td style="color:#888; font-weight:bold;">Fold</td>
+                <td>Všechno ostatní</td>
+                <td>Slabé offsuit ruky, gapové ruky, nízké nepropojené karty</td>
+            </tr>
+        </table>
+
+        <h2>3-bet</h2>
+        <p>
+            3-bet je re-raise přes originální open. Silná zbraň pro budování potu s premium rukami
+            a pro tlak na soupeře, aby foldnul marginalní ruky.
+        </p>
+
+        <div class="formula">
+            3-bet sizing: ~3x soupeřův raise IP, ~3.5-4x OOP
+        </div>
+
+        <div class="example">
+            <span class="label">Situace:</span> CO otevírá na 2.5bb. My na BTN.<br><br>
+            <span class="label">S AA:</span> 3-betujeme na <span class="val">7.5bb</span> (value).<br>
+            <span class="label">S A5s:</span> 3-betujeme na <span class="val">7.5bb</span> (bluff s blockerem &mdash; blokujeme AA, A5 má equity i když callne).<br>
+            <span class="label">S 88:</span> Callujeme. Příliš silné na fold, příliš slabé na 3-bet (špatně se hraje v 3-bet potu OOP s underpárem).
+        </div>
+
+        <h2>Defending Blindy</h2>
+        <p>
+            Z blindů dostáváš discount (v BB jsi dal 1bb, musíš dorovnat zbytek).
+            Proto bys měl defendovat širší range.
+        </p>
+
+        <div class="formula">
+            BB facing 2.5bb open: potřebuješ callovat ~40% ruk,<br>
+            abys nebyl exploitable (soupeř by jinak stealoval s čímkoli).
+        </div>
+
+        <div class="tip">
+            Z BB calluj s rukami, které mají dostatečnou equity &mdash; suited ruky, connected ruky, páry.
+            Folduj offsuit trash jako J3o, 84o, K2o.
+        </div>
+
+        <div class="tip">
+            Z SB buď 3-betuj, nebo folduj. Call ze SB je obvykle špatný &mdash; hraješ OOP proti dvěma hráčům.
+        </div>
+
+        <h2>Squeeze</h2>
+        <p>
+            Squeeze = 3-bet, když někdo otevřel a jeden nebo více hráčů callnulo.
+            Extrémně profitabilní, protože calleři mají capped range (s premium rukami by sami 3-betnuli).
+        </p>
+
+        <div class="example">
+            <span class="label">CO otevírá 2.5bb. BTN calluje. My v SB.</span><br><br>
+            Dead money v potu: 2.5 + 2.5 + 0.5 + 1 = <span class="val">6.5bb</span><br>
+            Squeezujeme na <span class="val">12bb</span>.<br><br>
+            CO často foldne (musí se bát BTN i nás).<br>
+            BTN skoro vždy foldne (jeho call range je slabý).<br>
+            Často vyhraje 6.5bb bez showdownu.
+        </div>
+
+        <h2>Preflop chyby</h2>
+
+        <div class="tip">
+            <strong>Limpování.</strong> Dáváš soupeřům dobré pot odds a vzdáváš se initiative. Místo limpu raisuj nebo folduj.
+        </div>
+
+        <div class="tip">
+            <strong>Příliš wide 3-bet calling range.</strong> Callovat 3-bet s KJo nebo QTo OOP je leak. Tyto ruky špatně realizují equity mimo pozici.
+        </div>
+
+        <div class="tip">
+            <strong>Příliš tight v BB.</strong> Dostáváš discount &mdash; využij ho. Foldovat se 40% ruk v BB na minraise znamená nechávat peníze na stole.
+        </div>
+    </div>
+</body>
+</html>

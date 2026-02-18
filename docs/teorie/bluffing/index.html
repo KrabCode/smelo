@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluffing – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Bluffing</h2>
+        <p>
+            Bluff je bet nebo raise s rukou, která pravděpodobně není nejlepší.
+            Cíl: přimět soupeře s lepší rukou k foldu.
+            Bez bluffování by poker nefungoval &mdash; soupeři by callovali jen, když tě porazí.
+        </p>
+
+        <h2>Typy bluffů</h2>
+
+        <div class="tip">
+            <strong>Semi-bluff:</strong> Betneš s drawem, který má equity, kdyby tě callnuli. Vyhraješ buď hned (soupeř foldne), nebo na dalším streetu (trefíš draw). Nejlepší typ bluffu.
+        </div>
+
+        <div class="tip">
+            <strong>Pure bluff:</strong> Betneš s rukou, která nemá žádnou šanci vyhrát na showdownu. Spoléháš čistě na fold equity. Riskantní, ale někdy nutný.
+        </div>
+
+        <h2>Kdy bluffovat</h2>
+
+        <div class="formula">
+            Bluff je +EV, když:<br>
+            fold equity &times; pot > (1 &minus; fold equity) &times; bet<br><br>
+            Zjednodušeně: soupeř musí foldnout víc než bet/(pot+bet)
+        </div>
+
+        <p>Optimální situace pro bluff:</p>
+
+        <div class="example">
+            <span class="label">1. Máš dobrý příběh</span><br>
+            Tvé akce dávají smysl jako value ruka. Betoval jsi flop a turn &mdash; bluff na riveru vypadá jako silná ruka.<br><br>
+            <span class="label">2. Soupeřův range je slabý</span><br>
+            Soupeř checkoval dvakrát, nebo jen callnul. Nemá silné ruky. Foldne na tlak.<br><br>
+            <span class="label">3. Board pomáhá tvému příběhu</span><br>
+            Přišla scare karta (A, K, flush completing card). Představuješ ruku, která trefila.<br><br>
+            <span class="label">4. Máš blockery</span><br>
+            Držíš karty, které blokují soupeřovy silné ruky. Příklad: máš A&#9829; na heart boardu &mdash; blokuješ nut flush.
+        </div>
+
+        <h2>Blockery</h2>
+        <p>
+            Blocker je karta ve tvé ruce, která snižuje pravděpodobnost, že soupeř má určitou ruku.
+            Extrémně důležité pro bluffování na riveru.
+        </p>
+
+        <div class="example">
+            <span class="label">Board:</span> <span class="val">K&#9824; T&#9829; 7&#9827; 2&#9830; 6&#9824;</span><br><br>
+            <span class="label">Máš A&#9824;:</span> Blokuješ AK (soupeř má méně combinací top páru). Dobrý bluff.<br>
+            <span class="label">Máš K&#9829;:</span> Blokuješ Kx combá, ale zároveň máš top pár. Nepotřebuješ bluffovat.<br>
+            <span class="label">Máš 5&#9827; 4&#9827;:</span> Neblokuješ nic důležitého. Špatný bluff kandidát.
+        </div>
+
+        <h2>Bluffing na konkrétních streetech</h2>
+
+        <div class="example">
+            <span class="label">Flop semi-bluff:</span><br>
+            Máš <span class="val">9&#9829; 8&#9829;</span>. Flop: <span class="val">K&#9829; 5&#9829; 2&#9827;</span><br>
+            C-betneš. 9 outů na flush + backdoor straight. Soupeř foldne slabé ruky,
+            a když callne, máš ~36% equity na vylepšení.<br><br>
+            <span class="label">Turn barrel:</span><br>
+            Turn: <span class="val">3&#9824;</span>. Blank. Pokračuješ v betu. Soupeřův range po callu flopu je většinou
+            jeden pár nebo slabý draw. Tlačíš ho z marginalních ruk.<br><br>
+            <span class="label">River bluff:</span><br>
+            River: <span class="val">J&#9827;</span>. Minul jsi flush. Ale betoval jsi dva streety &mdash; tvůj příběh říká "mám silnou ruku".
+            Soupeř foldne většinu jedních párů. Bluff je +EV.
+        </div>
+
+        <h2>Kdy NEbluffovat</h2>
+
+        <div class="tip">
+            <strong>Proti calling station.</strong> Nerespektují tvůj bet a callnou s čímkoli. Viz <a href="../player-types/" style="color:#ffb300;">Typy hráčů</a>.
+        </div>
+
+        <div class="tip">
+            <strong>Multiway pot.</strong> Víc hráčů = víc šancí, že někdo má ruku. Bluff EV prudce klesá.
+        </div>
+
+        <div class="tip">
+            <strong>Nemáš příběh.</strong> Checkoval jsi flop, checkoval jsi turn, a teď betneš river? Nedává smysl. Dobrý hráč tě prokoukne.
+        </div>
+
+        <div class="tip">
+            <strong>Na tiltu.</strong> Bluffování vyžaduje racionální myšlení a disciplínu. Viz <a href="../tilt/" style="color:#ffb300;">Tilt Management</a>.
+        </div>
+    </div>
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+</body>
+</html>

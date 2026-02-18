@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPR – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-family: monospace; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .zone-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .zone-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
+        .zone-table td { padding: 8px 10px; border-bottom: 1px solid #222; color: #ccc; }
+        .zone-table .zone { font-weight: bold; font-family: monospace; }
+        .zone-low { color: #f87171; }
+        .zone-mid { color: #ffb300; }
+        .zone-high { color: #4ade80; }
+        .calc { background: #222; border: 1px solid #333; border-radius: 12px; padding: 24px; margin: 24px 0; }
+        .calc-row { display: flex; gap: 16px; margin: 12px 0; }
+        .calc-field { flex: 1; }
+        .calc-field label { display: block; color: #888; font-size: 0.85em; margin-bottom: 4px; }
+        .calc-field input { width: 100%; background: #181818; border: 1px solid #444; border-radius: 6px; color: #eee; padding: 10px 12px; font-size: 1em; font-family: monospace; }
+        .calc-field input:focus { outline: none; border-color: #ffb300; }
+        .result { margin-top: 16px; padding: 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; display: none; }
+        .result.visible { display: block; }
+        .result-row { display: flex; justify-content: space-between; padding: 4px 0; }
+        .result-label { color: #888; }
+        .result-value { color: #ffb300; font-weight: bold; font-family: monospace; }
+        .note { margin-top: 12px; padding: 12px; border: 1px solid #333; border-radius: 8px; font-size: 0.9em; display: none; }
+        .note.visible { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Stack-to-Pot Ratio</h2>
+        <p>
+            SPR je poměr efektivního stacku k potu na flopu.
+            Určuje, jak moc jsi commitnutý a jak bys měl hrát postflop.
+        </p>
+
+        <div class="formula">
+            SPR = efektivní stack / pot na flopu
+        </div>
+
+        <p>
+            Efektivní stack = menší ze dvou stacků. Tolik můžeš maximálně vyhrát nebo prohrát.
+        </p>
+
+        <h2>SPR Zóny</h2>
+
+        <table class="zone-table">
+            <tr>
+                <th>SPR</th>
+                <th>Zóna</th>
+                <th>Důsledek</th>
+            </tr>
+            <tr>
+                <td class="zone zone-low">0&ndash;4</td>
+                <td>Nízký</td>
+                <td>Commituj s top párem+ a silnými drawy. Binární rozhodování: all-in nebo fold.</td>
+            </tr>
+            <tr>
+                <td class="zone zone-mid">4&ndash;10</td>
+                <td>Střední</td>
+                <td>Na stack off potřebuješ dva páry+. Víc streetů, pozice je důležitější.</td>
+            </tr>
+            <tr>
+                <td class="zone zone-high">10+</td>
+                <td>Vysoký</td>
+                <td>Deep stacked play. Spekulativní ruky (suited connectors, malé páry) nabírají hodnotu. Set mining je výdělečný.</td>
+            </tr>
+        </table>
+
+        <h2>Příklady</h2>
+        <div class="example">
+            <span class="label">Tvůj stack:</span> <span class="val">500</span><br>
+            <span class="label">Stack soupeře:</span> <span class="val">800</span><br>
+            <span class="label">Efektivní stack:</span> <span class="val">500</span><br>
+            <span class="label">Pot na flopu:</span> <span class="val">100</span><br><br>
+            <span class="label">SPR:</span> 500 / 100 = <span class="val">5.0</span><br><br>
+            Střední SPR. Top pár je dobrý, ale commitovat celý stack bez vylepšení je riskantní.
+        </div>
+
+        <div class="example">
+            <span class="label">Tvůj stack:</span> <span class="val">200</span><br>
+            <span class="label">Stack soupeře:</span> <span class="val">350</span><br>
+            <span class="label">Efektivní stack:</span> <span class="val">200</span><br>
+            <span class="label">Pot na flopu:</span> <span class="val">80</span><br><br>
+            <span class="label">SPR:</span> 200 / 80 = <span class="val">2.5</span><br><br>
+            Nízký SPR. Top pár s dobrým kickerem &mdash; dej all-in.
+        </div>
+
+        <h2>Kalkulačka</h2>
+        <div class="calc">
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Tvůj stack</label>
+                    <input type="number" id="myStack" placeholder="500" min="0" step="any">
+                </div>
+                <div class="calc-field">
+                    <label>Stack soupeře</label>
+                    <input type="number" id="oppStack" placeholder="800" min="0" step="any">
+                </div>
+            </div>
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Pot na flopu</label>
+                    <input type="number" id="pot" placeholder="100" min="0" step="any">
+                </div>
+            </div>
+
+            <div class="result" id="result">
+                <div class="result-row">
+                    <span class="result-label">Efektivní stack</span>
+                    <span class="result-value" id="rEff">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">SPR</span>
+                    <span class="result-value" id="rSPR">&ndash;</span>
+                </div>
+            </div>
+
+            <div class="note" id="note"></div>
+        </div>
+
+        <h2>Preflop Sizing a SPR</h2>
+        <p>
+            Velikost preflop raisu přímo ovlivňuje SPR na flopu.
+            Větší open = menší SPR = jednodušší postflop rozhodování.
+        </p>
+        <p>
+            S premium rukami (AA, KK) chceš nízký SPR &mdash; raisuj víc preflop.
+            Se spekulativními rukami (suited connectors, malé páry) chceš vysoký SPR &mdash; drž pot malý a stacky hluboké.
+        </p>
+    </div>
+
+    <script>
+        var myStackEl = document.getElementById('myStack');
+        var oppStackEl = document.getElementById('oppStack');
+        var potEl = document.getElementById('pot');
+        var resultEl = document.getElementById('result');
+        var noteEl = document.getElementById('note');
+
+        function calc() {
+            var my = parseFloat(myStackEl.value);
+            var opp = parseFloat(oppStackEl.value);
+            var pot = parseFloat(potEl.value);
+
+            if (isNaN(my) || isNaN(opp) || isNaN(pot) || my <= 0 || opp <= 0 || pot <= 0) {
+                resultEl.classList.remove('visible');
+                noteEl.classList.remove('visible');
+                return;
+            }
+
+            var eff = Math.min(my, opp);
+            var spr = eff / pot;
+
+            document.getElementById('rEff').textContent = eff.toFixed(0);
+            document.getElementById('rSPR').textContent = spr.toFixed(1);
+            resultEl.classList.add('visible');
+
+            var msg, bg, bc, clr;
+            if (spr <= 4) {
+                msg = 'Nízký SPR. Commituj s top párem+. All-in nebo fold.';
+                bg = '#2e1a1a'; bc = '#4a2a2a'; clr = '#f87171';
+            } else if (spr <= 10) {
+                msg = 'Střední SPR. Na stack off potřebuješ dva páry+. Pozice je klíčová.';
+                bg = '#2e2a1a'; bc = '#4a3a2a'; clr = '#ffb300';
+            } else {
+                msg = 'Vysoký SPR. Spekulativní ruky nabírají hodnotu. Set mining a suited connectors jsou výdělečné.';
+                bg = '#1a2e1a'; bc = '#2a4a2a'; clr = '#4ade80';
+            }
+            noteEl.textContent = msg;
+            noteEl.style.background = bg;
+            noteEl.style.borderColor = bc;
+            noteEl.style.color = clr;
+            noteEl.classList.add('visible');
+        }
+
+        myStackEl.addEventListener('input', calc);
+        oppStackEl.addEventListener('input', calc);
+        potEl.addEventListener('input', calc);
+    </script>
+</body>
+</html>

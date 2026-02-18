@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teorie – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #181818;
+            color: #eee;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+        }
+        a { color: #eee; text-decoration: none; }
+        h1, h2 {
+            font-family: 'Staatliches', sans-serif;
+            letter-spacing: 4px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 24px 16px 0;
+        }
+        .header h1 a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        h2 { margin: 28px 0 16px; font-size: 1.5em; text-align: center; }
+
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            display: block;
+            background: #222;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px 24px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .card:hover {
+            border-color: #ffb300;
+            background: #282828;
+        }
+        .card-title {
+            font-family: 'Staatliches', sans-serif;
+            letter-spacing: 2px;
+            font-size: 1.2em;
+            color: #ffb300;
+            margin-bottom: 4px;
+        }
+        .card-desc {
+            color: #999;
+            font-size: 0.9em;
+        }
+        .card-tag {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.75em;
+            color: #666;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 2px 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../">SMELO.CZ</a></h1>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Poker Teorie</h2>
+
+        <div class="card-list">
+            <a class="card" href="pot-odds/">
+                <div class="card-title">1. Pot Odds</div>
+                <div class="card-desc">Matematika za callováním. Kalkulačka, tabulka.</div>
+                <span class="card-tag">kalkulačka + teorie</span>
+            </a>
+
+            <a class="card" href="outs-equity/">
+                <div class="card-title">2. Outs &amp; Equity</div>
+                <div class="card-desc">Počítání outů, pravidlo 2 a 4, kalkulačka equity.</div>
+                <span class="card-tag">kalkulačka + teorie</span>
+            </a>
+
+            <a class="card" href="implied-odds/">
+                <div class="card-title">3. Implied Odds</div>
+                <div class="card-desc">Když pot odds nestačí. Kolik musíš vyhrát na dalších streetech?</div>
+                <span class="card-tag">kalkulačka + teorie</span>
+            </a>
+
+            <a class="card" href="ev/">
+                <div class="card-title">4. Expected Value (EV)</div>
+                <div class="card-desc">Jeden vzorec, který sjednocuje všechno. +EV = výdělek.</div>
+                <span class="card-tag">kalkulačka + teorie</span>
+            </a>
+
+            <a class="card" href="pozice/">
+                <div class="card-title">5. Pozice</div>
+                <div class="card-desc">Proč hrát jako poslední vydělává. Seaty, open range, IP vs OOP.</div>
+                <span class="card-tag">teorie + vizualizace</span>
+            </a>
+
+            <a class="card" href="bet-sizing/">
+                <div class="card-title">6. Bet Sizing</div>
+                <div class="card-desc">Jak velký bet a proč. Value, bluff, protection, geometrický sizing.</div>
+                <span class="card-tag">teorie</span>
+            </a>
+
+            <a class="card" href="spr/">
+                <div class="card-title">7. SPR (Stack-to-Pot Ratio)</div>
+                <div class="card-desc">Jak poměr stacku k potu ovlivňuje postflop strategii.</div>
+                <span class="card-tag">kalkulačka + teorie</span>
+            </a>
+
+            <a class="card" href="ranges/">
+                <div class="card-title">8. Ranges</div>
+                <div class="card-desc">Přemýšlení v distribucích, ne v konkrétních rukách. Range advantage.</div>
+                <span class="card-tag">teorie</span>
+            </a>
+
+            <a class="card" href="preflop/">
+                <div class="card-title">9. Preflop Strategie</div>
+                <div class="card-desc">Open raise, 3-bet, defending blindů, squeeze.</div>
+                <span class="card-tag">teorie</span>
+            </a>
+
+            <a class="card" href="postflop/">
+                <div class="card-title">10. Postflop Play</div>
+                <div class="card-desc">C-bet, barreling, check-raise, pot control, board texture.</div>
+                <span class="card-tag">teorie</span>
+            </a>
+
+            <a class="card" href="bluffing/">
+                <div class="card-title">11. Bluffing</div>
+                <div class="card-desc">Semi-bluff, pure bluff, blockery, kdy bluffovat a kdy ne.</div>
+                <span class="card-tag">teorie</span>
+            </a>
+
+            <a class="card" href="player-types/">
+                <div class="card-title">12. Typy hráčů</div>
+                <div class="card-desc">Nit, calling station, TAG, LAG. Jak je poznat a jak proti nim hrát.</div>
+                <span class="card-tag">teorie + analýza + kvíz</span>
+            </a>
+
+            <a class="card" href="bankroll/">
+                <div class="card-title">13. Bankroll Management</div>
+                <div class="card-desc">Variance, buy-iny, move up/down. Proč BRM zachraňuje kariéry.</div>
+                <span class="card-tag">teorie</span>
+            </a>
+
+            <a class="card" href="tilt/">
+                <div class="card-title">14. Tilt Management</div>
+                <div class="card-desc">Jak nebýt pošmelen. Q&amp;A od obětí šmela.</div>
+                <span class="card-tag">humor + teorie</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

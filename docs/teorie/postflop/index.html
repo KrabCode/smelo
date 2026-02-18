@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postflop Play – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .board-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        .board-table th { text-align: left; color: #888; font-weight: normal; font-size: 0.85em; padding: 6px 10px; border-bottom: 1px solid #333; }
+        .board-table td { padding: 8px 10px; border-bottom: 1px solid #222; color: #ccc; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Postflop Play</h2>
+        <p>
+            Postflop je místo, kde se dělají peníze. Preflop můžeš hrát mechanicky podle chartů,
+            ale postflop vyžaduje přemýšlení &mdash; board texture, range advantage, sizing, pozice.
+        </p>
+
+        <h2>C-bet (Continuation Bet)</h2>
+        <p>
+            Preflop raiser má initiative. C-bet je bet na flopu od hráče, který raisnul preflop.
+            Funguje, protože soupeř minul flop ~66% času.
+        </p>
+
+        <div class="formula">
+            C-bet frekvence závisí na board texture a pozici.<br>
+            Suchý board IP &rarr; c-betuj často (60-80%)<br>
+            Wet board OOP &rarr; c-betuj selektivně (30-40%)
+        </div>
+
+        <h2>Board Texture</h2>
+
+        <table class="board-table">
+            <tr><th>Typ</th><th>Příklad</th><th>Strategie</th></tr>
+            <tr>
+                <td style="color:#4ade80;">Suchý</td>
+                <td>K72r, A83r</td>
+                <td>Malý c-bet s vysokou frekvencí. Soupeř minul, callne málo.</td>
+            </tr>
+            <tr>
+                <td style="color:#ffb300;">Semi-wet</td>
+                <td>KT7 s jednou suited, QJ4</td>
+                <td>Standardní 50-66% c-bet. Selektivnější &mdash; betuj s equity.</td>
+            </tr>
+            <tr>
+                <td style="color:#f87171;">Wet</td>
+                <td>876ss, JT9, QJ8hh</td>
+                <td>Větší sizing, nižší frekvence. Hodně ruk má equity. Chraň své range.</td>
+            </tr>
+        </table>
+
+        <h2>Barreling (Multi-street betting)</h2>
+        <p>
+            C-bet na flopu je jen začátek. Otázka je, jestli pokračovat na turnu a riveru.
+        </p>
+
+        <div class="example">
+            <span class="label">Kdy pokračovat (double barrel):</span><br>
+            &bull; Turn karta pomáhá tvému range víc než soupeři (overcard, completing draws ve tvém range)<br>
+            &bull; Soupeř má capped range (callnul flop, nemá silné ruky)<br>
+            &bull; Turn karta je scare card (A, K na low board)<br><br>
+            <span class="label">Kdy zpomalit:</span><br>
+            &bull; Turn kompletuje zjevný draw<br>
+            &bull; Soupeř je calling station (nebluffuj ho)<br>
+            &bull; Tvá ruka má showdown value (checknout je OK)
+        </div>
+
+        <h2>Check-raise</h2>
+        <p>
+            Checkneš, soupeř betuje, a ty raisneš. Silná zbraň OOP.
+            Používá se pro value (sety, dva páry) a jako bluff (silné drawy).
+        </p>
+
+        <div class="formula">
+            Check-raise range by měl být polarizovaný:<br>
+            Value: sety, dva páry, silné top páry<br>
+            Bluff: flush drawy, OESD, combo drawy
+        </div>
+
+        <div class="example">
+            <span class="label">Flop:</span> <span class="val">T&#9829; 8&#9824; 3&#9827;</span> &mdash; Soupeř c-betuje.<br><br>
+            <span class="label">Check-raise pro value:</span> TT, 88, 33, T8s<br>
+            <span class="label">Check-raise jako bluff:</span> 97s (OESD), J9s (OESD), 65s (gutshot + backdoor)
+        </div>
+
+        <h2>Donk Bet</h2>
+        <p>
+            Bet do preflop raisera (jako caller). Tradičně považovaný za slabý play,
+            ale má využití na specifických boardech.
+        </p>
+
+        <div class="tip">
+            Donk betuj, když board výrazně favorizuje tvůj range.
+            Příklad: Flop 678 a ty jsi BB caller. Máš víc two-párů a straightů než preflop raiser.
+        </div>
+
+        <h2>Pot Control</h2>
+        <p>
+            Ne každá ruka musí budovat pot. Střední síla ruky (jeden pár, slabý top pár)
+            profituje z malých potů.
+        </p>
+
+        <div class="formula">
+            Silná ruka &rarr; buduj pot (bet/raise)<br>
+            Střední ruka &rarr; kontroluj pot (check/call)<br>
+            Slabá ruka/draw &rarr; check/fold nebo semi-bluff
+        </div>
+
+        <div class="tip">
+            Pot control je důležitější OOP. Na pozici máš luxus checkovat back a realizovat equity zdarma.
+            Viz <a href="../pozice/" style="color:#ffb300;">Pozice</a>.
+        </div>
+
+        <h2>River Play</h2>
+        <p>Poslední street. Žádné další karty. Rozhodování je binární.</p>
+
+        <div class="tip">
+            <strong>Value bet river:</strong> Betuj, když většina ruk v soupeřově calling range je horší. Pokud tě volá jen lepší &mdash; checkni.
+        </div>
+
+        <div class="tip">
+            <strong>Bluff river:</strong> Betuj, když soupeřův range je většinou slabý a nemůže callovat. Viz <a href="../bluffing/" style="color:#ffb300;">Bluffing</a> pro detaily.
+        </div>
+
+        <div class="tip">
+            <strong>Facing river bet:</strong> Porovnej pot odds se šancí, že soupeř bluffuje. Pokud bluffuje dost často &mdash; calluj. Viz <a href="../pot-odds/" style="color:#ffb300;">Pot Odds</a>.
+        </div>
+    </div>
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+</body>
+</html>

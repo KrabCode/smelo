@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranges – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .range-vis { background: #1e1e1e; border-radius: 8px; padding: 12px; margin: 16px 0; font-family: monospace; font-size: 0.8em; line-height: 1.4; overflow-x: auto; }
+        .range-vis .h { color: #ffb300; }
+        .range-vis .m { color: #4ade80; }
+        .range-vis .l { color: #666; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Ranges</h2>
+        <p>
+            Začátečník přemýšlí: "Co má soupeř za ruku?"
+            Dobrý hráč přemýšlí: "Jaký má soupeř range?"
+        </p>
+        <p>
+            Range je soubor všech ruk, které soupeř může mít v dané situaci.
+            Místo hádání jedné konkrétní ruky pracuješ s distribucí.
+        </p>
+
+        <h2>Proč range, ne ruka</h2>
+
+        <div class="formula">
+            Soupeř openuje z UTG &rarr; tight range (~12% ruk)<br>
+            Soupeř openuje z BTN &rarr; wide range (~40% ruk)<br>
+            Stejná akce, úplně jiný range.
+        </div>
+
+        <p>
+            Z jedné akce nemůžeš přesně určit, co soupeř drží.
+            Ale z kombinace pozice + akcí + sizingu + boardu dokážeš range zúžit.
+        </p>
+
+        <h2>Jak vypadá range</h2>
+        <p>UTG open range (~12%):</p>
+        <div class="range-vis">
+<span class="h">AA  AKs AQs AJs ATs</span> <span class="l">A9s A8s A7s A6s A5s A4s A3s A2s</span>
+<span class="h">AKo KK  KQs KJs</span> <span class="l">KTs K9s K8s K7s K6s K5s K4s K3s K2s</span>
+<span class="h">AQo KQo QQ  QJs</span> <span class="l">QTs Q9s Q8s Q7s Q6s Q5s Q4s Q3s Q2s</span>
+<span class="h">AJo</span> <span class="l">KJo QJo</span> <span class="h">JJ  JTs</span> <span class="l">J9s J8s J7s J6s J5s J4s J3s J2s</span>
+<span class="l">ATo KTo QTo JTo</span> <span class="h">TT</span>  <span class="l">T9s T8s T7s T6s T5s T4s T3s T2s</span>
+<span class="l">A9o K9o Q9o J9o T9o</span> <span class="m">99</span>  <span class="l">98s 97s 96s 95s 94s 93s 92s</span>
+<span class="l">A8o K8o Q8o J8o T8o 98o</span> <span class="m">88</span>  <span class="l">87s 86s 85s 84s 83s 82s</span>
+<span class="l">A7o K7o Q7o J7o T7o 97o 87o</span> <span class="m">77</span>  <span class="l">76s 75s 74s 73s 72s</span>
+<span class="l">A6o K6o Q6o J6o T6o 96o 86o 76o 66  65s 64s 63s 62s</span>
+<span class="l">A5o K5o Q5o J5o T5o 95o 85o 75o 65o 55  54s 53s 52s</span>
+<span class="l">A4o K4o Q4o J4o T4o 94o 84o 74o 64o 54o 44  43s 42s</span>
+<span class="l">A3o K3o Q3o J3o T3o 93o 83o 73o 63o 53o 43o 33  32s</span>
+<span class="l">A2o K2o Q2o J2o T2o 92o 82o 72o 62o 52o 42o 32o 22</span>
+        </div>
+        <p style="font-size:0.8em; color:#666;"><span style="color:#ffb300;">zlutá</span> = v range, <span style="color:#4ade80;">zelená</span> = občas, <span style="color:#666;">šedá</span> = mimo range</p>
+
+        <h2>Zužování range</h2>
+        <p>Každá akce soupeře jeho range filtruje:</p>
+
+        <div class="example">
+            <span class="label">Preflop:</span> Soupeř openuje z CO. Range: ~27% ruk.<br>
+            <span class="label">Flop K&#9829;7&#9824;2&#9827;:</span> Soupeř c-betuje. Range se zúží &mdash; pořád široký, c-betuje hodně na suchém boardu.<br>
+            <span class="label">Turn 9&#9830;:</span> Soupeř betuje znovu. Range se zúží dál &mdash; slabé ruky by checkly. Teď má pravděpodobně Kx+, drawy, nebo bluff.<br>
+            <span class="label">River 3&#9829;:</span> Soupeř dává all-in. Range je polarizovaný &mdash; buď má velmi silnou ruku (dva páry+), nebo bluffuje.
+        </div>
+
+        <h2>Typy range</h2>
+
+        <div class="tip">
+            <strong>Lineární (merged):</strong> Betuje silné a středně silné ruky. Žádné bluffování. Typické pro malé bety a situace, kde soupeř hodně calluje.
+        </div>
+
+        <div class="tip">
+            <strong>Polarizovaný:</strong> Betuje jen velmi silné ruky (value) a slabé ruky (bluff). Středně silné ruky checkuje. Typické pro velké bety a river spoty.
+        </div>
+
+        <div class="tip">
+            <strong>Condensed:</strong> Range po callu. Callující hráč nemá nuts (raisnul by) ani trash (foldnul by). Má středně silné ruky.
+        </div>
+
+        <h2>Range advantage</h2>
+        <p>
+            Na daném boardu může mít jeden hráč silnější range než druhý.
+            To se nazývá range advantage a určuje, kdo by měl betovat.
+        </p>
+
+        <div class="example">
+            <span class="label">Flop:</span> <span class="val">A&#9829; K&#9824; 7&#9827;</span><br><br>
+            <span class="label">Preflop raiser (UTG):</span> Má v range hodně Ax, Kx, AK. Silný range na tomto boardu.<br>
+            <span class="label">Caller (BB):</span> Má méně Ax a Kx (ty by 3-betoval). Slabší range.<br><br>
+            &rarr; UTG má range advantage. Měl by c-betovat s vysokou frekvencí.
+        </div>
+
+        <div class="example">
+            <span class="label">Flop:</span> <span class="val">8&#9829; 7&#9829; 6&#9824;</span><br><br>
+            <span class="label">Preflop raiser (CO):</span> Má overpáry, ale méně dvou párů a straightů.<br>
+            <span class="label">Caller (BB):</span> Má 89, 97, 65, 54, T9 &mdash; hodně napojených ruk.<br><br>
+            &rarr; BB má range advantage na tomto wet boardu. CO by měl c-betovat opatrněji.
+        </div>
+
+        <div class="tip">
+            Přemýšlení v ranges je nejdůležitější skill, který odlišuje dobré hráče od průměrných.
+            Trénuj to: po každé akci soupeře si řekni "jaký range tím říká?"
+        </div>
+    </div>
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+</body>
+</html>

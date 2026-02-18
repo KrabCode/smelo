@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Implied Odds – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-family: monospace; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .vs { display: flex; gap: 16px; margin: 16px 0; }
+        .vs-box { flex: 1; background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; }
+        .vs-box h3 { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1em; margin-bottom: 8px; }
+        .vs-pot { color: #ffb300; }
+        .vs-imp { color: #4ade80; }
+        .calc { background: #222; border: 1px solid #333; border-radius: 12px; padding: 24px; margin: 24px 0; }
+        .calc-row { display: flex; gap: 16px; margin: 12px 0; }
+        .calc-field { flex: 1; }
+        .calc-field label { display: block; color: #888; font-size: 0.85em; margin-bottom: 4px; }
+        .calc-field input { width: 100%; background: #181818; border: 1px solid #444; border-radius: 6px; color: #eee; padding: 10px 12px; font-size: 1em; font-family: monospace; }
+        .calc-field input:focus { outline: none; border-color: #ffb300; }
+        .result { margin-top: 16px; padding: 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; display: none; }
+        .result.visible { display: block; }
+        .result-row { display: flex; justify-content: space-between; padding: 4px 0; }
+        .result-label { color: #888; }
+        .result-value { color: #ffb300; font-weight: bold; font-family: monospace; }
+        .note { margin-top: 12px; padding: 12px; border: 1px solid #333; border-radius: 8px; font-size: 0.9em; display: none; }
+        .note.visible { display: block; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Implied Odds</h2>
+        <p>
+            Implied odds rozšiřují pot odds o peníze, které očekáváš vyhrát na dalších streetech, když trefíš draw.
+            Pot odds se dívají jen na aktuální pot. Implied odds počítají i s budoucími bety soupeře.
+        </p>
+
+        <div class="formula">
+            break-even call = equity &times; (pot + call + budoucí výhry)
+        </div>
+
+        <p>
+            Když pot odds nestačí na call, ale soupeř pravděpodobně zaplatí velký bet, když trefíš, implied odds to mohou ospravedlnit.
+        </p>
+
+        <h2>Pot Odds vs. Implied Odds</h2>
+        <div class="vs">
+            <div class="vs-box">
+                <h3 class="vs-pot">Pot Odds</h3>
+                <p style="font-size:0.9em; color:#aaa;">
+                    Co investuješ vs. co je v potu teď.
+                    Statický pohled &mdash; jen aktuální street.
+                </p>
+            </div>
+            <div class="vs-box">
+                <h3 class="vs-imp">Implied Odds</h3>
+                <p style="font-size:0.9em; color:#aaa;">
+                    Celkový očekávaný výdělek, když trefíš.
+                    Dynamický pohled &mdash; zahrnuje budoucí streety.
+                </p>
+            </div>
+        </div>
+
+        <h2>Příklad</h2>
+        <div class="example">
+            <span class="label">Ruka:</span> <span class="val">7&#9829; 8&#9829;</span><br>
+            <span class="label">Flop:</span> <span class="val">5&#9829; 6&#9827; K&#9824;</span><br>
+            <span class="label">Pot:</span> <span class="val">200</span><br>
+            <span class="label">Soupeř betuje:</span> <span class="val">150</span><br><br>
+            <span class="label">Pot odds:</span> 150 / (200 + 150 + 150) = <span class="val">30%</span><br>
+            <span class="label">Outy:</span> 8 (OESD) &times; 2 streety &rarr; ~<span class="val">32%</span><br><br>
+            Pot odds jsou na hraně. Ale soupeř má <span class="val">1 500</span> behind.<br>
+            Když trefíš straight, čekej, že z něj vytáhneš dalších <span class="val">300&ndash;500</span>.<br><br>
+            Implied odds dělají z callu jasný +EV play.
+        </div>
+
+        <h2>Kalkulačka</h2>
+        <p>Kolik musíš vyhrát na dalších streetech, aby byl call výdělečný?</p>
+
+        <div class="calc">
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Pot (před betem)</label>
+                    <input type="number" id="pot" placeholder="200" min="0" step="any">
+                </div>
+                <div class="calc-field">
+                    <label>Bet soupeře</label>
+                    <input type="number" id="bet" placeholder="150" min="0" step="any">
+                </div>
+            </div>
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Tvá equity %</label>
+                    <input type="number" id="equity" placeholder="32" min="0.1" max="100" step="any">
+                </div>
+                <div class="calc-field">
+                    <label>Zbývající stack soupeře</label>
+                    <input type="number" id="remaining" placeholder="1500" min="0" step="any">
+                </div>
+            </div>
+
+            <div class="result" id="result">
+                <div class="result-row">
+                    <span class="result-label">Pot odds</span>
+                    <span class="result-value" id="rPotOdds">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Potřebuješ vyhrát navíc</span>
+                    <span class="result-value" id="rNeeded">&ndash;</span>
+                </div>
+                <div class="result-row">
+                    <span class="result-label">Soupeř má behind</span>
+                    <span class="result-value" id="rBehind">&ndash;</span>
+                </div>
+            </div>
+
+            <div class="note" id="note"></div>
+        </div>
+
+        <h2>Kdy jsou implied odds dobré?</h2>
+        <div class="tip">
+            <strong>Silné implied odds:</strong> skryté drawy (sety, backdoor flush), loose soupeř co payoffuje, deep stacky.
+        </div>
+        <div class="tip">
+            <strong>Slabé implied odds:</strong> zjevné drawy (4 karty na flush na boardu), tight soupeř, shallow stacky.
+        </div>
+
+        <h2>Reverse Implied Odds</h2>
+        <p>
+            Opak &mdash; kolik můžeš prohrát, i když trefíš.
+            Příklad: trefíš flush, ale soupeř má vyšší flush.
+        </p>
+        <p>
+            Pozor na drawy, kde nemáš nuts.
+            Chasovat non-nut flush proti soupeři, co 3-betoval preflop, může být drahé.
+        </p>
+    </div>
+
+    <script>
+        !function(){var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT),n=[];while(w.nextNode())n.push(w.currentNode);n.forEach(function(t){if(/[\u2660\u2665\u2663\u2666]/.test(t.textContent)){var s=document.createElement('span');s.innerHTML=t.textContent.replace(/\u2660/g,'<span style="color:#60a5fa">\u2660</span>').replace(/\u2665/g,'<span style="color:#f87171">\u2665</span>').replace(/\u2663/g,'<span style="color:#4ade80">\u2663</span>').replace(/\u2666/g,'<span style="color:#ffb300">\u2666</span>');t.parentNode.replaceChild(s,t)}})}();
+    </script>
+    <script>
+        var potEl = document.getElementById('pot');
+        var betEl = document.getElementById('bet');
+        var equityEl = document.getElementById('equity');
+        var remainEl = document.getElementById('remaining');
+        var resultEl = document.getElementById('result');
+        var noteEl = document.getElementById('note');
+
+        function calc() {
+            var pot = parseFloat(potEl.value);
+            var bet = parseFloat(betEl.value);
+            var eq = parseFloat(equityEl.value);
+            var rem = parseFloat(remainEl.value);
+
+            if (isNaN(pot) || isNaN(bet) || isNaN(eq) || pot < 0 || bet <= 0 || eq <= 0 || eq > 100) {
+                resultEl.classList.remove('visible');
+                noteEl.classList.remove('visible');
+                return;
+            }
+
+            var totalPot = pot + bet + bet;
+            var potOdds = (bet / totalPot) * 100;
+
+            var eqFrac = eq / 100;
+            var needed = (bet / eqFrac) - pot - bet;
+            if (needed < 0) needed = 0;
+
+            document.getElementById('rPotOdds').textContent = potOdds.toFixed(1) + '%';
+            document.getElementById('rNeeded').textContent = needed.toFixed(0);
+            document.getElementById('rBehind').textContent = isNaN(rem) ? '–' : rem.toFixed(0);
+            resultEl.classList.add('visible');
+
+            if (needed <= 0) {
+                noteEl.textContent = 'Pot odds stačí samy o sobě. Call je výdělečný i bez implied odds.';
+                noteEl.style.background = '#1a2e1a';
+                noteEl.style.borderColor = '#2a4a2a';
+                noteEl.style.color = '#8fbc8f';
+            } else if (!isNaN(rem) && rem >= needed) {
+                noteEl.textContent = 'Soupeř má dost behind (' + rem.toFixed(0) + ' >= ' + needed.toFixed(0) + '). Implied odds ospravedlňují call.';
+                noteEl.style.background = '#1a2e1a';
+                noteEl.style.borderColor = '#2a4a2a';
+                noteEl.style.color = '#8fbc8f';
+            } else if (!isNaN(rem)) {
+                noteEl.textContent = 'Nemá dost behind (' + rem.toFixed(0) + ' < ' + needed.toFixed(0) + '). Implied odds nestačí. Folduj.';
+                noteEl.style.background = '#2e1a1a';
+                noteEl.style.borderColor = '#4a2a2a';
+                noteEl.style.color = '#bc8f8f';
+            } else {
+                noteEl.textContent = 'Potřebuješ vyhrát minimálně ' + needed.toFixed(0) + ' navíc na dalších streetech.';
+                noteEl.style.background = '#1a1a2e';
+                noteEl.style.borderColor = '#2a2a4e';
+                noteEl.style.color = '#aab';
+            }
+            noteEl.classList.add('visible');
+        }
+
+        potEl.addEventListener('input', calc);
+        betEl.addEventListener('input', calc);
+        equityEl.addEventListener('input', calc);
+        remainEl.addEventListener('input', calc);
+    </script>
+</body>
+</html>

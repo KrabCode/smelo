@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expected Value – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #181818; color: #eee; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; }
+        a { color: #ffb300; }
+        h1, h2 { font-family: 'Staatliches', sans-serif; letter-spacing: 4px; }
+        .header { text-align: center; padding: 24px 16px 0; }
+        .header h1 a { color: #eee; text-decoration: none; }
+        .header h1 a:hover { color: #ffb300; }
+        .back { text-align: center; margin-top: 8px; font-size: 0.9em; }
+        .back a { color: #888; text-decoration: none; }
+        .back a:hover { color: #ffb300; }
+        hr { border-color: #333; margin: 16px 0; }
+        .container { max-width: 640px; margin: 0 auto; padding: 0 20px 60px; }
+        h2 { margin: 28px 0 12px; font-size: 1.5em; }
+        p { margin: 8px 0; color: #ccc; }
+        .formula { color: #aaa; font-family: monospace; background: #1e1e1e; padding: 12px 16px; border-radius: 6px; margin: 12px 0; border-left: 3px solid #ffb300; }
+        .example { background: #222; border: 1px solid #333; border-radius: 8px; padding: 16px; margin: 16px 0; font-family: monospace; font-size: 0.95em; line-height: 1.7; }
+        .example .label { color: #888; }
+        .example .val { color: #ffb300; font-weight: bold; }
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .calc { background: #222; border: 1px solid #333; border-radius: 12px; padding: 24px; margin: 24px 0; }
+        .calc-row { display: flex; gap: 16px; margin: 12px 0; }
+        .calc-field { flex: 1; }
+        .calc-field label { display: block; color: #888; font-size: 0.85em; margin-bottom: 4px; }
+        .calc-field input { width: 100%; background: #181818; border: 1px solid #444; border-radius: 6px; color: #eee; padding: 10px 12px; font-size: 1em; font-family: monospace; }
+        .calc-field input:focus { outline: none; border-color: #ffb300; }
+        .result { margin-top: 16px; padding: 16px; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; display: none; }
+        .result.visible { display: block; }
+        .result-row { display: flex; justify-content: space-between; padding: 4px 0; }
+        .result-label { color: #888; }
+        .result-value { color: #ffb300; font-weight: bold; font-family: monospace; }
+        .note { margin-top: 12px; padding: 12px; border: 1px solid #333; border-radius: 8px; font-size: 0.9em; display: none; }
+        .note.visible { display: block; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../">SMELO.CZ</a></h1>
+        <div class="back"><a href="../">&#8592; Teorie</a></div>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Expected Value (EV)</h2>
+        <p>
+            EV je průměrný výsledek rozhodnutí, kdybys ho opakoval nekonečněkrát.
+            Celý poker se dá zredukovat na jedno pravidlo: opakovaně dělej +EV rozhodnutí.
+        </p>
+
+        <div class="formula">
+            EV = (šance na výhru &times; kolik vyhraješ) &minus; (šance na prohru &times; kolik prohraješ)
+        </div>
+
+        <p>
+            Pokud je EV kladné, rozhodnutí je dlouhodobě výdělečné. I když prohraješ konkrétní ruku.
+        </p>
+
+        <h2>Příklad: Call s flush draw</h2>
+        <div class="example">
+            <span class="label">Pot:</span> <span class="val">100</span><br>
+            <span class="label">Bet soupeře:</span> <span class="val">50</span><br>
+            <span class="label">Musíš callovat:</span> <span class="val">50</span><br>
+            <span class="label">Tvá equity:</span> <span class="val">36%</span> (flush draw, 9 outů na flopu)<br><br>
+            <span class="label">Když vyhraješ:</span> 100 + 50 = <span class="val">+150</span><br>
+            <span class="label">Když prohraješ:</span> <span class="val">&minus;50</span><br><br>
+            <span class="label">EV callu:</span> (0.36 &times; 150) &minus; (0.64 &times; 50)<br>
+            = 54 &minus; 32 = <span class="val">+22</span><br><br>
+            Call je +EV. Průměrně vyděláš 22 za každé takové rozhodnutí.
+        </div>
+
+        <h2>Příklad: Bluff na riveru</h2>
+        <div class="example">
+            <span class="label">Pot:</span> <span class="val">200</span><br>
+            <span class="label">Tvůj bet:</span> <span class="val">150</span><br>
+            <span class="label">Odhaduješ, že soupeř foldne:</span> <span class="val">60%</span> času<br><br>
+            <span class="label">Když foldne:</span> <span class="val">+200</span> (vyhraje pot)<br>
+            <span class="label">Když callne:</span> <span class="val">&minus;150</span> (ztratíš bet)<br><br>
+            <span class="label">EV bluffu:</span> (0.60 &times; 200) &minus; (0.40 &times; 150)<br>
+            = 120 &minus; 60 = <span class="val">+60</span><br><br>
+            Bluff je +EV. I když 40% času prohraješ 150, celkově vyděláváš.
+        </div>
+
+        <h2>Kalkulačka EV</h2>
+        <div class="calc">
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Šance na výhru (%)</label>
+                    <input type="number" id="winPct" placeholder="36" min="0" max="100" step="any">
+                </div>
+            </div>
+            <div class="calc-row">
+                <div class="calc-field">
+                    <label>Kolik vyhraješ</label>
+                    <input type="number" id="winAmt" placeholder="150" min="0" step="any">
+                </div>
+                <div class="calc-field">
+                    <label>Kolik prohraješ</label>
+                    <input type="number" id="loseAmt" placeholder="50" min="0" step="any">
+                </div>
+            </div>
+
+            <div class="result" id="result">
+                <div class="result-row">
+                    <span class="result-label">EV</span>
+                    <span class="result-value" id="rEV">&ndash;</span>
+                </div>
+            </div>
+
+            <div class="note" id="note"></div>
+        </div>
+
+        <h2>EV a poker strategie</h2>
+
+        <div class="tip">
+            <strong>Pot odds jsou zkratka pro EV.</strong> Když equity > pot odds, EV callu je kladné. Nemusíš počítat celý vzorec &mdash; stačí porovnat dvě procenta.
+        </div>
+
+        <div class="tip">
+            <strong>Variance není EV.</strong> Krátkodobě můžeš prohrávat i s +EV rozhodnutími. Ale po tisících ruk se výsledky přiblíží k EV. Proto je důležitý <a href="../bankroll/" style="color:#ffb300;">bankroll management</a>.
+        </div>
+
+        <div class="tip">
+            <strong>Každé rozhodnutí má EV.</strong> Fold má vždy EV = 0. Call a raise mají kladný nebo záporný EV. Tvůj cíl je vybrat akci s nejvyšším EV.
+        </div>
+    </div>
+
+    <script>
+        var winPctEl = document.getElementById('winPct');
+        var winAmtEl = document.getElementById('winAmt');
+        var loseAmtEl = document.getElementById('loseAmt');
+        var resultEl = document.getElementById('result');
+        var noteEl = document.getElementById('note');
+
+        function calc() {
+            var wp = parseFloat(winPctEl.value);
+            var wa = parseFloat(winAmtEl.value);
+            var la = parseFloat(loseAmtEl.value);
+
+            if (isNaN(wp) || isNaN(wa) || isNaN(la) || wp < 0 || wp > 100) {
+                resultEl.classList.remove('visible');
+                noteEl.classList.remove('visible');
+                return;
+            }
+
+            var ev = (wp / 100) * wa - ((100 - wp) / 100) * la;
+            document.getElementById('rEV').textContent = (ev >= 0 ? '+' : '') + ev.toFixed(1);
+            resultEl.classList.add('visible');
+
+            if (ev > 0) {
+                noteEl.textContent = '+EV. Toto rozhodnutí je dlouhodobě výdělečné.';
+                noteEl.style.background = '#1a2e1a';
+                noteEl.style.borderColor = '#2a4a2a';
+                noteEl.style.color = '#8fbc8f';
+            } else if (ev < 0) {
+                noteEl.textContent = '-EV. Toto rozhodnutí je dlouhodobě ztrátové.';
+                noteEl.style.background = '#2e1a1a';
+                noteEl.style.borderColor = '#4a2a2a';
+                noteEl.style.color = '#bc8f8f';
+            } else {
+                noteEl.textContent = 'Break-even. Ani výdělek, ani ztráta.';
+                noteEl.style.background = '#1a1a2e';
+                noteEl.style.borderColor = '#2a2a4e';
+                noteEl.style.color = '#aab';
+            }
+            noteEl.classList.add('visible');
+        }
+
+        winPctEl.addEventListener('input', calc);
+        winAmtEl.addEventListener('input', calc);
+        loseAmtEl.addEventListener('input', calc);
+    </script>
+</body>
+</html>
