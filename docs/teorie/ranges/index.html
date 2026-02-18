@@ -23,10 +23,13 @@
         .example .label { color: #888; }
         .example .val { color: #ffb300; font-weight: bold; }
         .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
-        .range-vis { background: #1e1e1e; border-radius: 8px; padding: 12px; margin: 16px 0; font-family: monospace; font-size: 0.8em; line-height: 1.4; overflow-x: auto; }
-        .range-vis .h { color: #ffb300; }
-        .range-vis .m { color: #4ade80; }
-        .range-vis .l { color: #666; }
+        .range-grid { display: grid; grid-template-columns: repeat(13, 1fr); gap: 2px; margin: 16px 0; }
+        .range-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-family: monospace; font-size: 0.65em; border-radius: 3px; font-weight: bold; transition: transform 0.1s; }
+        .range-cell:hover { transform: scale(1.15); z-index: 1; }
+        .rc-h { background: rgba(255,179,0,0.25); color: #ffb300; border: 1px solid rgba(255,179,0,0.3); }
+        .rc-m { background: rgba(74,222,128,0.2); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+        .rc-l { background: #1e1e1e; color: #444; border: 1px solid #282828; }
+        @media (max-width: 500px) { .range-cell { font-size: 0.5em; } }
     </style>
 </head>
 <body>
@@ -61,22 +64,28 @@
 
         <h2>Jak vypadá range</h2>
         <p>UTG open range (~12%):</p>
-        <div class="range-vis">
-<span class="h">AA  AKs AQs AJs ATs</span> <span class="l">A9s A8s A7s A6s A5s A4s A3s A2s</span>
-<span class="h">AKo KK  KQs KJs</span> <span class="l">KTs K9s K8s K7s K6s K5s K4s K3s K2s</span>
-<span class="h">AQo KQo QQ  QJs</span> <span class="l">QTs Q9s Q8s Q7s Q6s Q5s Q4s Q3s Q2s</span>
-<span class="h">AJo</span> <span class="l">KJo QJo</span> <span class="h">JJ  JTs</span> <span class="l">J9s J8s J7s J6s J5s J4s J3s J2s</span>
-<span class="l">ATo KTo QTo JTo</span> <span class="h">TT</span>  <span class="l">T9s T8s T7s T6s T5s T4s T3s T2s</span>
-<span class="l">A9o K9o Q9o J9o T9o</span> <span class="m">99</span>  <span class="l">98s 97s 96s 95s 94s 93s 92s</span>
-<span class="l">A8o K8o Q8o J8o T8o 98o</span> <span class="m">88</span>  <span class="l">87s 86s 85s 84s 83s 82s</span>
-<span class="l">A7o K7o Q7o J7o T7o 97o 87o</span> <span class="m">77</span>  <span class="l">76s 75s 74s 73s 72s</span>
-<span class="l">A6o K6o Q6o J6o T6o 96o 86o 76o 66  65s 64s 63s 62s</span>
-<span class="l">A5o K5o Q5o J5o T5o 95o 85o 75o 65o 55  54s 53s 52s</span>
-<span class="l">A4o K4o Q4o J4o T4o 94o 84o 74o 64o 54o 44  43s 42s</span>
-<span class="l">A3o K3o Q3o J3o T3o 93o 83o 73o 63o 53o 43o 33  32s</span>
-<span class="l">A2o K2o Q2o J2o T2o 92o 82o 72o 62o 52o 42o 32o 22</span>
-        </div>
+        <div class="range-grid" id="range-grid"></div>
         <p style="font-size:0.8em; color:#666;"><span style="color:#ffb300;">zlutá</span> = v range, <span style="color:#4ade80;">zelená</span> = občas, <span style="color:#666;">šedá</span> = mimo range</p>
+        <script>
+        !function(){
+            var R='AKQJT98765432';
+            var H='AA,AKs,AQs,AJs,ATs,KK,KQs,KJs,QQ,QJs,JJ,JTs,TT,AKo,AQo,AJo,KQo'.split(',');
+            var M='99,88,77'.split(',');
+            var grid=document.getElementById('range-grid');
+            for(var r=0;r<13;r++){for(var c=0;c<13;c++){
+                var a=R[r],b=R[c],name;
+                if(r===c) name=a+b;
+                else if(c>r) name=a+b+'s';
+                else name=b+a+'o';
+                var cls=H.indexOf(name)>=0?'rc-h':M.indexOf(name)>=0?'rc-m':'rc-l';
+                var d=document.createElement('div');
+                d.className='range-cell '+cls;
+                d.textContent=name;
+                d.title=name;
+                grid.appendChild(d);
+            }}
+        }();
+        </script>
 
         <h2>Zužování range</h2>
         <p>Každá akce soupeře jeho range filtruje:</p>
