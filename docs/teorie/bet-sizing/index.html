@@ -113,6 +113,42 @@
             Souvisí s <a href="../spr/" style="color:#ffb300;">SPR</a>. Nízký SPR = jednoduchý sizing (jeden nebo dva bety). Vysoký SPR = potřebuješ víc streetů a menší sizing na začátku.
         </div>
 
+        <h2>Min Raise</h2>
+        <p>
+            Minimální raise znamená zvýšení o nejmenší povolenou částku.
+            Pravidlo je jednoduché: min raise = předchozí bet &times; 2.
+        </p>
+
+        <div class="formula">
+            Min raise = poslední bet + (poslední bet &minus; předchozí bet)<br>
+            Zjednodušeně: min raise = 2 &times; poslední bet
+        </div>
+
+        <div class="example">
+            <span class="label">Preflop (BB = 10):</span><br>
+            Open raise min &rarr; <span class="val">20</span> (2&times; BB)<br>
+            3-bet min na raise 20 &rarr; <span class="val">40</span> (20 + 20)<br>
+            4-bet min na 3-bet 40 &rarr; <span class="val">80</span> (40 + 40)<br><br>
+            <span class="label">Postflop (bet 50 do potu 100):</span><br>
+            Min raise &rarr; <span class="val">100</span> (50 + 50)<br>
+            Min re-raise na raise 100 &rarr; <span class="val">200</span> (100 + 100)
+        </div>
+
+        <p>
+            Min raise dává soupeři extrémně dobré pot odds.
+            Proto se používá jen ve specifických situacích:
+        </p>
+
+        <div class="tip">
+            <strong>Kdy min raise funguje:</strong> Chceš nafouknout pot s monsterem (soupeř dostane odds, které nemůže odmítnout).
+            Nebo chceš levně získat informaci o síle soupeřovy ruky.
+        </div>
+
+        <div class="tip">
+            <strong>Kdy min raise nefunguje:</strong> Jako bluff &mdash; dáváš soupeři tak dobré odds, že musí callovat s čímkoliv.
+            Break-even fold% u min raise je jen ~33%, ale soupeř skoro nikdy nefoldne za tak málo.
+        </div>
+
         <div class="tip">
             <strong>Hlavní chyba:</strong> příliš malý bet s value rukou ("aby zaplatil") a příliš velký bet jako bluff ("aby foldnul"). Mělo by to být přesně naopak.
         </div>
