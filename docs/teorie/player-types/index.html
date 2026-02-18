@@ -194,7 +194,7 @@ var DATA = {
             {
                 title: 'Nit raisne tvůj river bet',
                 streets: [
-                    {label:'Preflop', cards:'A\u2660 T\u2660', text:'Hero openuje 2.5bb z CO. Nit calluje z BB.'},
+                    {label:'Preflop', cards:'A\u2660 T\u2660', text:'Hero otvírá 2.5bb z CO. Nit calluje z BB.'},
                     {label:'Flop', cards:'A\u2663 8\u2666 3\u2660', text:'Nit checkuje. Hero betuje 3bb. Nit calluje.', note:'Top pár, slušný kicker. Value bet na suchém boardu.'},
                     {label:'Turn', cards:'5\u2665', text:'Nit checkuje. Hero betuje 7bb. Nit calluje.', note:'Blank. Pokračujeme ve value. Nit drží asi slabší Ax nebo pár.'},
                     {label:'River', cards:'2\u2663', text:'Nit checkuje. Hero betuje 16bb. Nit RAISNE na 45bb.', note:'Další blank. Betneš river pro value... a nit raisne. Co teď?'}
@@ -221,7 +221,7 @@ var DATA = {
             {
                 title: 'Nit 3-betuje preflop',
                 streets: [
-                    {label:'Preflop', cards:'A\u2660 Q\u2665', text:'Hero openuje 2.5bb z HJ. Nit 3-betuje na 8bb z CO.', note:'AQo je normálně silná ruka. Ale nit 3-betuje jen s top range \u2014 QQ+, AKs, možná AKo.'}
+                    {label:'Preflop', cards:'A\u2660 Q\u2665', text:'Hero otvírá 2.5bb z HJ. Nit 3-betuje na 8bb z CO.', note:'AQo je normálně silná ruka. Ale nit 3-betuje jen s top range \u2014 QQ+, AKs, možná AKo.'}
                 ],
                 prompt: 'Nit tě 3-betnul. Máš AQo. Co uděláš?',
                 choices: [
@@ -233,7 +233,7 @@ var DATA = {
             {
                 title: 'Nit checkuje dva streety',
                 streets: [
-                    {label:'Preflop', cards:'K\u2660 J\u2660', text:'Hero openuje z CO. Nit calluje z BB.'},
+                    {label:'Preflop', cards:'K\u2660 J\u2660', text:'Hero otvírá z CO. Nit calluje z BB.'},
                     {label:'Flop', cards:'K\u2663 7\u2666 4\u2660', text:'Nit checkuje. Hero betuje 3bb. Nit calluje.', note:'Top pár, dobrý kicker. Standard c-bet.'},
                     {label:'Turn', cards:'9\u2665', text:'Nit checkuje. Hero checkuje.', note:'Zpomalil jsi na turnu pro pot control.'},
                     {label:'River', cards:'2\u2666', text:'Nit checkuje.', note:'Board: K\u26637\u26664\u26609\u26652\u2666. Nit checkoval všechny tři streety.'}
@@ -254,7 +254,7 @@ var DATA = {
             {
                 title: 'Value bet na riveru s top párem',
                 streets: [
-                    {label:'Preflop', cards:'A\u2665 8\u2665', text:'Hero openuje z CO. Station calluje z BB.'},
+                    {label:'Preflop', cards:'A\u2665 8\u2665', text:'Hero otvírá z CO. Station calluje z BB.'},
                     {label:'Flop', cards:'A\u2666 9\u2663 5\u2660', text:'Station checkuje. Hero betuje 3.5bb. Station calluje.', note:'Top pár. Station callne s jakýmkoli párem, gutšotem, backdoor drawy.'},
                     {label:'Turn', cards:'3\u2665', text:'Station checkuje. Hero betuje 8bb. Station calluje.', note:'Blank. Pokračujeme ve value. Station drží cokoli.'},
                     {label:'River', cards:'7\u2666', text:'Station checkuje.', note:'Board: A\u26669\u26635\u26603\u26657\u2666. Suchý board, žádný draw nedorazil.'}
@@ -269,7 +269,7 @@ var DATA = {
             {
                 title: 'Missed draw \u2014 bluffovat?',
                 streets: [
-                    {label:'Preflop', cards:'Q\u2660 J\u2660', text:'Hero openuje z BTN. Station calluje z BB.'},
+                    {label:'Preflop', cards:'Q\u2660 J\u2660', text:'Hero otvírá z BTN. Station calluje z BB.'},
                     {label:'Flop', cards:'T\u2660 5\u2660 2\u2663', text:'Station checkuje. Hero betuje 3bb. Station calluje.', note:'Flush draw + overkarty. Semi-bluff.'},
                     {label:'Turn', cards:'K\u2666', text:'Station checkuje. Hero betuje 7bb. Station calluje.', note:'Přidal se gutshot (A pro straight). Pokračuješ v tlaku.'},
                     {label:'River', cards:'3\u2665', text:'Station checkuje.', note:'Nic netrefil. Máš queen high. Zero showdown value.'}
@@ -284,7 +284,7 @@ var DATA = {
             {
                 title: 'Station raisne turn',
                 streets: [
-                    {label:'Preflop', cards:'T\u2660 T\u2663', text:'Hero openuje z MP. Station calluje z BTN.'},
+                    {label:'Preflop', cards:'T\u2660 T\u2663', text:'Hero otvírá z MP. Station calluje z BTN.'},
                     {label:'Flop', cards:'J\u2665 T\u2666 6\u2663', text:'Hero betuje 4bb. Station calluje.', note:'Střední set! Value bet.'},
                     {label:'Turn', cards:'8\u2660', text:'Hero betuje 10bb. Station RAISNE na 28bb.', note:'Station \u2014 hráč, který NIKDY neraisuje \u2014 právě raisnul tvůj turn bet.'}
                 ],
@@ -317,7 +317,7 @@ var DATA = {
             {
                 title: 'TAG c-betuje suchý flop',
                 streets: [
-                    {label:'Preflop', cards:'8\u2660 7\u2660', text:'TAG openuje z CO. Hero calluje z BTN.'},
+                    {label:'Preflop', cards:'8\u2660 7\u2660', text:'TAG otvírá z CO. Hero calluje z BTN.'},
                     {label:'Flop', cards:'A\u2663 5\u2666 2\u2665', text:'TAG c-betuje 33% potu.', note:'Suchý ace-high board. TAG c-betuje tenhle flop s vysokou frekvencí \u2014 i s rukami, které minuly.'}
                 ],
                 prompt: 'TAG c-betnul suchý flop. Máš 87s \u2014 nic. Co uděláš?',
@@ -330,7 +330,7 @@ var DATA = {
             {
                 title: 'TAG checkne turn po c-betu',
                 streets: [
-                    {label:'Preflop', cards:'K\u2660 Q\u2663', text:'Hero openuje z HJ. TAG calluje z BTN.'},
+                    {label:'Preflop', cards:'K\u2660 Q\u2663', text:'Hero otvírá z HJ. TAG calluje z BTN.'},
                     {label:'Flop', cards:'J\u2665 8\u2666 3\u2663', text:'Hero c-betuje 50% potu. TAG calluje.', note:'C-bet s dvěma overcartami. Standard.'},
                     {label:'Turn', cards:'2\u2660', text:'Hero checkuje. TAG checkuje za tebou.', note:'Check-check. TAGův range je capped \u2014 se silnou rukou by betnul v pozici.'}
                 ],
@@ -344,7 +344,7 @@ var DATA = {
             {
                 title: 'TAG 3-betne z blindů',
                 streets: [
-                    {label:'Preflop', cards:'A\u2660 J\u2666', text:'Hero openuje 2.5bb z HJ. TAG v BB 3-betuje na 9bb.', note:'TAG 3-betuje z BB. Jeho 3-bet range z BB je tight: JJ+, AQs+, AKo. Možná AJs na dolním konci.'}
+                    {label:'Preflop', cards:'A\u2660 J\u2666', text:'Hero otvírá 2.5bb z HJ. TAG v BB 3-betuje na 9bb.', note:'TAG 3-betuje z BB. Jeho 3-bet range z BB je tight: JJ+, AQs+, AKo. Možná AJs na dolním konci.'}
                 ],
                 prompt: 'TAG 3-betnul z BB. Máš AJo. Co uděláš?',
                 choices: [
@@ -356,7 +356,7 @@ var DATA = {
             {
                 title: 'TAG triple-bareluje',
                 streets: [
-                    {label:'Preflop', cards:'Q\u2660 Q\u2663', text:'Hero openuje z CO. TAG calluje z BTN.'},
+                    {label:'Preflop', cards:'Q\u2660 Q\u2663', text:'Hero otvírá z CO. TAG calluje z BTN.'},
                     {label:'Flop', cards:'K\u2665 8\u2666 3\u2663', text:'Hero c-betuje 50%. TAG calluje.', note:'King-high board. TAG callne s broadwayem, páry, drawy.'},
                     {label:'Turn', cards:'5\u2660', text:'Hero betuje 66%. TAG calluje.', note:'Blank. Pokračuješ ve value/protection. TAG pořád calluje.'},
                     {label:'River', cards:'4\u2665', text:'Hero checkuje. TAG betuje 80% potu.', note:'Checkneš river. TAG betne velký. Má Kx, nebo bluffuje missed draw?'}
@@ -377,7 +377,7 @@ var DATA = {
             {
                 title: 'LAG tě 3-betne',
                 streets: [
-                    {label:'Preflop', cards:'J\u2660 J\u2665', text:'Hero openuje 2.5bb z CO. LAG na BTN 3-betuje na 8bb.', note:'LAG 3-betuje často \u2014 30%+ z BTN vs CO open. JJ je daleko ahead jeho range.'}
+                    {label:'Preflop', cards:'J\u2660 J\u2665', text:'Hero otvírá 2.5bb z CO. LAG na BTN 3-betuje na 8bb.', note:'LAG 3-betuje často \u2014 30%+ z BTN vs CO open. JJ je daleko ahead jeho range.'}
                 ],
                 prompt: 'LAG tě 3-betnul z BTN. Máš JJ. Co uděláš?',
                 choices: [
@@ -389,7 +389,7 @@ var DATA = {
             {
                 title: 'LAG betuje 3 streety',
                 streets: [
-                    {label:'Preflop', cards:'A\u2663 K\u2660', text:'Hero openuje z MP. LAG calluje z BTN.'},
+                    {label:'Preflop', cards:'A\u2663 K\u2660', text:'Hero otvírá z MP. LAG calluje z BTN.'},
                     {label:'Flop', cards:'A\u2666 5\u2665 2\u2663', text:'Hero betuje 4bb. LAG calluje.', note:'Top pár, top kicker. Dream flop.'},
                     {label:'Turn', cards:'8\u2660', text:'Hero betuje 10bb. LAG calluje.', note:'Blank. Pokračuješ ve value.'},
                     {label:'River', cards:'J\u2663', text:'Hero checkuje. LAG betne pot (48bb).', note:'Checkneš river. LAG okamžitě betne pot. S čím?'}
@@ -404,7 +404,7 @@ var DATA = {
             {
                 title: 'LAG checkne flop',
                 streets: [
-                    {label:'Preflop', cards:'T\u2660 T\u2663', text:'Hero openuje z CO. LAG calluje z BB.'},
+                    {label:'Preflop', cards:'T\u2660 T\u2663', text:'Hero otvírá z CO. LAG calluje z BB.'},
                     {label:'Flop', cards:'K\u2665 7\u2666 3\u2663', text:'LAG checkuje.', note:'K-high board. LAG checkuje. Normálně by c-betnul (i z BB), protože je agresivní. Check je podezřelý.'}
                 ],
                 prompt: 'LAG \u2014 hráč, který betuje skoro vždy \u2014 checkoval flop. Máš TT. Co uděláš?',
@@ -417,7 +417,7 @@ var DATA = {
             {
                 title: 'LAG overbetne river na flush boardu',
                 streets: [
-                    {label:'Preflop', cards:'K\u2660 K\u2665', text:'Hero openuje z UTG. LAG calluje z BTN.'},
+                    {label:'Preflop', cards:'K\u2660 K\u2665', text:'Hero otvírá z UTG. LAG calluje z BTN.'},
                     {label:'Flop', cards:'Q\u2660 8\u2660 3\u2666', text:'Hero betuje 4bb. LAG calluje.', note:'Overpair na queen-high boardu. Jeden spade.'},
                     {label:'Turn', cards:'7\u2663', text:'Hero betuje 10bb. LAG calluje.', note:'Blank. Pokračuješ ve value.'},
                     {label:'River', cards:'2\u2660', text:'Třetí spade. Hero checkuje. LAG overbetne 1.5x pot.', note:'Flush completing card. LAG okamžitě overbetne. Trap, nebo má flush?'}
