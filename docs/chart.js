@@ -142,7 +142,7 @@ document.getElementById('btnAll').addEventListener('click', () => {
     processAndRender();
 });
 
-function buildTooltip(rowIdx, highlightLabels) {
+function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     const date = storedSessionLabels[rowIdx];
     const entries = playerNames.map((name, ci) => {
         const cell = storedOriginalCells[rowIdx][ci];
@@ -154,7 +154,9 @@ function buildTooltip(rowIdx, highlightLabels) {
     entries.forEach(e => {
         const sign = e.delta > 0 ? '+' : '';
         const cls = e.delta > 0 ? 'pos' : e.delta < 0 ? 'neg' : '';
-        html += `<div class="tt-row"><span class="tt-dot" style="background:${e.color}"></span><span class="tt-name">${e.name}</span><span class="tt-val">${e.val}</span><span class="tt-delta ${cls}">(${sign}${e.delta})</span></div>`;
+        const bold = e.fullName === hoveredPlayer ? 'font-weight:bold;' : '';
+        const bg = e.fullName === hoveredPlayer ? 'background:rgba(255,255,255,0.06);border-radius:3px;' : '';
+        html += `<div class="tt-row" style="${bg}"><span class="tt-dot" style="background:${e.color}"></span><span class="tt-name" style="${bold}">${e.name}</span><span class="tt-val" style="${bold}">${e.val}</span><span class="tt-delta ${cls}" style="${bold}">(${sign}${e.delta})</span></div>`;
     });
     if (highlightLabels && highlightLabels[rowIdx]) {
         const pName = selectedPlayer ? selectedPlayer.split('/')[0].trim() : '';
@@ -234,11 +236,10 @@ function drawChart() {
         chartData.addColumn({ type: 'string', role: 'annotation' });
     });
     for (let i = 0; i < sessionLabels.length; i++) {
-        const tt = buildTooltip(i, highlightTooltips);
         const row = [sessionLabels[i]];
         playerNames.forEach((name, ci) => {
             row.push(cumulative[ci][i]);
-            row.push(tt);
+            row.push(buildTooltip(i, highlightTooltips, name));
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
