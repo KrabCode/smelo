@@ -112,9 +112,13 @@ function processAndRender() {
         if (firstIdx > 0) for (let i = 0; i < firstIdx; i++) arr[i] = null;
     });
 
-    const sessionLabels = rows.map(x => x.row[1]
-        .replace(/Mon/g,'Po').replace(/Tue/g,'Út').replace(/Wed/g,'St')
-        .replace(/Thu/g,'Čt').replace(/Fri/g,'Pá').replace(/Sat/g,'So').replace(/Sun/g,'Ne'));
+    const sessionLabels = rows.map(x => {
+        if (x.date) {
+            const d = x.date;
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+        return x.row[1];
+    });
 
     storedCumulative = cumulative;
     storedOriginalCells = originalCells;
