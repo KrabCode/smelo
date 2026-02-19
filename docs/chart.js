@@ -197,7 +197,7 @@ function drawChart() {
     const series = {};
     playerNames.forEach((name, i) => {
         const color = playerColors[name];
-        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true };
+        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true };
         else if (selectedPlayer) series[i] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false };
         else series[i] = { color: mute(color), lineWidth: 2, pointSize: 0, visibleInLegend: true };
     });
