@@ -83,6 +83,10 @@
                     <span class="result-label">EV callu</span>
                     <span class="result-value" id="cEV">&ndash;</span>
                 </div>
+                <div class="result-row">
+                    <span class="result-label">Musíš vyhrát alespoň</span>
+                    <span class="result-value" id="cMinEq">&ndash;</span>
+                </div>
             </div>
             <div class="note" id="cNote"></div>
         </div>
@@ -158,7 +162,9 @@
                 cResult.classList.remove('visible'); cNote.classList.remove('visible'); return;
             }
             var ev = (eq / 100) * (pot + call) - ((100 - eq) / 100) * call;
+            var minEq = call / (pot + call + call) * 100;
             document.getElementById('cEV').textContent = (ev >= 0 ? '+' : '') + ev.toFixed(1);
+            document.getElementById('cMinEq').textContent = minEq.toFixed(1) + '%';
             cResult.classList.add('visible');
             styleNote(cNote, ev);
         }
