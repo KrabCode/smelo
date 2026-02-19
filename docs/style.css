@@ -12,6 +12,11 @@ img { border-radius: 16px; }
     letter-spacing: 4px;
     padding-top: 16px;
 }
+.smelotitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 .smelkarta {
     width: 100%;
