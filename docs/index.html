@@ -27,12 +27,8 @@
     <div id="rangeToggle" style="margin:12px 0 4px;display:none;">
       <button id="btnHalf" class="range-btn active">Půlrok</button>
       <button id="btnAll" class="range-btn">Vše</button>
-      <button id="btnZoom" class="range-btn" style="margin-left:8px;">&#x26F6;</button>
     </div>
     <div id="graphSpinner"><div class="spinner"></div></div>
-    <div class="chart-fullscreen-controls" id="fsControls">
-      <button id="btnFsClose" class="range-btn">&#x2715;</button>
-    </div>
     <div id="chartDiv" style="visibility:hidden;"></div>
     <div id="statsTableDiv"></div>
   </div>
@@ -246,21 +242,6 @@ if (!location.hash) {
 document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) {
   card.addEventListener('click', function() { this.classList.toggle('active'); });
 });
-(function() {
-  var cd = document.getElementById('chartDiv');
-  var fc = document.getElementById('fsControls');
-  function toggleFs() {
-    var on = cd.classList.toggle('chart-fullscreen');
-    fc.classList.toggle('visible', on);
-    document.body.style.overflow = on ? 'hidden' : '';
-    window.dispatchEvent(new Event('resize'));
-  }
-  document.getElementById('btnZoom').addEventListener('click', toggleFs);
-  document.getElementById('btnFsClose').addEventListener('click', toggleFs);
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && cd.classList.contains('chart-fullscreen')) toggleFs();
-  });
-})();
 </script>
 <script src="reveal.js"></script>
 </body>
