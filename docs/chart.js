@@ -164,12 +164,40 @@ function drawChart() {
     const originalCells = storedOriginalCells;
     const sessionLabels = storedSessionLabels;
 
+    // Find highlight indices for selected player
+    let highlights = {};
+    if (selectedPlayer) {
+        const ci = playerNames.indexOf(selectedPlayer);
+        if (ci >= 0) {
+            let bestVal = -Infinity, worstVal = Infinity, bestIdx = -1, worstIdx = -1;
+            let streak = 0, maxStreak = 0, streakEnd = -1;
+            for (let i = 0; i < originalCells.length; i++) {
+                const cell = originalCells[i][ci];
+                const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
+                if (!played) continue;
+                const v = Number(cell);
+                if (v > bestVal) { bestVal = v; bestIdx = i; }
+                if (v < worstVal) { worstVal = v; worstIdx = i; }
+                if (v > 0) { streak++; if (streak > maxStreak) { maxStreak = streak; streakEnd = i; } }
+                else streak = 0;
+            }
+            if (bestIdx >= 0) highlights[bestIdx] = (highlights[bestIdx] || '') + '▲ +' + bestVal;
+            if (worstIdx >= 0) highlights[worstIdx] = (highlights[worstIdx] || '') + '▼ ' + worstVal;
+            if (maxStreak >= 2 && streakEnd >= 0) {
+                // Mark the last session of the streak
+                var streakLabel = maxStreak + '× win streak';
+                highlights[streakEnd] = highlights[streakEnd] ? highlights[streakEnd] + ' | ' + streakLabel : streakLabel;
+            }
+        }
+    }
+
     chartData = new google.visualization.DataTable();
     chartData.addColumn('string', 'Datum');
     playerNames.forEach(name => {
         chartData.addColumn('number', name);
         chartData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
         chartData.addColumn({ type: 'string', role: 'style' });
+        chartData.addColumn({ type: 'string', role: 'annotation' });
     });
     for (let i = 0; i < sessionLabels.length; i++) {
         const tt = buildTooltip(i);
@@ -180,8 +208,12 @@ function drawChart() {
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
-                row.push(played ? 'point {size: 4; stroke-width: 2; fill-color: #181818; visible: true;}' : 'point {size: 0; visible: false;}');
+                const isHighlight = highlights[i];
+                if (isHighlight) row.push('point {size: 6; stroke-width: 2; fill-color: #181818; visible: true;}');
+                else row.push(played ? 'point {size: 4; stroke-width: 2; fill-color: #181818; visible: true;}' : 'point {size: 0; visible: false;}');
+                row.push(name === selectedPlayer ? (isHighlight || null) : null);
             } else {
+                row.push(null);
                 row.push(null);
             }
         });
@@ -208,6 +240,7 @@ function drawChart() {
         vAxis: { title: 'pošmel / výšmel', titleTextStyle: { color: '#aaa', italic: false }, textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' },
         chartArea: { left: 60, top: 40, right: 20, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { isHtml: true, trigger: 'both' },
+        annotations: { textStyle: { fontSize: 11, color: '#eee', auraColor: '#181818', opacity: 0.9 }, stem: { color: '#555', length: 8 } },
         explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
     };
@@ -229,7 +262,9 @@ function computeStats() {
         const cum = storedCumulative[ci];
         let total = 0;
         for (let j = cum.length - 1; j >= 0; j--) { if (cum[j] != null) { total = cum[j]; break; } }
-        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, color: playerColors[name] };
+        let streak = 0, maxStreak = 0;
+        sessions.forEach(v => { if (v > 0) { streak++; if (streak > maxStreak) maxStreak = streak; } else streak = 0; });
+        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, streak: 0, color: playerColors[name] };
         return {
             name: name.split('/')[0].trim(),
             fullName: name,
@@ -238,6 +273,7 @@ function computeStats() {
             worst: Math.min(...sessions),
             total,
             games: sessions.length,
+            streak: maxStreak,
             color: playerColors[name]
         };
     });
@@ -260,7 +296,7 @@ function renderStatsTable() {
     const arrow = col => statsSortCol === col ? (statsSortAsc ? ' ▲' : ' ▼') : '';
     const c = v => v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
     const f = v => v > 0 ? `+${v}` : `${v}`;
-    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th></tr>`;
+    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th><th data-col="streak">Win streak${arrow('streak')}</th></tr>`;
     sorted.forEach(s => {
         const sel = selectedPlayer === s.fullName ? ' class="selected"' : '';
         html += `<tr data-player="${s.fullName}"${sel}>` +
@@ -270,6 +306,7 @@ function renderStatsTable() {
             `<td class="${c(s.avg)}">${f(s.avg)}</td>` +
             `<td class="${c(s.best)}">${f(s.best)}</td>` +
             `<td class="${c(s.worst)}">${f(s.worst)}</td>` +
+            `<td>${s.streak}</td>` +
             `</tr>`;
     });
     html += '</table>';
