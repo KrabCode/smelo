@@ -33,8 +33,19 @@
     <div id="statsTableDiv"></div>
   </div>
   <div class="tab-panel" data-tab="pravidla">
-    <div style="max-width:600px;margin:0 auto;padding:0 20px;color:#888;text-align:left;">
-      <p>Pravidla budou brzy doplněna.</p>
+    <div class="pravidla-list" style="max-width:600px;margin:0 auto;padding:0 20px;">
+      <div class="pravidlo-card" data-toggle>Žádný mobil, když máš karty.</div>
+      <div class="pravidlo-card" data-toggle>Hraj v pořadí. Neskákej nikomu do akce.</div>
+      <div class="pravidlo-card" data-toggle>Řekni nahlas co děláš — check, call, raise, fold.</div>
+      <div class="pravidlo-card" data-toggle>Nesypej žetony do potu. Dej je před sebe.</div>
+      <div class="pravidlo-card" data-toggle>Žádný string bet — řekni raise a částku najednou.</div>
+      <div class="pravidlo-card" data-toggle>Nezdržuj. Máš 30 vteřin, pak se rozhodneš.</div>
+      <div class="pravidlo-card" data-toggle>Nekomentuj rozehranou hru. Ticho do showdownu.</div>
+      <div class="pravidlo-card" data-toggle>Žádný slow roll. Máš nuts? Ukaž hned.</div>
+      <div class="pravidlo-card" data-toggle>Žetony měj na stole, viditelně a ve sloupcích.</div>
+      <div class="pravidlo-card" data-toggle>Nedáváš pozor? Dealer ti foldne.</div>
+      <div class="pravidlo-card" data-toggle>Žádný rabbit hunting. Co bylo v balíčku, tam zůstane.</div>
+      <div class="pravidlo-card" data-toggle>Kdo odejde od stolu, nechá blindy projít.</div>
     </div>
   </div>
   <div class="tab-panel" data-tab="teorie">
@@ -226,6 +237,9 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
   btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
 });
 handleHash();
+document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) {
+  card.addEventListener('click', function() { this.classList.toggle('active'); });
+});
 </script>
 <script src="reveal.js"></script>
 </body>

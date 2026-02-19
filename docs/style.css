@@ -238,6 +238,37 @@ a.card { color: var(--text); text-decoration: none; }
 .input-panel .settings summary { color: #888; cursor: pointer; font-size: 0.85em; }
 .input-panel .settings .fields { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
 
+/* === Pravidla === */
+.pravidla-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pravidlo-card {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 18px 24px;
+    font-family: 'Staatliches', sans-serif;
+    font-size: 1.15em;
+    letter-spacing: 2px;
+    color: #555;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s, border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.pravidlo-card:hover {
+    color: #888;
+    border-color: #555;
+}
+.pravidlo-card.active {
+    color: #ffb300;
+    background: #222;
+    border-color: #ffb300;
+    box-shadow: 0 0 12px rgba(255,179,0,0.15);
+}
+
 /* === Mobile: keep title & tabs on one row === */
 @media (max-width: 600px) {
     .smelotitle {
