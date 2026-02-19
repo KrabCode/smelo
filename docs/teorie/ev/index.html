@@ -87,6 +87,10 @@
                     <span class="result-label">Musíš vyhrát alespoň</span>
                     <span class="result-value" id="cMinEq">&ndash;</span>
                 </div>
+                <div class="result-row">
+                    <span class="result-label">Hraniční bet při dané equity</span>
+                    <span class="result-value" id="cBreakBet">&ndash;</span>
+                </div>
             </div>
             <div class="note" id="cNote"></div>
         </div>
@@ -163,8 +167,11 @@
             }
             var ev = (eq / 100) * (pot + call) - ((100 - eq) / 100) * call;
             var minEq = call / (pot + call + call) * 100;
+            var eqFrac = eq / 100;
+            var breakBet = eqFrac >= 0.5 ? null : eqFrac * pot / (1 - 2 * eqFrac);
             document.getElementById('cEV').textContent = (ev >= 0 ? '+' : '') + ev.toFixed(1);
             document.getElementById('cMinEq').textContent = minEq.toFixed(1) + '%';
+            document.getElementById('cBreakBet').textContent = breakBet === null ? 'libovolný' : Math.floor(breakBet).toLocaleString('cs');
             cResult.classList.add('visible');
             styleNote(cNote, ev);
         }
