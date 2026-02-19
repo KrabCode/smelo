@@ -82,7 +82,7 @@ img { border-radius: 16px; }
 /* === Chart === */
 #chartDiv {
     width: 100%;
-    max-width: 1200px;
+    max-width: 100%;
     min-width: 400px;
     height: 420px;
     margin: 0 auto;
@@ -131,7 +131,7 @@ img { border-radius: 16px; }
 
 /* === Stats table === */
 #statsTableDiv {
-    max-width: 700px;
+    max-width: 100%;
     margin: 10px auto 30px;
     padding: 0 12px;
     font-family: 'Segoe UI', Arial, sans-serif;
