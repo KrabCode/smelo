@@ -180,7 +180,7 @@ function drawChart() {
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
-                row.push(played ? 'point {size: 3; visible: true;}' : 'point {size: 0; visible: false;}');
+                row.push(played ? 'point {size: 3; fill-color: #181818; visible: true;}' : 'point {size: 0; visible: false;}');
             } else {
                 row.push(null);
             }
@@ -203,7 +203,7 @@ function drawChart() {
     });
     const options = {
         title: 'Kumulativní šmelo', titleTextStyle: { fontSize: 14, color: '#eee' },
-        legend: 'none', interpolateNulls: false, dataOpacity: 1.0, series,
+        legend: 'none', interpolateNulls: false, dataOpacity: 1.0, curveType: 'function', series,
         hAxis: { textStyle: { fontSize: 10, color: '#aaa' }, slantedText: true, slantedTextAngle: 45, gridlines: { color: '#333' }, baselineColor: '#444' },
         vAxis: { title: 'pošmel / výšmel', titleTextStyle: { color: '#aaa', italic: false }, textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' },
         chartArea: { left: 60, top: 40, right: 20, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
