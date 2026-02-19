@@ -204,7 +204,7 @@ function drawChart() {
                 if (dc !== undefined && dc !== '' && dc !== '0' && Number(dc) !== 0 && storedDates[di])
                     dated.push({ idx: di, val: Number(dc), date: storedDates[di] });
             }
-            var tiltSum = 0, tiltEndIdx = -1;
+            var tiltSum = 0, tiltEndIdx = -1, bestWeekSum = 0, bestWeekIdx = -1;
             for (var di = 0; di < dated.length; di++) {
                 var sum = 0;
                 for (var dj = di; dj < dated.length; dj++) {
@@ -212,11 +212,17 @@ function drawChart() {
                     sum += dated[dj].val;
                 }
                 if (sum < tiltSum) { tiltSum = sum; tiltEndIdx = dated[di].idx; }
+                if (sum > bestWeekSum) { bestWeekSum = sum; bestWeekIdx = dated[di].idx; }
             }
             if (tiltEndIdx >= 0 && tiltSum < 0) {
                 var tiltLabel = 'tilt ' + tiltSum;
                 highlights[tiltEndIdx] = highlights[tiltEndIdx] ? highlights[tiltEndIdx] + ' | ' + tiltLabel : tiltLabel;
                 if (!highlightTypes[tiltEndIdx]) highlightTypes[tiltEndIdx] = 'tilt';
+            }
+            if (bestWeekIdx >= 0 && bestWeekSum > 0) {
+                var bwLabel = 'best week +' + bestWeekSum;
+                highlights[bestWeekIdx] = highlights[bestWeekIdx] ? highlights[bestWeekIdx] + ' | ' + bwLabel : bwLabel;
+                if (!highlightTypes[bestWeekIdx]) highlightTypes[bestWeekIdx] = 'bestWeek';
             }
 
             // Descriptive labels for tooltips
@@ -224,6 +230,7 @@ function drawChart() {
             if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9660; Největší prohra: ' + worstVal + '</span>';
             if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '<span style="color:#ffb300;">&#9670; Win streak: ' + maxStreak + ' her v řadě</span>';
             if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Týden tiltu: ' + tiltSum + '</span>';
+            if (bestWeekIdx >= 0 && bestWeekSum > 0) highlightTooltips[bestWeekIdx] = (highlightTooltips[bestWeekIdx] ? highlightTooltips[bestWeekIdx] + '<br>' : '') + '<span style="color:#4ade80;">&#9632; Nejlepší týden: +' + bestWeekSum + '</span>';
         }
     }
 
@@ -249,6 +256,7 @@ function drawChart() {
                 else if (ht === 'worst') row.push('point {size: 8; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
                 else if (ht === 'streak') row.push('point {size: 8; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
                 else if (ht === 'tilt') row.push('point {size: 8; shape-type: square; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
+                else if (ht === 'bestWeek') row.push('point {size: 8; shape-type: square; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
                 else if (played) row.push('point {size: 3.5; fill-color: ' + pc + '; visible: true;}');
                 else row.push(null);
                 row.push(highlights[i] || null);
@@ -314,8 +322,8 @@ function computeStats() {
         for (let j = cum.length - 1; j >= 0; j--) { if (cum[j] != null) { total = cum[j]; break; } }
         let streak = 0, maxStreak = 0;
         sessions.forEach(v => { if (v > 0) { streak++; if (streak > maxStreak) maxStreak = streak; } else streak = 0; });
-        // Worst week: sliding window of 7 days
-        let tiltWeek = 0;
+        // Best/worst week: sliding window of 7 days
+        let tiltWeek = 0, bestWeek = 0;
         for (let i = 0; i < sessionDated.length; i++) {
             if (!sessionDated[i].date) continue;
             let sum = 0;
@@ -325,8 +333,9 @@ function computeStats() {
                 sum += sessionDated[j].val;
             }
             if (sum < tiltWeek) tiltWeek = sum;
+            if (sum > bestWeek) bestWeek = sum;
         }
-        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, streak: 0, tiltWeek: 0, color: playerColors[name] };
+        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, streak: 0, tiltWeek: 0, bestWeek: 0, color: playerColors[name] };
         return {
             name: name.split('/')[0].trim(),
             fullName: name,
@@ -337,6 +346,7 @@ function computeStats() {
             games: sessions.length,
             streak: maxStreak,
             tiltWeek,
+            bestWeek,
             color: playerColors[name]
         };
     });
@@ -359,7 +369,7 @@ function renderStatsTable() {
     const arrow = col => statsSortCol === col ? (statsSortAsc ? ' ▲' : ' ▼') : '';
     const c = v => v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
     const f = v => v > 0 ? `+${v}` : `${v}`;
-    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th><th data-col="streak">Win streak${arrow('streak')}</th><th data-col="tiltWeek">Týden tiltu${arrow('tiltWeek')}</th></tr>`;
+    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th><th data-col="streak">Win streak${arrow('streak')}</th><th data-col="bestWeek">Nejlepší týden${arrow('bestWeek')}</th><th data-col="tiltWeek">Týden tiltu${arrow('tiltWeek')}</th></tr>`;
     sorted.forEach(s => {
         const sel = selectedPlayer === s.fullName ? ' class="selected"' : '';
         html += `<tr data-player="${s.fullName}"${sel}>` +
@@ -370,6 +380,7 @@ function renderStatsTable() {
             `<td class="${c(s.best)}">${f(s.best)}</td>` +
             `<td class="${c(s.worst)}">${f(s.worst)}</td>` +
             `<td>${s.streak >= 2 ? s.streak : ''}</td>` +
+            `<td class="${c(s.bestWeek)}">${s.bestWeek ? f(s.bestWeek) : '0'}</td>` +
             `<td class="${c(s.tiltWeek)}">${s.tiltWeek ? f(s.tiltWeek) : '0'}</td>` +
             `</tr>`;
     });
