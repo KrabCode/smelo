@@ -280,11 +280,17 @@ function drawChart() {
         vAxis: { title: 'pošmel / výšmel', titleTextStyle: { color: '#aaa', italic: false }, textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' },
         chartArea: { left: 60, top: 40, right: 20, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { isHtml: true, trigger: 'both' },
-        annotations: { textStyle: { fontSize: 11, color: '#eee', auraColor: '#181818', opacity: 0.9 }, stem: { color: '#555', length: 8 } },
+        annotations: { textStyle: { fontSize: 11, color: '#eee', auraColor: '#181818', opacity: 0.9 }, stem: { color: '#555', length: 12 }, highContrast: false, alwaysOutside: true },
         explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
     };
-    if (!chart) chart = new google.visualization.LineChart(document.getElementById('chartDiv'));
+    if (!chart) {
+        chart = new google.visualization.LineChart(document.getElementById('chartDiv'));
+        google.visualization.events.addListener(chart, 'select', function() {
+            var sel = chart.getSelection();
+            if (sel.length) chart.setSelection(sel);
+        });
+    }
     chart.draw(chartData, options);
 }
 
