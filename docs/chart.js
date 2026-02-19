@@ -229,7 +229,7 @@ function drawChart() {
             if (bestIdx >= 0) highlightTooltips[bestIdx] = '<span style="color:#4ade80;">&#9650; Největší výhra: +' + bestVal + '</span>';
             if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9660; Největší prohra: ' + worstVal + '</span>';
             if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '<span style="color:#ffb300;">&#9670; Série výher: ' + maxStreak + ' her v řadě</span>';
-            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Týden tiltu: ' + tiltSum + '</span>';
+            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Začátek týdne tiltu: ' + tiltSum + '</span>';
             if (bestWeekIdx >= 0 && bestWeekSum > 0) highlightTooltips[bestWeekIdx] = (highlightTooltips[bestWeekIdx] ? highlightTooltips[bestWeekIdx] + '<br>' : '') + '<span style="color:#4ade80;">&#9632; Nejlepší týden: +' + bestWeekSum + '</span>';
         }
     }
