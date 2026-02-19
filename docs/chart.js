@@ -214,16 +214,16 @@ function drawChart() {
                 if (sum < tiltSum) { tiltSum = sum; tiltEndIdx = dated[di].idx; }
             }
             if (tiltEndIdx >= 0 && tiltSum < 0) {
-                var tiltLabel = '😤 ' + tiltSum;
+                var tiltLabel = 'tilt ' + tiltSum;
                 highlights[tiltEndIdx] = highlights[tiltEndIdx] ? highlights[tiltEndIdx] + ' | ' + tiltLabel : tiltLabel;
                 if (!highlightTypes[tiltEndIdx]) highlightTypes[tiltEndIdx] = 'tilt';
             }
 
             // Descriptive labels for tooltips
-            if (bestIdx >= 0) highlightTooltips[bestIdx] = '🏆 Největší výhra: +' + bestVal;
-            if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '💀 Největší prohra: ' + worstVal;
-            if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '🔥 Nejdelší win streak: ' + maxStreak + ' her v řadě';
-            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '😤 Týden největšího tiltu: ' + tiltSum;
+            if (bestIdx >= 0) highlightTooltips[bestIdx] = '<span style="color:#4ade80;">&#9650; Největší výhra: +' + bestVal + '</span>';
+            if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9660; Největší prohra: ' + worstVal + '</span>';
+            if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '<span style="color:#ffb300;">&#9670; Win streak: ' + maxStreak + ' her v řadě</span>';
+            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Týden tiltu: ' + tiltSum + '</span>';
         }
     }
 
