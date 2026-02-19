@@ -362,7 +362,7 @@ function renderStatsTable() {
             `<td class="${c(s.avg)}">${f(s.avg)}</td>` +
             `<td class="${c(s.best)}">${f(s.best)}</td>` +
             `<td class="${c(s.worst)}">${f(s.worst)}</td>` +
-            `<td>${s.streak}</td>` +
+            `<td>${s.streak >= 2 ? s.streak : ''}</td>` +
             `<td class="${c(s.tiltWeek)}">${s.tiltWeek ? f(s.tiltWeek) : '0'}</td>` +
             `</tr>`;
     });
