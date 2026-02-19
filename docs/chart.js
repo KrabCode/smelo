@@ -249,7 +249,7 @@ function drawChart() {
                 else if (ht === 'worst') row.push('point {size: 8; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
                 else if (ht === 'streak') row.push('point {size: 8; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
                 else if (ht === 'tilt') row.push('point {size: 8; shape-type: square; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
-                else if (played) row.push('point {size: 4; stroke-width: 2; stroke-color: ' + pc + '; fill-color: #181818; visible: true;}');
+                else if (played) row.push('point {size: 3.5; fill-color: ' + pc + '; visible: true;}');
                 else row.push(null);
                 row.push(highlights[i] || null);
             } else {
