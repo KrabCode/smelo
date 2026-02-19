@@ -210,13 +210,14 @@ function drawChart() {
             }
             var tiltSum = 0, tiltEndIdx = -1, bestWeekSum = 0, bestWeekIdx = -1;
             for (var di = 0; di < dated.length; di++) {
-                var sum = 0;
+                var sum = 0, lastDj = di;
                 for (var dj = di; dj < dated.length; dj++) {
                     if (dated[dj].date - dated[di].date > MS_WEEK) break;
                     sum += dated[dj].val;
+                    lastDj = dj;
                 }
-                if (sum < tiltSum) { tiltSum = sum; tiltEndIdx = dated[di].idx; }
-                if (sum > bestWeekSum) { bestWeekSum = sum; bestWeekIdx = dated[di].idx; }
+                if (sum < tiltSum) { tiltSum = sum; tiltEndIdx = dated[lastDj].idx; }
+                if (sum > bestWeekSum) { bestWeekSum = sum; bestWeekIdx = dated[lastDj].idx; }
             }
             if (tiltEndIdx >= 0 && tiltSum < 0) {
                 var tiltLabel = 'nej. tilt ' + tiltSum;
@@ -233,8 +234,8 @@ function drawChart() {
             if (bestIdx >= 0) highlightTooltips[bestIdx] = '<span style="color:#4ade80;">&#9650; Největší výhra: +' + bestVal + '</span>';
             if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9660; Největší prohra: ' + worstVal + '</span>';
             if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '<span style="color:#ffb300;">&#9670; Série výher: ' + maxStreak + ' her v řadě</span>';
-            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Začátek týdne tiltu: ' + tiltSum + '</span>';
-            if (bestWeekIdx >= 0 && bestWeekSum > 0) highlightTooltips[bestWeekIdx] = (highlightTooltips[bestWeekIdx] ? highlightTooltips[bestWeekIdx] + '<br>' : '') + '<span style="color:#4ade80;">&#9632; Nejlepší týden: +' + bestWeekSum + '</span>';
+            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Konec týdne tiltu: ' + tiltSum + '</span>';
+            if (bestWeekIdx >= 0 && bestWeekSum > 0) highlightTooltips[bestWeekIdx] = (highlightTooltips[bestWeekIdx] ? highlightTooltips[bestWeekIdx] + '<br>' : '') + '<span style="color:#4ade80;">&#9632; Konec nej. týdne: +' + bestWeekSum + '</span>';
         }
     }
 
