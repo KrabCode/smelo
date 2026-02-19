@@ -217,11 +217,13 @@ function drawChart() {
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
+                const pc = playerColors[name];
                 const ht = highlightTypes[i];
                 if (ht === 'best') row.push('point {size: 8; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
                 else if (ht === 'worst') row.push('point {size: 8; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
                 else if (ht === 'streak') row.push('point {size: 8; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
-                else row.push(played ? 'point {size: 4; stroke-width: 2; fill-color: #181818; visible: true;}' : 'point {size: 0; visible: false;}');
+                else if (played) row.push('point {size: 4; stroke-width: 2; stroke-color: ' + pc + '; fill-color: #181818; visible: true;}');
+                else row.push(null);
                 row.push(highlights[i] || null);
             } else {
                 row.push(null);
