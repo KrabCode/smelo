@@ -156,7 +156,9 @@ function buildTooltip(rowIdx, highlightLabels) {
         html += `<div class="tt-row"><span class="tt-dot" style="background:${e.color}"></span><span class="tt-name">${e.name}</span><span class="tt-val">${e.val}</span><span class="tt-delta ${cls}">(${sign}${e.delta})</span></div>`;
     });
     if (highlightLabels && highlightLabels[rowIdx]) {
-        html += `<div style="margin-top:6px;padding-top:4px;border-top:1px solid #444;color:#ffb300;font-size:11px;">${highlightLabels[rowIdx]}</div>`;
+        const pName = selectedPlayer ? selectedPlayer.split('/')[0].trim() : '';
+        const pColor = selectedPlayer ? playerColors[selectedPlayer] : '#ffb300';
+        html += `<div style="margin-top:6px;padding-top:4px;border-top:1px solid #444;font-size:11px;"><span style="color:${pColor};font-weight:bold;">${pName}</span><br><span style="color:#ffb300;">${highlightLabels[rowIdx]}</span></div>`;
     }
     return html + '</div>';
 }
@@ -232,7 +234,7 @@ function drawChart() {
     const mute = hex => {
         const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
         const bg = 34;
-        const mix = (c) => Math.round(bg + (c - bg) * 0.25);
+        const mix = (c) => Math.round(bg + (c - bg) * 0.45);
         return '#' + [r,g,b].map(c => mix(c).toString(16).padStart(2,'0')).join('');
     };
     const series = {};
@@ -240,7 +242,7 @@ function drawChart() {
         const color = playerColors[name];
         if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true };
         else if (selectedPlayer) series[i] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false };
-        else series[i] = { color: mute(color), lineWidth: 2, pointSize: 0, visibleInLegend: true };
+        else series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true };
     });
     const options = {
         title: 'Kumulativní šmelo', titleTextStyle: { fontSize: 14, color: '#eee' },
