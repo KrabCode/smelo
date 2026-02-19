@@ -180,7 +180,7 @@ function drawChart() {
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
-                row.push(played ? 'point {size: 3; fill-color: transparent; visible: true;}' : 'point {size: 0; visible: false;}');
+                row.push(played ? 'point {size: 4; stroke-width: 2; fill-color: #181818; visible: true;}' : 'point {size: 0; visible: false;}');
             } else {
                 row.push(null);
             }
