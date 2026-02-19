@@ -12,7 +12,7 @@ const COLORS = [
     "#ce6dbd","#de9ed6","#1b9e77","#d95f02"
 ];
 let chart = null, chartData = null, playerNames = [], playerColors = {}, selectedPlayer = localStorage.getItem('smelo_player') || '';
-let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null;
+let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedDates = null;
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
 const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 3600000;
@@ -119,6 +119,7 @@ function processAndRender() {
     storedCumulative = cumulative;
     storedOriginalCells = originalCells;
     storedSessionLabels = sessionLabels;
+    storedDates = rows.map(x => x.date);
 
     drawChart();
     drawStatsChart();
@@ -193,10 +194,34 @@ function drawChart() {
                 highlights[streakEnd] = highlights[streakEnd] ? highlights[streakEnd] + ' | ' + streakLabel : streakLabel;
                 if (!highlightTypes[streakEnd]) highlightTypes[streakEnd] = 'streak';
             }
+            // Worst week (tilt week)
+            var MS_WEEK = 7 * 24 * 60 * 60 * 1000;
+            var dated = [];
+            for (var di = 0; di < originalCells.length; di++) {
+                var dc = originalCells[di][ci];
+                if (dc !== undefined && dc !== '' && dc !== '0' && Number(dc) !== 0 && storedDates[di])
+                    dated.push({ idx: di, val: Number(dc), date: storedDates[di] });
+            }
+            var tiltSum = 0, tiltEndIdx = -1;
+            for (var di = 0; di < dated.length; di++) {
+                var sum = 0;
+                for (var dj = di; dj < dated.length; dj++) {
+                    if (dated[dj].date - dated[di].date > MS_WEEK) break;
+                    sum += dated[dj].val;
+                }
+                if (sum < tiltSum) { tiltSum = sum; tiltEndIdx = dated[di].idx; }
+            }
+            if (tiltEndIdx >= 0 && tiltSum < 0) {
+                var tiltLabel = '😤 ' + tiltSum;
+                highlights[tiltEndIdx] = highlights[tiltEndIdx] ? highlights[tiltEndIdx] + ' | ' + tiltLabel : tiltLabel;
+                if (!highlightTypes[tiltEndIdx]) highlightTypes[tiltEndIdx] = 'tilt';
+            }
+
             // Descriptive labels for tooltips
             if (bestIdx >= 0) highlightTooltips[bestIdx] = '🏆 Největší výhra: +' + bestVal;
             if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '💀 Největší prohra: ' + worstVal;
             if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '🔥 Nejdelší win streak: ' + maxStreak + ' her v řadě';
+            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '😤 Týden největšího tiltu: ' + tiltSum;
         }
     }
 
@@ -222,6 +247,7 @@ function drawChart() {
                 if (ht === 'best') row.push('point {size: 8; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
                 else if (ht === 'worst') row.push('point {size: 8; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
                 else if (ht === 'streak') row.push('point {size: 8; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
+                else if (ht === 'tilt') row.push('point {size: 8; shape-type: square; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
                 else if (played) row.push('point {size: 4; stroke-width: 2; stroke-color: ' + pc + '; fill-color: #181818; visible: true;}');
                 else row.push(null);
                 row.push(highlights[i] || null);
@@ -266,18 +292,34 @@ let statsSortCol = 'total', statsSortAsc = false, statsData = null;
 function computeStats() {
     if (!storedOriginalCells || !playerNames.length) return [];
     const oc = storedOriginalCells;
+    const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
     return playerNames.map((name, ci) => {
-        const sessions = [];
+        const sessions = [], sessionDated = [];
         for (let i = 0; i < oc.length; i++) {
             const cell = oc[i][ci];
-            if (cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0) sessions.push(Number(cell));
+            if (cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0) {
+                sessions.push(Number(cell));
+                sessionDated.push({ idx: i, val: Number(cell), date: storedDates[i] });
+            }
         }
         const cum = storedCumulative[ci];
         let total = 0;
         for (let j = cum.length - 1; j >= 0; j--) { if (cum[j] != null) { total = cum[j]; break; } }
         let streak = 0, maxStreak = 0;
         sessions.forEach(v => { if (v > 0) { streak++; if (streak > maxStreak) maxStreak = streak; } else streak = 0; });
-        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, streak: 0, color: playerColors[name] };
+        // Worst week: sliding window of 7 days
+        let tiltWeek = 0;
+        for (let i = 0; i < sessionDated.length; i++) {
+            if (!sessionDated[i].date) continue;
+            let sum = 0;
+            for (let j = i; j < sessionDated.length; j++) {
+                if (!sessionDated[j].date) continue;
+                if (sessionDated[j].date - sessionDated[i].date > MS_WEEK) break;
+                sum += sessionDated[j].val;
+            }
+            if (sum < tiltWeek) tiltWeek = sum;
+        }
+        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, streak: 0, tiltWeek: 0, color: playerColors[name] };
         return {
             name: name.split('/')[0].trim(),
             fullName: name,
@@ -287,6 +329,7 @@ function computeStats() {
             total,
             games: sessions.length,
             streak: maxStreak,
+            tiltWeek,
             color: playerColors[name]
         };
     });
@@ -309,7 +352,7 @@ function renderStatsTable() {
     const arrow = col => statsSortCol === col ? (statsSortAsc ? ' ▲' : ' ▼') : '';
     const c = v => v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
     const f = v => v > 0 ? `+${v}` : `${v}`;
-    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th><th data-col="streak">Win streak${arrow('streak')}</th></tr>`;
+    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th><th data-col="streak">Win streak${arrow('streak')}</th><th data-col="tiltWeek">Týden tiltu${arrow('tiltWeek')}</th></tr>`;
     sorted.forEach(s => {
         const sel = selectedPlayer === s.fullName ? ' class="selected"' : '';
         html += `<tr data-player="${s.fullName}"${sel}>` +
@@ -320,6 +363,7 @@ function renderStatsTable() {
             `<td class="${c(s.best)}">${f(s.best)}</td>` +
             `<td class="${c(s.worst)}">${f(s.worst)}</td>` +
             `<td>${s.streak}</td>` +
+            `<td class="${c(s.tiltWeek)}">${s.tiltWeek ? f(s.tiltWeek) : '0'}</td>` +
             `</tr>`;
     });
     html += '</table>';
