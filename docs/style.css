@@ -264,9 +264,13 @@ a.card { color: var(--text); text-decoration: none; }
 }
 .pravidlo-card.active {
     color: #ffb300;
-    background: #222;
+    background: linear-gradient(135deg, #1e1a10, #222);
     border-color: #ffb300;
-    box-shadow: 0 0 12px rgba(255,179,0,0.15);
+    box-shadow: 0 0 16px rgba(255,179,0,0.25), 0 0 40px rgba(255,179,0,0.08);
+    text-shadow: 0 0 12px rgba(255,179,0,0.3);
+}
+.pravidlo-card.active:hover {
+    box-shadow: 0 0 20px rgba(255,179,0,0.35), 0 0 50px rgba(255,179,0,0.12);
 }
 
 /* === Mobile: keep title & tabs on one row === */
