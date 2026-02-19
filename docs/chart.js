@@ -168,7 +168,7 @@ function drawChart() {
     const sessionLabels = storedSessionLabels;
 
     // Find highlight indices for selected player
-    let highlights = {}, highlightTooltips = {};
+    let highlights = {}, highlightTooltips = {}, highlightTypes = {};
     if (selectedPlayer) {
         const ci = playerNames.indexOf(selectedPlayer);
         if (ci >= 0) {
@@ -184,11 +184,12 @@ function drawChart() {
                 if (v > 0) { streak++; if (streak > maxStreak) { maxStreak = streak; streakEnd = i; } }
                 else streak = 0;
             }
-            if (bestIdx >= 0) highlights[bestIdx] = (highlights[bestIdx] || '') + '▲ +' + bestVal;
-            if (worstIdx >= 0) highlights[worstIdx] = (highlights[worstIdx] || '') + '▼ ' + worstVal;
+            if (bestIdx >= 0) { highlights[bestIdx] = '▲ +' + bestVal; highlightTypes[bestIdx] = 'best'; }
+            if (worstIdx >= 0) { highlights[worstIdx] = '▼ ' + worstVal; highlightTypes[worstIdx] = 'worst'; }
             if (maxStreak >= 2 && streakEnd >= 0) {
-                var streakLabel = maxStreak + '× win streak';
+                var streakLabel = maxStreak + '× streak';
                 highlights[streakEnd] = highlights[streakEnd] ? highlights[streakEnd] + ' | ' + streakLabel : streakLabel;
+                if (!highlightTypes[streakEnd]) highlightTypes[streakEnd] = 'streak';
             }
             // Descriptive labels for tooltips
             if (bestIdx >= 0) highlightTooltips[bestIdx] = '🏆 Největší výhra: +' + bestVal;
@@ -214,10 +215,12 @@ function drawChart() {
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
-                const isHighlight = highlights[i];
-                if (isHighlight) row.push('point {size: 6; stroke-width: 2; fill-color: #181818; visible: true;}');
+                const ht = highlightTypes[i];
+                if (ht === 'best') row.push('point {size: 8; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
+                else if (ht === 'worst') row.push('point {size: 8; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
+                else if (ht === 'streak') row.push('point {size: 8; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
                 else row.push(played ? 'point {size: 4; stroke-width: 2; fill-color: #181818; visible: true;}' : 'point {size: 0; visible: false;}');
-                row.push(name === selectedPlayer ? (isHighlight || null) : null);
+                row.push(highlights[i] || null);
             } else {
                 row.push(null);
                 row.push(null);
