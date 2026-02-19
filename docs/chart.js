@@ -141,13 +141,13 @@ document.getElementById('btnAll').addEventListener('click', () => {
     processAndRender();
 });
 
-function buildTooltip(rowIdx) {
+function buildTooltip(rowIdx, highlightLabels) {
     const date = storedSessionLabels[rowIdx];
     const entries = playerNames.map((name, ci) => {
         const cell = storedOriginalCells[rowIdx][ci];
         const delta = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
         if (delta === 0) return null;
-        return { name: name.split('/')[0].trim(), val: storedCumulative[ci][rowIdx], delta, color: playerColors[name] };
+        return { name: name.split('/')[0].trim(), fullName: name, val: storedCumulative[ci][rowIdx], delta, color: playerColors[name] };
     }).filter(Boolean).sort((a, b) => b.delta - a.delta);
     let html = `<div class="tt"><div class="tt-header">${date}</div>`;
     entries.forEach(e => {
@@ -155,6 +155,9 @@ function buildTooltip(rowIdx) {
         const cls = e.delta > 0 ? 'pos' : e.delta < 0 ? 'neg' : '';
         html += `<div class="tt-row"><span class="tt-dot" style="background:${e.color}"></span><span class="tt-name">${e.name}</span><span class="tt-val">${e.val}</span><span class="tt-delta ${cls}">(${sign}${e.delta})</span></div>`;
     });
+    if (highlightLabels && highlightLabels[rowIdx]) {
+        html += `<div style="margin-top:6px;padding-top:4px;border-top:1px solid #444;color:#ffb300;font-size:11px;">${highlightLabels[rowIdx]}</div>`;
+    }
     return html + '</div>';
 }
 
@@ -165,7 +168,7 @@ function drawChart() {
     const sessionLabels = storedSessionLabels;
 
     // Find highlight indices for selected player
-    let highlights = {};
+    let highlights = {}, highlightTooltips = {};
     if (selectedPlayer) {
         const ci = playerNames.indexOf(selectedPlayer);
         if (ci >= 0) {
@@ -184,10 +187,13 @@ function drawChart() {
             if (bestIdx >= 0) highlights[bestIdx] = (highlights[bestIdx] || '') + '▲ +' + bestVal;
             if (worstIdx >= 0) highlights[worstIdx] = (highlights[worstIdx] || '') + '▼ ' + worstVal;
             if (maxStreak >= 2 && streakEnd >= 0) {
-                // Mark the last session of the streak
                 var streakLabel = maxStreak + '× win streak';
                 highlights[streakEnd] = highlights[streakEnd] ? highlights[streakEnd] + ' | ' + streakLabel : streakLabel;
             }
+            // Descriptive labels for tooltips
+            if (bestIdx >= 0) highlightTooltips[bestIdx] = '🏆 Největší výhra: +' + bestVal;
+            if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '💀 Největší prohra: ' + worstVal;
+            if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '🔥 Nejdelší win streak: ' + maxStreak + ' her v řadě';
         }
     }
 
@@ -200,7 +206,7 @@ function drawChart() {
         chartData.addColumn({ type: 'string', role: 'annotation' });
     });
     for (let i = 0; i < sessionLabels.length; i++) {
-        const tt = buildTooltip(i);
+        const tt = buildTooltip(i, highlightTooltips);
         const row = [sessionLabels[i]];
         playerNames.forEach((name, ci) => {
             row.push(cumulative[ci][i]);
