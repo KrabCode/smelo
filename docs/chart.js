@@ -252,12 +252,12 @@ function drawChart() {
             if (selectedPlayer && name === selectedPlayer) {
                 const pc = playerColors[name];
                 const ht = highlightTypes[i];
-                if (ht === 'best') row.push('point {size: 8; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
-                else if (ht === 'worst') row.push('point {size: 8; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
-                else if (ht === 'streak') row.push('point {size: 8; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
-                else if (ht === 'tilt') row.push('point {size: 8; shape-type: square; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
-                else if (ht === 'bestWeek') row.push('point {size: 8; shape-type: square; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
-                else if (played) row.push('point {size: 3.5; fill-color: ' + pc + '; visible: true;}');
+                if (ht === 'best') row.push('point {size: 5; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
+                else if (ht === 'worst') row.push('point {size: 5; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
+                else if (ht === 'streak') row.push('point {size: 5; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
+                else if (ht === 'tilt') row.push('point {size: 5; shape-type: square; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
+                else if (ht === 'bestWeek') row.push('point {size: 5; shape-type: square; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
+                else if (played) row.push('point {size: 2.5; fill-color: ' + pc + '; visible: true;}');
                 else row.push(null);
                 row.push(highlights[i] || null);
             } else {
