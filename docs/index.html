@@ -11,7 +11,11 @@
 </head>
 <body>
 <div style="text-align:center;">
-  <h1 class="smelotitle"><a href="https://smelo.cz">ŠMELO.CZ</a></h1>
+  <h1 class="smelotitle">
+    <span class="suits-wave" aria-hidden="true"><span style="color:#60a5fa">♠</span><span style="color:#f87171">♥</span><span style="color:#4ade80">♣</span><span style="color:#ffb300">♦</span></span>
+    <a href="https://smelo.cz">ŠMELO.CZ</a>
+    <span class="suits-wave suits-wave-right" aria-hidden="true"><span style="color:#60a5fa">♠</span><span style="color:#f87171">♥</span><span style="color:#4ade80">♣</span><span style="color:#ffb300">♦</span></span>
+  </h1>
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="vysledky">Výsledky</button>
     <button class="tab-btn" data-tab="smelo">Šmelo</button>
@@ -117,9 +121,6 @@
     </div>
   </div>
   <div class="tab-panel" data-tab="smelo">
-    <div style="display:flex; justify-content:center; margin:40px 0; background: none;">
-      <iframe src="testimonials.html" style="width:100%; max-width:548px; height:380px; border:none; border-radius:12px; background: none;"></iframe>
-    </div>
     <div style="max-width:400px;margin:auto;">
       <div style="display:flex;flex-direction:column;gap:24px;">
         <img src="assets/nepracuje_at_smeli.png" alt="Frame 12" class="smelkarta" loading="lazy" />
@@ -196,6 +197,7 @@ function switchTab(tab) {
   var btn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
   if (btn) btn.classList.add('active');
   panel.classList.add('active');
+  if (tab === 'vysledky') window.dispatchEvent(new Event('resize'));
 }
 function handleHash() {
   var hash = location.hash.slice(1);

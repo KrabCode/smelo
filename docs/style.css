@@ -20,6 +20,32 @@ img { border-radius: 16px; }
     border-radius: 16px;
 }
 
+/* === Suits wave === */
+.suits-wave {
+    display: inline-flex;
+    gap: 4px;
+    font-size: 0.55em;
+    opacity: 0.45;
+    margin: 0 10px;
+    vertical-align: middle;
+}
+.suits-wave span {
+    display: inline-block;
+    animation: suitBounce 2s ease-in-out infinite;
+}
+.suits-wave span:nth-child(1) { animation-delay: 0s; }
+.suits-wave span:nth-child(2) { animation-delay: 0.15s; }
+.suits-wave span:nth-child(3) { animation-delay: 0.3s; }
+.suits-wave span:nth-child(4) { animation-delay: 0.45s; }
+.suits-wave-right span:nth-child(1) { animation-delay: 0.6s; }
+.suits-wave-right span:nth-child(2) { animation-delay: 0.75s; }
+.suits-wave-right span:nth-child(3) { animation-delay: 0.9s; }
+.suits-wave-right span:nth-child(4) { animation-delay: 1.05s; }
+@keyframes suitBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
 /* === Tabs === */
 .tab-bar {
     display: flex;
@@ -46,7 +72,7 @@ img { border-radius: 16px; }
     border-bottom-color: #ffb300;
 }
 .tab-panel { display: none; }
-.tab-panel.active { display: block; }
+.tab-panel.active { display: block; margin-top: 24px; }
 
 /* === Chart === */
 #chartDiv {

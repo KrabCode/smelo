@@ -11,9 +11,9 @@ const COLORS = [
     "#843c39","#ad494a","#d6616b","#e7969c","#7b4173","#a55194",
     "#ce6dbd","#de9ed6","#1b9e77","#d95f02"
 ];
-let chart = null, chartData = null, playerNames = [], playerColors = {}, selectedPlayer = '';
+let chart = null, chartData = null, playerNames = [], playerColors = {}, selectedPlayer = localStorage.getItem('smelo_player') || '';
 let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null;
-let rangeMode = 'half';
+let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
 const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 3600000;
 
@@ -54,6 +54,10 @@ function fetchAndRender() {
                 }
                 return { row, date: isNaN(ts) ? null : new Date(ts) };
             });
+        if (rangeMode === 'all') {
+            document.getElementById('btnAll').classList.add('active');
+            document.getElementById('btnHalf').classList.remove('active');
+        }
         processAndRender();
         document.getElementById('rangeToggle').style.display = '';
         document.getElementById('graphSpinner').style.display = 'none';
@@ -123,6 +127,7 @@ function processAndRender() {
 document.getElementById('btnHalf').addEventListener('click', () => {
     if (rangeMode === 'half') return;
     rangeMode = 'half';
+    localStorage.setItem('smelo_range', rangeMode);
     document.getElementById('btnHalf').classList.add('active');
     document.getElementById('btnAll').classList.remove('active');
     processAndRender();
@@ -130,6 +135,7 @@ document.getElementById('btnHalf').addEventListener('click', () => {
 document.getElementById('btnAll').addEventListener('click', () => {
     if (rangeMode === 'all') return;
     rangeMode = 'all';
+    localStorage.setItem('smelo_range', rangeMode);
     document.getElementById('btnAll').classList.add('active');
     document.getElementById('btnHalf').classList.remove('active');
     processAndRender();
@@ -281,6 +287,7 @@ function renderStatsTable() {
         tr.addEventListener('click', () => {
             const player = tr.dataset.player;
             selectedPlayer = selectedPlayer === player ? '' : player;
+            localStorage.setItem('smelo_player', selectedPlayer);
             drawChart();
             renderStatsTable();
         });
