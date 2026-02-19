@@ -219,6 +219,7 @@ function switchTab(tab) {
   panel.classList.add('active');
   if (tab === 'vysledky') window.dispatchEvent(new Event('resize'));
   try { localStorage.setItem('activeTab', tab); } catch(e) {}
+  if (location.hash) history.replaceState(null, '', location.pathname);
 }
 function handleHash() {
   var hash = location.hash.slice(1);
