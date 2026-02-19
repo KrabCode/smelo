@@ -19,6 +19,7 @@
   <div class="tab-bar">
     <button class="tab-btn active" data-tab="vysledky">Výsledky</button>
     <button class="tab-btn" data-tab="smelo">Šmelo</button>
+    <button class="tab-btn" data-tab="pravidla">Pravidla</button>
     <button class="tab-btn" data-tab="teorie">Teorie</button>
     <button class="tab-btn" data-tab="input">Záznam</button>
   </div>
@@ -31,10 +32,20 @@
     <div id="chartDiv" style="visibility:hidden;"></div>
     <div id="statsTableDiv"></div>
   </div>
+  <div class="tab-panel" data-tab="pravidla">
+    <div style="max-width:600px;margin:0 auto;padding:0 20px;color:#888;text-align:left;">
+      <p>Pravidla budou brzy doplněna.</p>
+    </div>
+  </div>
   <div class="tab-panel" data-tab="teorie">
     <div class="card-list" style="max-width:700px;margin:0 auto;padding:0 20px;">
+      <a class="card" id="zaklady" href="teorie/zaklady/">
+        <div class="card-title">0. Základy pokeru</div>
+        <div class="card-desc">Texas Hold'em v kostce. Hand rankings, streets, akce, blindy.</div>
+        <span class="card-tag">základy</span>
+      </a>
       <a class="card" id="blindy" href="teorie/blindy/">
-        <div class="card-title">0. Poprosim blindy.</div>
+        <div class="card-title">1. Poprosim blindy.</div>
         <div class="card-desc">Nejdůležitější pokerový koncept. Dej. Tam. Ty. Blindy.</div>
         <span class="card-tag">humor + přežití</span>
       </a>
@@ -109,12 +120,12 @@
         <span class="card-tag">humor + teorie</span>
       </a>
       <a class="card" id="live-tells" href="teorie/live-tells/">
-        <div class="card-title">15. Live Tells</div>
+        <div class="card-title">16. Live Tells</div>
         <div class="card-desc">Timing telly, fyzické telly, Mike Caro's Law. Čti soupeře jako knihu.</div>
         <span class="card-tag">teorie</span>
       </a>
       <a class="card" id="priklady" href="teorie/priklady/">
-        <div class="card-title">16. Celé hry</div>
+        <div class="card-title">17. Celé hry</div>
         <div class="card-desc">4 kompletní hry od preflop po river. Equity vs pot odds, implied odds, čtení soupeře.</div>
         <span class="card-tag">analýza + teorie</span>
       </a>

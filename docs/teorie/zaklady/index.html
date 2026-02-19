@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Základy pokeru – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../base.css">
+    <style>
+        .hand-table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin: 12px 0; }
+        .hand-table th { color: #888; font-weight: normal; text-align: left; padding: 6px 10px; border-bottom: 1px solid #333; font-size: 0.85em; }
+        .hand-table td { padding: 6px 10px; border-bottom: 1px solid #222; color: #ccc; }
+        .hand-table td:first-child { color: #ffb300; font-weight: bold; white-space: nowrap; }
+        .hand-table tr:hover { background: #1e1e1e; }
+        .street { display: flex; align-items: center; gap: 12px; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 14px; margin: 10px 0; }
+        .street-name { font-family: 'Staatliches', sans-serif; color: #ffb300; font-size: 1.1em; letter-spacing: 1px; min-width: 90px; }
+        .street-desc { color: #ccc; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../#zaklady">&larr; ŠMELO.CZ</a></h1>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Základy pokeru</h2>
+        <p>Texas Hold'em v kostce. Tohle musíš znát, než sedneš ke stolu.</p>
+
+        <h2>Průběh hry</h2>
+        <p>Každý hráč dostane <strong style="color:#ffb300;">2 karty</strong> (hole cards). Na stůl postupně přijde až <strong style="color:#ffb300;">5 společných karet</strong>. Cíl: složit nejlepší 5kartovou kombinaci z libovolných 5 ze 7 dostupných karet.</p>
+
+        <h2>Streets</h2>
+        <p>Hra se dělí na 4 fáze. V každé můžeš vsadit, zvýšit, dorovnat, nebo zahodit.</p>
+
+        <div class="street">
+            <div class="street-name">Preflop</div>
+            <div class="street-desc">Každý hráč má 2 karty. Blindy jsou ve hře. První akce.</div>
+        </div>
+        <div class="street">
+            <div class="street-name">Flop</div>
+            <div class="street-desc">Na stůl přijdou 3 společné karty.</div>
+        </div>
+        <div class="street">
+            <div class="street-name">Turn</div>
+            <div class="street-desc">4. společná karta.</div>
+        </div>
+        <div class="street">
+            <div class="street-name">River</div>
+            <div class="street-desc">5. a poslední společná karta. Následuje showdown.</div>
+        </div>
+
+        <h2>Akce</h2>
+        <table class="hand-table">
+            <tr><td>Fold</td><td>Zahodíš karty. Už nehraješ toto kolo.</td></tr>
+            <tr><td>Check</td><td>Necháš akci na dalším hráči (jen když nikdo nevsadil).</td></tr>
+            <tr><td>Call</td><td>Dorovnáš současnou sázku.</td></tr>
+            <tr><td>Bet</td><td>Vsadíš jako první v dané street.</td></tr>
+            <tr><td>Raise</td><td>Zvýšíš sázku nad aktuální bet.</td></tr>
+        </table>
+
+        <h2>Pořadí akcí</h2>
+        <p><strong>Preflop:</strong> akce začíná vlevo od big blindu (UTG) a pokračuje po směru hodinových ručiček. Blindy hrají poslední.</p>
+        <p><strong>Postflop:</strong> akce začíná od small blindu (nebo prvního aktivního hráče vlevo od dealera). Dealer (button) hraje poslední &mdash; má nejlepší pozici.</p>
+
+        <h2>Blindy</h2>
+        <p>Dva hráči vlevo od dealera platí povinné sázky:</p>
+        <div class="formula">Small Blind (SB) = 0.5&times; big blind &nbsp;|&nbsp; Big Blind (BB) = minimální sázka</div>
+        <p>Blindy zajistí, že v potu jsou vždy peníze. Bez nich by nikdo neměl důvod hrát.</p>
+
+        <h2>Hand rankings</h2>
+        <p>Od nejsilnější po nejslabší:</p>
+
+        <table class="hand-table">
+            <tr><th>Ruka</th><th>Popis</th><th>Příklad</th></tr>
+            <tr><td>Royal Flush</td><td>A K Q J 10 stejné barvy</td><td>A&#9824; K&#9824; Q&#9824; J&#9824; 10&#9824;</td></tr>
+            <tr><td>Straight Flush</td><td>5 po sobě, stejná barva</td><td>7&#9829; 8&#9829; 9&#9829; 10&#9829; J&#9829;</td></tr>
+            <tr><td>Four of a Kind</td><td>4 stejné hodnoty</td><td>Q&#9824; Q&#9829; Q&#9827; Q&#9830; 3&#9824;</td></tr>
+            <tr><td>Full House</td><td>Trojice + pár</td><td>K&#9824; K&#9829; K&#9827; 8&#9830; 8&#9824;</td></tr>
+            <tr><td>Flush</td><td>5 karet stejné barvy</td><td>2&#9827; 5&#9827; 8&#9827; J&#9827; A&#9827;</td></tr>
+            <tr><td>Straight</td><td>5 po sobě, různé barvy</td><td>4&#9824; 5&#9829; 6&#9827; 7&#9830; 8&#9824;</td></tr>
+            <tr><td>Three of a Kind</td><td>3 stejné hodnoty</td><td>9&#9824; 9&#9829; 9&#9827; K&#9830; 2&#9824;</td></tr>
+            <tr><td>Two Pair</td><td>Dva páry</td><td>J&#9824; J&#9829; 5&#9827; 5&#9830; A&#9824;</td></tr>
+            <tr><td>One Pair</td><td>Jeden pár</td><td>10&#9824; 10&#9829; A&#9827; 7&#9830; 3&#9824;</td></tr>
+            <tr><td>High Card</td><td>Nic z výše &mdash; rozhoduje nejvyšší karta</td><td>A&#9824; J&#9829; 8&#9827; 5&#9830; 2&#9824;</td></tr>
+        </table>
+
+        <div class="tip">Při stejné ruce rozhoduje kicker &mdash; nejvyšší vedlejší karta. Např. oba mají pár králů, ale jeden má A kicker a druhý Q &rarr; vyhrává A.</div>
+
+    </div>
+<script src="../../suits.js"></script>
+<script src="../../reveal.js"></script>
+</body>
+</html>
