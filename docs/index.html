@@ -218,6 +218,7 @@ function switchTab(tab) {
   if (btn) btn.classList.add('active');
   panel.classList.add('active');
   if (tab === 'vysledky') window.dispatchEvent(new Event('resize'));
+  try { localStorage.setItem('activeTab', tab); } catch(e) {}
 }
 function handleHash() {
   var hash = location.hash.slice(1);
@@ -235,6 +236,9 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
   btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
 });
 handleHash();
+if (!location.hash) {
+  try { var saved = localStorage.getItem('activeTab'); if (saved) switchTab(saved); } catch(e) {}
+}
 document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) {
   card.addEventListener('click', function() { this.classList.toggle('active'); });
 });
