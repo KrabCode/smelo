@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ŠMELO.CZ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="base.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/charts/loader.js"></script>
@@ -14,10 +12,13 @@
 <body>
 <div style="text-align:center;">
   <h1 class="smelotitle"><a href="https://smelo.cz">ŠMELO.CZ</a></h1>
-  <div style="margin:8px 0;"><a href="teorie/" style="color:#ffb300; text-decoration:none; font-family:'Staatliches',sans-serif; letter-spacing:4px; font-size:1.1em;">&rarr; TEORIE</a></div>
-  <hr>
-  <h2 class="collapsible-title"><span class="arrow">▼</span>Výsledky</h2>
-  <div class="collapsible-section">
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="vysledky">Výsledky</button>
+    <button class="tab-btn" data-tab="smelo">Šmelo</button>
+    <button class="tab-btn" data-tab="teorie">Teorie</button>
+    <button class="tab-btn" data-tab="input">Záznam</button>
+  </div>
+  <div class="tab-panel active" data-tab="vysledky">
     <div id="rangeToggle" style="margin:12px 0 4px;display:none;">
       <button id="btnHalf" class="range-btn active">Půlrok</button>
       <button id="btnAll" class="range-btn">Vše</button>
@@ -26,42 +27,101 @@
     <div id="chartDiv" style="visibility:hidden;"></div>
     <div id="statsTableDiv"></div>
   </div>
-  <hr>
-  <h2 class="collapsible-title"><span class="arrow">▼</span>moje cesta</h2>
-  <div class="collapsible-section">
-    <div style="display:flex; justify-content:center;">
-      <p style="text-align:left; max-width:600px;">
-        🃏✨ Jednoho večera jsem seděl u pokerového stolu s podezřelými lidmi.<br><br>
-        Karty byly proti mně, soupeř si tahal z rukávu žetony. 🎲<br>
-        Tu noc jsem prohrál. 😅<br><br>
-        Ale naučil jsem se něco zásadního: 💡<br>
-        V pokeru – i v životě – nejvíc vyhráváš, když ohýbáš pravidla. 🔄<br><br>
-        Proč hrát fér, když můžeš hrát chytře? 🧠<br><br>
-        Uvědomil jsem si, že úspěch není o štěstí 🍀 - že štěstíčku se musí jít naproti. 🚶‍♂️<br>
-        Šmel vždy a všude 🕵️‍♂️ a sleduj, jak se ti otevírají dveře. 🚪<br><br>
-        Život je hra. Play to win. ♠️💪<br><br>
-        Šmelím, tedy jsem. 😎
-        <br>
-      </p>
+  <div class="tab-panel" data-tab="teorie">
+    <div class="card-list" style="max-width:700px;margin:0 auto;padding:0 20px;">
+      <a class="card" id="blindy" href="teorie/blindy/">
+        <div class="card-title">0. Poprosim blindy.</div>
+        <div class="card-desc">Nejdůležitější pokerový koncept. Dej. Tam. Ty. Blindy.</div>
+        <span class="card-tag">humor + přežití</span>
+      </a>
+      <a class="card" id="outs-equity" href="teorie/outs-equity/">
+        <div class="card-title">2. Outs &amp; Equity</div>
+        <div class="card-desc">Počítání outů, pravidlo 2 a 4, kalkulačka equity.</div>
+        <span class="card-tag">kalkulačka + teorie</span>
+      </a>
+      <a class="card" id="ev" href="teorie/ev/">
+        <div class="card-title">3. Expected Value (EV)</div>
+        <div class="card-desc">EV = (win% &times; výhra) &minus; (lose% &times; ztráta)</div>
+        <span class="card-tag">kalkulačka + teorie</span>
+      </a>
+      <a class="card" id="pot-odds" href="teorie/pot-odds/">
+        <div class="card-title">4. Pot Odds</div>
+        <div class="card-desc">pot odds = call / (pot + call)</div>
+        <span class="card-tag">kalkulačka + teorie</span>
+      </a>
+      <a class="card" id="implied-odds" href="teorie/implied-odds/">
+        <div class="card-title">5. Implied Odds</div>
+        <div class="card-desc">Když pot odds nestačí. Kolik musíš vyhrát na dalších streetech?</div>
+        <span class="card-tag">kalkulačka + teorie</span>
+      </a>
+      <a class="card" id="pozice" href="teorie/pozice/">
+        <div class="card-title">6. Pozice</div>
+        <div class="card-desc">Proč pozice vydělává. Seaty, open range, IP vs OOP.</div>
+        <span class="card-tag">teorie + vizualizace</span>
+      </a>
+      <a class="card" id="bet-sizing" href="teorie/bet-sizing/">
+        <div class="card-title">7. Bet Sizing</div>
+        <div class="card-desc">Jak velký bet a proč. Value, bluff, protection, geometrický sizing.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="spr" href="teorie/spr/">
+        <div class="card-title">8. SPR (Stack-to-Pot Ratio)</div>
+        <div class="card-desc">Jak poměr stacku k potu ovlivňuje postflop strategii.</div>
+        <span class="card-tag">kalkulačka + teorie</span>
+      </a>
+      <a class="card" id="ranges" href="teorie/ranges/">
+        <div class="card-title">9. Ranges</div>
+        <div class="card-desc">Přemýšlení v distribucích, ne v konkrétních rukách. Range advantage.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="preflop" href="teorie/preflop/">
+        <div class="card-title">10. Preflop Strategie</div>
+        <div class="card-desc">Open raise, 3-bet, defending blindů, squeeze.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="postflop" href="teorie/postflop/">
+        <div class="card-title">11. Postflop Play</div>
+        <div class="card-desc">C-bet, barreling, check-raise, pot control, board texture.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="bluffing" href="teorie/bluffing/">
+        <div class="card-title">12. Bluffing</div>
+        <div class="card-desc">Semi-bluff, pure bluff, blockery, kdy bluffovat a kdy ne.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="player-types" href="teorie/player-types/">
+        <div class="card-title">13. Typy hráčů</div>
+        <div class="card-desc">Nit, calling station, TAG, LAG. Jak je poznat a jak proti nim hrát.</div>
+        <span class="card-tag">teorie + analýza + kvíz</span>
+      </a>
+      <a class="card" id="bankroll" href="teorie/bankroll/">
+        <div class="card-title">14. Bankroll Management</div>
+        <div class="card-desc">Variance, buy-iny, move up/down. Proč BRM zachraňuje kariéry.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="tilt" href="teorie/tilt/">
+        <div class="card-title">15. Tilt Management</div>
+        <div class="card-desc">Jak nebýt pošmelen. Q&amp;A od obětí šmela.</div>
+        <span class="card-tag">humor + teorie</span>
+      </a>
+      <a class="card" id="live-tells" href="teorie/live-tells/">
+        <div class="card-title">15. Live Tells</div>
+        <div class="card-desc">Timing telly, fyzické telly, Mike Caro's Law. Čti soupeře jako knihu.</div>
+        <span class="card-tag">teorie</span>
+      </a>
+      <a class="card" id="priklady" href="teorie/priklady/">
+        <div class="card-title">16. Celé hry</div>
+        <div class="card-desc">4 kompletní hry od preflop po river. Equity vs pot odds, implied odds, čtení soupeře.</div>
+        <span class="card-tag">analýza + teorie</span>
+      </a>
     </div>
   </div>
-  <hr>
-  <h2 class="collapsible-title"><span class="arrow">▼</span>Šmelopříběhy</h2>
-  <div class="collapsible-section">
+  <div class="tab-panel" data-tab="smelo">
     <div style="display:flex; justify-content:center; margin:40px 0; background: none;">
       <iframe src="testimonials.html" style="width:100%; max-width:548px; height:380px; border:none; border-radius:12px; background: none;"></iframe>
     </div>
-  </div>
-  <hr>
-  <h2 class="collapsible-title"><span class="arrow">▼</span>Šmelkarty</h2>
-  <div class="collapsible-section">
     <div style="max-width:400px;margin:auto;">
       <div style="display:flex;flex-direction:column;gap:24px;">
-        <img src="assets/Skulls.png" alt="Krásná ruka!" class="smelkarta" loading="lazy" />
-        <img src="assets/Smutek.png" alt="Smutek" class="smelkarta" loading="lazy" />
-        <img src="assets/Blindy.png" alt="Blindy" class="smelkarta" loading="lazy" />
-        <img src="assets/Tank.png" alt="Tank" class="smelkarta" loading="lazy" />
-        <img src="assets/Uspokojsa.png" alt="Ucpokorca" class="smelkarta" loading="lazy" />
         <img src="assets/nepracuje_at_smeli.png" alt="Frame 12" class="smelkarta" loading="lazy" />
         <img src="assets/nesmeli_at_neji.png" alt="smelo_7" class="smelkarta" loading="lazy" />
         <img src="assets/nesmelite_smelte.png" alt="Frame 18" class="smelkarta" loading="lazy" />
@@ -87,12 +147,73 @@
         <img src="assets/starci.png" alt="starci" class="smelkarta" loading="lazy" />
         <img src="assets/mluviti_stribro_smeliti_zlato.png" alt="Frame 3" class="smelkarta" loading="lazy" />
         <img src="assets/live_laugh_smelo.png" alt="Frame 5" class="smelkarta" loading="lazy" />
+		<img src="assets/Skulls.png" alt="Krásná ruka!" class="smelkarta" loading="lazy" />
+        <img src="assets/Smutek.png" alt="Smutek" class="smelkarta" loading="lazy" />
+        <img src="assets/Blindy.png" alt="Blindy" class="smelkarta" loading="lazy" />
+        <img src="assets/Tank.png" alt="Tank" class="smelkarta" loading="lazy" />
+        <img src="assets/Uspokojsa.png" alt="Ucpokorca" class="smelkarta" loading="lazy" />
       </div>
     </div>
   </div>
+  <div class="tab-panel" data-tab="input">
+    <div class="input-panel">
+      <h3 style="text-align:center; color:#888; font-family:inherit;">Přidat záznam</h3>
+      <form id="inputForm" autocomplete="off">
+        <div style="margin-bottom:12px;">
+          <label for="sessionDate">Datum (YYYY-MM-DD)</label>
+          <input type="text" id="sessionDate" pattern="\d{4}-\d{2}-\d{2}" placeholder="2026-02-17" required>
+        </div>
+        <div id="entriesContainer"></div>
+        <button type="button" id="addEntryBtn" class="btn" style="width:100%; border-style:dashed; color:#888;">+ Přidat hráče</button>
+        <button type="submit" class="btn btn-submit">Odeslat</button>
+        <div id="status"></div>
+      </form>
+      <details class="settings">
+        <summary>Nastavení</summary>
+        <div class="fields">
+          <div>
+            <label for="webappUrl">Apps Script URL</label>
+            <input type="url" id="webappUrl" placeholder="https://script.google.com/macros/s/.../exec">
+          </div>
+          <div>
+            <label for="secret">Secret</label>
+            <input type="password" id="secret" placeholder="shared secret">
+          </div>
+        </div>
+      </details>
+    </div>
+    <datalist id="playerList"></datalist>
+  </div>
 </div>
 <script src="chart.js"></script>
-<script src="collapsible.js"></script>
+<script src="input/input.js"></script>
+<script>
+function switchTab(tab) {
+  var panel = document.querySelector('.tab-panel[data-tab="' + tab + '"]');
+  if (!panel) return;
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+  var btn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
+  if (btn) btn.classList.add('active');
+  panel.classList.add('active');
+}
+function handleHash() {
+  var hash = location.hash.slice(1);
+  if (!hash) return;
+  var panel = document.querySelector('.tab-panel[data-tab="' + hash + '"]');
+  if (panel) { switchTab(hash); return; }
+  var el = document.getElementById(hash);
+  if (el) {
+    var parent = el.closest('.tab-panel');
+    if (parent) switchTab(parent.dataset.tab);
+    setTimeout(function() { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
+  }
+}
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() { switchTab(this.dataset.tab); });
+});
+handleHash();
+</script>
 <script src="reveal.js"></script>
 </body>
 </html>

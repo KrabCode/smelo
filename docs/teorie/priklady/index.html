@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Celé hry – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico">
+    <link rel="stylesheet" href="../../base.css">
+    <style>
+        .hand { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 24px; margin: 32px 0; }
+        .hand-title { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1.3em; color: #ffb300; margin-bottom: 4px; }
+        .hand-subtitle { color: #666; font-size: 0.85em; margin-bottom: 16px; }
+        .hand-tag { display: inline-block; font-size: 0.7em; font-family: monospace; padding: 2px 8px; border-radius: 4px; margin-right: 6px; }
+        .tag-eq { background: #1a2e1a; color: #4ade80; border: 1px solid #2a4a2a; }
+        .tag-io { background: #1a1a2e; color: #60a5fa; border: 1px solid #2a2a4e; }
+        .tag-opp { background: #2e1a1a; color: #f87171; border: 1px solid #4a2a2a; }
+
+        .street { margin: 12px 0; padding: 14px; background: #222; border-radius: 8px; font-size: 0.9em; line-height: 1.7; }
+        .street-head { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 0.95em; color: #888; margin-bottom: 6px; }
+        .cards { color: #ffb300; font-weight: bold; }
+        .action { color: #ccc; }
+        .pot-info { color: #888; font-size: 0.85em; margin-top: 4px; }
+
+        .analysis { margin: 8px 0; padding: 12px 16px; background: #1e1e1e; border-left: 3px solid #ffb300; border-radius: 0 6px 6px 0; font-size: 0.85em; line-height: 1.7; }
+        .analysis .math { color: #ffb300; font-family: monospace; }
+        .analysis .good { color: #4ade80; }
+        .analysis .bad { color: #f87171; }
+        .analysis .neutral { color: #60a5fa; }
+        .analysis .label { color: #888; }
+
+        .opponent-read { margin: 8px 0; padding: 12px 16px; background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 6px; font-size: 0.85em; color: #aab; line-height: 1.6; }
+        .opponent-read strong { color: #60a5fa; }
+
+        .decision { margin: 12px 0; padding: 14px; background: #1a2e1a; border: 1px solid #2a4a2a; border-radius: 8px; }
+        .decision.negative { background: #2e1a1a; border-color: #4a2a2a; }
+        .decision strong { color: #4ade80; }
+        .decision.negative strong { color: #f87171; }
+        .decision p { font-size: 0.9em; color: #ccc; margin: 4px 0 0; }
+
+        .result-box { margin: 12px 0; padding: 14px; background: #222; border: 1px solid #444; border-radius: 8px; }
+        .result-box .outcome { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; font-size: 1.1em; margin-bottom: 4px; }
+        .result-box .won { color: #4ade80; }
+        .result-box .lost { color: #f87171; }
+        .result-box p { font-size: 0.85em; color: #999; margin: 4px 0 0; }
+
+        .tip { background: #1a1a2e; border: 1px solid #2a2a4e; border-radius: 8px; padding: 14px; margin: 12px 0; color: #aab; font-size: 0.9em; }
+        .tip strong { color: #ccc; }
+
+        .summary { background: #222; border: 2px solid #ffb300; border-radius: 10px; padding: 20px; margin: 32px 0; }
+        .summary h3 { font-family: 'Staatliches', sans-serif; letter-spacing: 2px; color: #ffb300; margin-bottom: 12px; }
+        .summary li { color: #ccc; font-size: 0.9em; margin: 6px 0; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><a href="../../#priklady">&larr; ŠMELO.CZ</a></h1>
+        <hr>
+    </div>
+
+    <div class="container">
+        <h2>Celé hry &mdash; 4 příklady od preflop po river</h2>
+        <p>
+            Každá hra kombinuje tři klíčové koncepty: <strong style="color:#4ade80;">equity vs pot odds</strong>,
+            <strong style="color:#60a5fa;">implied odds</strong> a
+            <strong style="color:#f87171;">čtení soupeře</strong>.
+            U každého rozhodnutí uvidíš konkrétní matematiku a jak typ soupeře mění správný play.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- HAND 1 -->
+        <!-- ============================================================ -->
+        <div class="hand">
+            <div class="hand-title">Hand #1 &mdash; Flush Draw vs Nit</div>
+            <div class="hand-subtitle">Pot odds říkají call. Implied odds říkají fold.</div>
+            <span class="hand-tag tag-eq">equity vs pot odds</span>
+            <span class="hand-tag tag-io">implied odds</span>
+            <span class="hand-tag tag-opp">nit</span>
+
+            <div class="street">
+                <div class="street-head">Preflop</div>
+                <span class="action">Hero (<span class="cards">T&#9829; 9&#9829;</span>) otvírá 2.5bb z CO. Nit calluje z BB.</span>
+                <div class="pot-info">Pot: 5.5bb &bull; Efektivní stack: 100bb</div>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Čtení soupeře:</strong> Nit calluje preflop raise z BB jen s pockety 22&ndash;TT, suited broadwayem a ATo+. Tight, pasivní, nepayoffuje velké poty bez silné ruky.
+            </div>
+
+            <div class="street">
+                <div class="street-head">Flop &mdash; <span class="cards">K&#9829; 6&#9829; 2&#9824;</span></div>
+                <span class="action">Nit checkuje. Hero betuje 3bb. Nit calluje.</span>
+                <div class="pot-info">Pot: 11.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Outy:</span> 9 (flush draw) &rarr; <span class="math">9 &times; 2 = ~18%</span> na další kartu, <span class="math">9 &times; 4 = ~36%</span> flop-to-river<br>
+                <span class="label">Semi-bluff:</span> C-bet s flush drawem je standard. Máš fold equity + equity drawe.
+            </div>
+
+            <div class="street">
+                <div class="street-head">Turn &mdash; <span class="cards">5&#9827;</span></div>
+                <span class="action">Board: K&#9829; 6&#9829; 2&#9824; 5&#9827;. Nit checkuje. Hero betuje 7bb. Nit RAISNE na 20bb.</span>
+                <div class="pot-info">Pot po raisu: 38.5bb &bull; Musíš callovat: 13bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Pot odds:</span> <span class="math">13 / (38.5 + 13) = 25.2%</span><br>
+                <span class="label">Tvá equity:</span> <span class="math">9 outů &times; 2 = ~18%</span><br>
+                <span class="label">Verdikt:</span> <span class="bad">Equity 18% &lt; pot odds 25%. Čistý pot odds call to není.</span>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Implied odds analýza:</strong> Nit raisnul turn. To znamená silnou ruku &mdash; minimálně dva páry, spíš set nebo top pár/top kicker. Klíčová otázka: <em>kolik z něj vytáhneš, když trefíš flush na riveru?</em><br><br>
+                Odpověď: <strong>skoro nic</strong>. Nit uvidí třetí srdce na boardu a checkne/foldne. Tenhle hráč nikdy neplatí value bet na completing flush boardu. Tvoje implied odds jsou blízko nule.
+            </div>
+
+            <div class="analysis">
+                <span class="label">Potřebuješ vyhrát navíc:</span> <span class="math">13 / 0.18 &minus; 38.5 = ~33.7bb</span><br>
+                <span class="label">Reálně dostaneš:</span> <span class="bad">~0&ndash;5bb (nit foldne na flush completing card)</span><br>
+                <span class="label">Verdikt:</span> <span class="bad">Implied odds nestačí. Fold.</span>
+            </div>
+
+            <div class="decision negative">
+                <strong>Rozhodnutí: FOLD</strong>
+                <p>Pot odds nestačí (18% &lt; 25%) a implied odds jsou nulové &mdash; nit nikdy nezaplatí, když trefíš. River call by byl -EV i kdyby pot odds byly blízko.</p>
+            </div>
+
+            <div class="result-box">
+                <div class="outcome won">Hero folduje. River: 3&#9829;. Nit by checkoval/foldnul.</div>
+                <p>Flush dorazil, ale hero by nedostal zaplaceno. Nit ukazuje KK &mdash; set králů. Na flush completing riveru by nit 100% checkoval. Hero ušetřil 13bb na správném foldu.</p>
+            </div>
+
+            <div class="tip">
+                <strong>Poučení:</strong> Pot odds ti řeknou minimum. Ale proti nitovi musíš počítat implied odds = kolik REÁLNĚ dostaneš, ne kolik by bylo hezké dostat. Nit ti nedá ani korunu navíc, když trefíš.
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- HAND 2 -->
+        <!-- ============================================================ -->
+        <div class="hand">
+            <div class="hand-title">Hand #2 &mdash; Set Mining Against LAG</div>
+            <div class="hand-subtitle">Pot odds říkají fold. Implied odds říkají call. LAG zaplatí všechno.</div>
+            <span class="hand-tag tag-eq">equity vs pot odds</span>
+            <span class="hand-tag tag-io">implied odds</span>
+            <span class="hand-tag tag-opp">LAG</span>
+
+            <div class="street">
+                <div class="street-head">Preflop</div>
+                <span class="action">LAG otvírá 3bb z CO. Hero (<span class="cards">5&#9824; 5&#9827;</span>) je v BB.</span>
+                <div class="pot-info">Pot: 6.5bb (s blindy) &bull; Call: 2bb &bull; Efektivní stack: 120bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Set odds:</span> <span class="math">~7.5:1 against</span> (trefíš set na flopu v ~12% případů)<br>
+                <span class="label">Pot odds:</span> <span class="math">2 / (6.5 + 2) = 23.5%</span><br>
+                <span class="label">Equity 55 vs LAG range:</span> <span class="math">~42%</span> (LAG hraje hodně ruk &rarr; 55 má slušnou equity)<br>
+                <span class="label">Ale:</span> <span class="bad">55 je těžká na postflop. Bez setu je to guess-and-fold. Hraješ kvůli implied odds.</span>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Čtení soupeře:</strong> LAG otvírá z CO 35%+ ruk. Hraje agresivně postflop &mdash; c-betuje 75%+, barreluje turn, bluffuje river. Když trefíš set, LAG bude stack-off s top párem, overpárem, i se dvěma páry. <strong>Ideální cíl pro set mining.</strong>
+            </div>
+
+            <div class="decision">
+                <strong>Rozhodnutí preflop: CALL</strong>
+                <p>Set mining rule: potřebuješ 15:1 implied odds (callneš 2bb, potřebuješ vyhrát ~30bb když trefíš). LAG má 120bb stack a payoffuje s wide range. Call je jasně +EV.</p>
+            </div>
+
+            <div class="street">
+                <div class="street-head">Flop &mdash; <span class="cards">Q&#9830; 5&#9830; 8&#9827;</span></div>
+                <span class="action">Hero checkuje. LAG betuje 4bb. Hero calluje.</span>
+                <div class="pot-info">Pot: 14.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Equity:</span> <span class="good">Set pětek = ~90% equity</span> proti LAGovu c-bet range<br>
+                <span class="label">Proč jen call:</span> Necháš LAGa barrelovat. Raise by ho vystrašil. LAG chce být agresorem &mdash; využij to.
+            </div>
+
+            <div class="opponent-read">
+                <strong>Trap strategie:</strong> LAG c-betuje tento board s celým range &mdash; overcartami, páry, drawy, i air. Pokud raisneš, foldne 70% svých ruk. Callneš a necháš ho pokračovat v agresi.
+            </div>
+
+            <div class="street">
+                <div class="street-head">Turn &mdash; <span class="cards">J&#9829;</span></div>
+                <span class="action">Board: Q&#9830; 5&#9830; 8&#9827; J&#9829;. Hero checkuje. LAG betuje 12bb. Hero calluje.</span>
+                <div class="pot-info">Pot: 38.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">LAGova akce:</span> Second barrel. LAG interpretuje tvůj call na flopu jako slabost.<br>
+                <span class="label">Tvůj call:</span> <span class="good">Pořád trap. Set je skoro vždy nejlepší ruka.</span><br>
+                <span class="label">Pozor na:</span> 9T pro straight. Ale proti LAGově wide range je set pořád hugely ahead.
+            </div>
+
+            <div class="street">
+                <div class="street-head">River &mdash; <span class="cards">3&#9829;</span></div>
+                <span class="action">Board: Q&#9830; 5&#9830; 8&#9827; J&#9829; 3&#9829;. Hero checkuje. LAG betuje 35bb. Hero raisne all-in (72bb). LAG calluje.</span>
+                <div class="pot-info">Final pot: 251bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Check-raise river:</span> LAG betnul tři streets. Jeho ego mu nedovolí foldnout river.<br>
+                <span class="label">Implied odds se naplnily:</span> <span class="good">Investoval jsi 2bb preflop, vyhráváš 125bb pot.</span>
+            </div>
+
+            <div class="result-box">
+                <div class="outcome won">Hero vyhrává 125.5bb</div>
+                <p>LAG ukazuje Q&#9824;T&#9824; &mdash; top pár s průměrným kickerem. Platil tři streets a callnul check-raise na riveru, protože "mám top pár a ten mě foldne". Set mining proti LAGovi = ATM.</p>
+            </div>
+
+            <div class="tip">
+                <strong>Poučení:</strong> Proti LAGovi ignoruj přímé pot odds na malé páry preflop. Implied odds jsou obrovské &mdash; LAG ti zaplatí celý stack, když trefíš. Pravidlo: potřebuješ ~15x call size ve stacku soupeře.
+                <br><br><strong>Kdyby na stejném místě seděl nit:</strong> Fold preflop. Nit otevírá 15% ruk z CO. Když trefíš set, nit má overpár nebo nic &mdash; a s "nic" nedá ani korunu. Implied odds nestačí.
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- HAND 3 -->
+        <!-- ============================================================ -->
+        <div class="hand">
+            <div class="hand-title">Hand #3 &mdash; Top Pair vs Calling Station</div>
+            <div class="hand-subtitle">Equity je jasně nahoře. Pot odds jsou irelevantní. Station platí &mdash; value betuj maximum.</div>
+            <span class="hand-tag tag-eq">equity vs pot odds</span>
+            <span class="hand-tag tag-io">implied odds</span>
+            <span class="hand-tag tag-opp">calling station</span>
+
+            <div class="street">
+                <div class="street-head">Preflop</div>
+                <span class="action">Hero (<span class="cards">A&#9829; J&#9824;</span>) otvírá 2.5bb z MP. Calling station calluje z BTN. Všichni foldnou.</span>
+                <div class="pot-info">Pot: 6.5bb &bull; Efektivní stack: 100bb</div>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Čtení soupeře:</strong> Calling station hraje 45%+ ruk preflop. Calluje s jakýmkoli párem, suited kartami, connected kartami. Postflop calluje s druhým párem, gutšotem, backdoor drawy. <strong>Nebluffuje. Nikdy.</strong>
+            </div>
+
+            <div class="street">
+                <div class="street-head">Flop &mdash; <span class="cards">A&#9827; 9&#9830; 4&#9829;</span></div>
+                <span class="action">Hero betuje 5bb. Station calluje.</span>
+                <div class="pot-info">Pot: 16.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Tvá equity:</span> <span class="good">AJ na A-high boardu = ~80% equity</span> proti stationovu calling range<br>
+                <span class="label">Station callne s:</span> jakýkoli Ax (A8, A5, A2...), devátkama, pocket páry, backdoor drawy<br>
+                <span class="label">Value bet sizing:</span> <span class="math">5bb do 6.5bb potu = ~77% potu</span><br>
+                <span class="label">Proč velký:</span> <span class="good">Station callne 75% i 33% se stejnou frekvencí. Větší sizing = víc value.</span>
+            </div>
+
+            <div class="street">
+                <div class="street-head">Turn &mdash; <span class="cards">7&#9827;</span></div>
+                <span class="action">Board: A&#9827; 9&#9830; 4&#9829; 7&#9827;. Hero betuje 13bb. Station calluje.</span>
+                <div class="pot-info">Pot: 42.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Tvá equity:</span> <span class="good">~75%</span> &mdash; station pořád drží horší Ax, páry, maybe draw<br>
+                <span class="label">Pot odds pro station:</span> <span class="math">13 / (42.5 + 13) = 23.4%</span><br>
+                <span class="label">Stationova equity:</span> <span class="bad">~25% &mdash; platí skoro break-even odds s horšími rukami</span><br>
+                <span class="label">Klíč:</span> Station nemyslí na pot odds. Má pár, callne. Tak jednoduché to je.
+            </div>
+
+            <div class="opponent-read">
+                <strong>Implied odds (tvé, ne jeho):</strong> Zde uvažuješ o IMPLIED ODDS z druhé strany. Ty máš silnou ruku a station ti bude platit na VŠECH streetech. Tvoje implied odds na value bety jsou obrovské. Každý street, kde betneš a station callne se slabší rukou, je čistý profit.
+            </div>
+
+            <div class="street">
+                <div class="street-head">River &mdash; <span class="cards">2&#9824;</span></div>
+                <span class="action">Board: A&#9827; 9&#9830; 4&#9829; 7&#9827; 2&#9824;. Hero betuje 30bb. Station calluje.</span>
+                <div class="pot-info">Final pot: 102.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">River sizing:</span> <span class="math">30bb do 42.5bb potu = ~71% potu</span><br>
+                <span class="label">Proč NE check:</span> <span class="bad">Checknutí river = necháváš 20&ndash;30bb na stole. Station by callnul.</span><br>
+                <span class="label">Proč NE overbet:</span> I station má limit. 70&ndash;80% potu dostane zaplaceno od celého jeho range. Overbet foldne nejslabší cally.
+            </div>
+
+            <div class="result-box">
+                <div class="outcome won">Hero vyhrává 51.25bb</div>
+                <p>Station ukazuje A&#9830; 3&#9830; &mdash; horší kicker. Calloval tři streets s A3 na A-high boardu. Proti calling station: betuj velký, betuj vždycky, nebluffuj nikdy.</p>
+            </div>
+
+            <div class="tip">
+                <strong>Poučení:</strong> Proti calling station pot odds a equity fungují v tvůj prospěch na VŠECH streetech. Tvoje implied odds jsou maximální, protože víš, že zaplatí. Nemusíš řešit fold equity (nemá žádnou) ani balancování (nechápe to). Prostě value, value, value.
+                <br><br><strong>Co kdyby station raisnul turn?</strong> FOLD. Station neraisuje bez nuts. Když pasivní hráč raisne, má to. Vždycky. Viz lekce 13.
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- HAND 4 -->
+        <!-- ============================================================ -->
+        <div class="hand">
+            <div class="hand-title">Hand #4 &mdash; OESD vs TAG na Turnu</div>
+            <div class="hand-subtitle">Musíš počítat. Pot odds, implied odds, reverse implied odds &mdash; všechno záleží na tom, kdo sedí naproti.</div>
+            <span class="hand-tag tag-eq">equity vs pot odds</span>
+            <span class="hand-tag tag-io">implied odds &amp; reverse implied odds</span>
+            <span class="hand-tag tag-opp">TAG</span>
+
+            <div class="street">
+                <div class="street-head">Preflop</div>
+                <span class="action">TAG otvírá 2.5bb z HJ. Hero (<span class="cards">8&#9824; 7&#9824;</span>) calluje z BTN.</span>
+                <div class="pot-info">Pot: 6.5bb &bull; Efektivní stack: 100bb</div>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Čtení soupeře:</strong> TAG otvírá z HJ ~18% ruk. Hraje agresivně, ale promyšleně. C-betuje suchý board 70%+, mokrý 50%. Dokáže foldnout na turn/river, když cítí sílu. Nechá se bluffnout &mdash; ale taky tě přečte.
+            </div>
+
+            <div class="street">
+                <div class="street-head">Flop &mdash; <span class="cards">6&#9830; 5&#9829; K&#9827;</span></div>
+                <span class="action">TAG betuje 3bb. Hero calluje.</span>
+                <div class="pot-info">Pot: 12.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Outy:</span> 8 (OESD &mdash; 4x čtyřka + 4x devítka)<br>
+                <span class="label">Equity flop-to-river:</span> <span class="math">8 &times; 4 = ~32%</span><br>
+                <span class="label">Pot odds:</span> <span class="math">3 / (12.5 + 3) = 19.4%</span><br>
+                <span class="label">Verdikt:</span> <span class="good">32% &gt; 19.4% &mdash; jasný call se dvěma kartami na přijití.</span>
+            </div>
+
+            <div class="street">
+                <div class="street-head">Turn &mdash; <span class="cards">J&#9829;</span></div>
+                <span class="action">Board: 6&#9830; 5&#9829; K&#9827; J&#9829;. TAG betuje 10bb. Hero &mdash; ?</span>
+                <div class="pot-info">Pot: 22.5bb &bull; Call: 10bb &bull; Pot po callu: 42.5bb</div>
+            </div>
+
+            <div class="analysis">
+                <span class="label">Outy:</span> 8 (pořád OESD)<br>
+                <span class="label">Equity turn-to-river:</span> <span class="math">8 &times; 2 = ~16%</span><br>
+                <span class="label">Pot odds:</span> <span class="math">10 / (22.5 + 10 + 10) = 23.5%</span><br>
+                <span class="label">Verdikt:</span> <span class="bad">16% &lt; 23.5% &mdash; přímé pot odds nestačí.</span>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Implied odds analýza proti TAGovi:</strong><br>
+                Potřebuješ vyhrát navíc: <span style="color:#ffb300;font-family:monospace;">10 / 0.16 &minus; 22.5 &minus; 10 = ~30bb</span><br><br>
+                Otázka: <em>dá ti TAG 30bb na riveru, když trefíš straight?</em><br><br>
+                Odpověď: <strong>pravděpodobně ne.</strong> Pokud spadne 4 nebo 9, board bude 6-5-K-J-4 nebo 6-5-K-J-9. TAG uvidí connected board a bude opatrný. S overpárem (QQ, AA) možná zaplatí menší bet. Ale s top párem (KQ, KJ) checkne/foldne na river barrel. Reálné implied odds: ~10&ndash;15bb.
+            </div>
+
+            <div class="analysis">
+                <span class="label">Potřebuješ navíc:</span> <span class="math">~30bb</span><br>
+                <span class="label">Reálně dostaneš:</span> <span class="bad">~10&ndash;15bb</span><br>
+                <span class="label">Gap:</span> <span class="bad">15&ndash;20bb chybí. Implied odds nestačí.</span>
+            </div>
+
+            <div class="opponent-read">
+                <strong>Reverse implied odds:</strong> A co když trefíš 9 a TAG má T8 pro vyšší straight? Nebo 4 a TAG má 78 pro vyšší straight? Proti TAGovu range z HJ je to nepravděpodobné (nemá tyto ruky), ale proti LAGovi bys musel počítat i s tím.
+            </div>
+
+            <div class="decision negative">
+                <strong>Rozhodnutí: FOLD</strong>
+                <p>Pot odds nestačí (16% &lt; 23.5%). Implied odds jsou omezené (TAG nechá trefený straight projet, nebo zaplatí málo). Matematika říká fold.</p>
+            </div>
+
+            <div class="result-box">
+                <div class="outcome lost">Hero folduje. River: 4&#9827;. Straight by dorazil.</div>
+                <p>Bolí to. Ale: trefil bys straight v 16% případů. V 84% bys prohrál 10bb. I kdyby TAG zaplatil 20bb na riveru (optimistické), long-term EV callu = <span style="font-family:monospace;color:#f87171;">0.16 &times; (22.5 + 10 + 20) &minus; 0.84 &times; 10 = &minus;0.0bb</span> &mdash; v lepším případě break even. Fold je správný.</p>
+            </div>
+
+            <div class="tip">
+                <strong>Poučení:</strong> Na turnu (jedna karta do konce) se equity drawe snižuje na polovinu oproti flopu. Pot odds se nemění. Proto spousta drawů, které jsou call na flopu, jsou fold na turnu &mdash; zvlášť proti TAGovi, který ti nedá zaplaceno.
+                <br><br>
+                <strong>Co kdyby na stejném místě seděl calling station?</strong> CALL. Station zaplatí 30&ndash;50bb na riveru s jakýmkoli párem. Tvoje implied odds jsou 3x vyšší. Stejný draw, stejný pot, jiný soupeř &mdash; jiné rozhodnutí.
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- SUMMARY -->
+        <!-- ============================================================ -->
+        <div class="summary">
+            <h3>Shrnutí</h3>
+            <ul>
+                <li><strong>Pot odds</strong> ti řeknou minimum equity pro call. Ale to je jen začátek.</li>
+                <li><strong>Implied odds</strong> závisí na soupeři &mdash; kolik REÁLNĚ zaplatí, ne kolik má v stacku.</li>
+                <li><strong>Nit:</strong> implied odds &asymp; 0. Nezaplatí, když trefíš. Hraj striktně podle pot odds.</li>
+                <li><strong>Calling station:</strong> implied odds = maximum. Zaplatí s čímkoli. Value betuj, nebluffuj.</li>
+                <li><strong>TAG:</strong> implied odds = omezené. Dokáže foldnout. Bluffuj, ale neexpectuj payoff na drawech.</li>
+                <li><strong>LAG:</strong> implied odds = obrovské. Payoffuje s wide range. Set minuj, trapuj, nech ho bluffovat.</li>
+            </ul>
+        </div>
+    </div>
+
+
+<script src="../../suits.js"></script>
+<script src="../../reveal.js"></script>
+</body>
+</html>
