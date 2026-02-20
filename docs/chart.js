@@ -177,12 +177,11 @@ function drawChart() {
     const sessionLabels = storedSessionLabels;
 
     // Find highlight indices for selected player
-    let highlights = {}, highlightTooltips = {}, highlightTypes = {};
+    let highlightTooltips = {}, highlightTypes = {};
     if (selectedPlayer) {
         const ci = playerNames.indexOf(selectedPlayer);
         if (ci >= 0) {
             let bestVal = -Infinity, worstVal = Infinity, bestIdx = -1, worstIdx = -1;
-            let streak = 0, maxStreak = 0, streakEnd = -1;
             for (let i = 0; i < originalCells.length; i++) {
                 const cell = originalCells[i][ci];
                 const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
@@ -190,52 +189,15 @@ function drawChart() {
                 const v = Number(cell);
                 if (v > bestVal) { bestVal = v; bestIdx = i; }
                 if (v < worstVal) { worstVal = v; worstIdx = i; }
-                if (v > 0) { streak++; if (streak > maxStreak) { maxStreak = streak; streakEnd = i; } }
-                else streak = 0;
             }
-            if (bestIdx >= 0) { highlights[bestIdx] = '▲ +' + bestVal; highlightTypes[bestIdx] = 'best'; }
-            if (worstIdx >= 0) { highlights[worstIdx] = '▼ ' + worstVal; highlightTypes[worstIdx] = 'worst'; }
-            if (maxStreak >= 2 && streakEnd >= 0) {
-                var streakLabel = maxStreak + '× série';
-                highlights[streakEnd] = highlights[streakEnd] ? highlights[streakEnd] + ' | ' + streakLabel : streakLabel;
-                if (!highlightTypes[streakEnd]) highlightTypes[streakEnd] = 'streak';
+            if (bestIdx >= 0) {
+                highlightTypes[bestIdx] = 'best';
+                highlightTooltips[bestIdx] = '<span style="color:#4ade80;">&#9650; Největší výhra: +' + bestVal + '</span>';
             }
-            // Worst week (tilt week)
-            var MS_WEEK = 7 * 24 * 60 * 60 * 1000;
-            var dated = [];
-            for (var di = 0; di < originalCells.length; di++) {
-                var dc = originalCells[di][ci];
-                if (dc !== undefined && dc !== '' && dc !== '0' && Number(dc) !== 0 && storedDates[di])
-                    dated.push({ idx: di, val: Number(dc), date: storedDates[di] });
+            if (worstIdx >= 0) {
+                highlightTypes[worstIdx] = 'worst';
+                highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9660; Největší prohra: ' + worstVal + '</span>';
             }
-            var tiltSum = 0, tiltEndIdx = -1, bestWeekSum = 0, bestWeekIdx = -1;
-            for (var di = 0; di < dated.length; di++) {
-                var sum = 0, lastDj = di;
-                for (var dj = di; dj < dated.length; dj++) {
-                    if (dated[dj].date - dated[di].date > MS_WEEK) break;
-                    sum += dated[dj].val;
-                    lastDj = dj;
-                }
-                if (sum < tiltSum) { tiltSum = sum; tiltEndIdx = dated[lastDj].idx; }
-                if (sum > bestWeekSum) { bestWeekSum = sum; bestWeekIdx = dated[lastDj].idx; }
-            }
-            if (tiltEndIdx >= 0 && tiltSum < 0) {
-                var tiltLabel = 'nej. tilt ' + tiltSum;
-                highlights[tiltEndIdx] = highlights[tiltEndIdx] ? highlights[tiltEndIdx] + ' | ' + tiltLabel : tiltLabel;
-                if (!highlightTypes[tiltEndIdx]) highlightTypes[tiltEndIdx] = 'tilt';
-            }
-            if (bestWeekIdx >= 0 && bestWeekSum > 0) {
-                var bwLabel = 'nej. týden +' + bestWeekSum;
-                highlights[bestWeekIdx] = highlights[bestWeekIdx] ? highlights[bestWeekIdx] + ' | ' + bwLabel : bwLabel;
-                if (!highlightTypes[bestWeekIdx]) highlightTypes[bestWeekIdx] = 'bestWeek';
-            }
-
-            // Descriptive labels for tooltips
-            if (bestIdx >= 0) highlightTooltips[bestIdx] = '<span style="color:#4ade80;">&#9650; Největší výhra: +' + bestVal + '</span>';
-            if (worstIdx >= 0) highlightTooltips[worstIdx] = (highlightTooltips[worstIdx] ? highlightTooltips[worstIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9660; Největší prohra: ' + worstVal + '</span>';
-            if (maxStreak >= 2 && streakEnd >= 0) highlightTooltips[streakEnd] = (highlightTooltips[streakEnd] ? highlightTooltips[streakEnd] + '<br>' : '') + '<span style="color:#ffb300;">&#9670; Série výher: ' + maxStreak + ' her v řadě</span>';
-            if (tiltEndIdx >= 0 && tiltSum < 0) highlightTooltips[tiltEndIdx] = (highlightTooltips[tiltEndIdx] ? highlightTooltips[tiltEndIdx] + '<br>' : '') + '<span style="color:#f87171;">&#9632; Konec týdne tiltu: ' + tiltSum + '</span>';
-            if (bestWeekIdx >= 0 && bestWeekSum > 0) highlightTooltips[bestWeekIdx] = (highlightTooltips[bestWeekIdx] ? highlightTooltips[bestWeekIdx] + '<br>' : '') + '<span style="color:#4ade80;">&#9632; Konec nej. týdne: +' + bestWeekSum + '</span>';
         }
     }
 
@@ -245,7 +207,6 @@ function drawChart() {
         chartData.addColumn('number', name);
         chartData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
         chartData.addColumn({ type: 'string', role: 'style' });
-        chartData.addColumn({ type: 'string', role: 'annotation' });
     });
     for (let i = 0; i < sessionLabels.length; i++) {
         const row = [sessionLabels[i]];
@@ -259,14 +220,9 @@ function drawChart() {
                 const ht = highlightTypes[i];
                 if (ht === 'best') row.push('point {size: 5; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
                 else if (ht === 'worst') row.push('point {size: 5; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
-                else if (ht === 'streak') row.push('point {size: 5; shape-type: diamond; fill-color: #ffb300; stroke-color: #ffb300; stroke-width: 0; visible: true;}');
-                else if (ht === 'tilt') row.push('point {size: 5; shape-type: square; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
-                else if (ht === 'bestWeek') row.push('point {size: 5; shape-type: square; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
                 else if (played) row.push('point {size: 2.5; fill-color: ' + pc + '; visible: true;}');
                 else row.push(null);
-                row.push(highlights[i] || null);
             } else {
-                row.push(null);
                 row.push(null);
             }
         });
@@ -293,7 +249,6 @@ function drawChart() {
         vAxis: { title: 'pošmel / výšmel', titleTextStyle: { color: '#aaa', italic: false }, textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' },
         chartArea: { left: 60, top: 40, right: 20, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { isHtml: true, trigger: 'both' },
-        annotations: { textStyle: { fontSize: 11, color: '#eee', auraColor: '#181818', opacity: 0.9 }, stem: { color: '#555', length: 32 }, highContrast: false, alwaysOutside: true },
         explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
     };
@@ -312,35 +267,18 @@ let statsSortCol = 'total', statsSortAsc = false, statsData = null;
 function computeStats() {
     if (!storedOriginalCells || !playerNames.length) return [];
     const oc = storedOriginalCells;
-    const MS_WEEK = 7 * 24 * 60 * 60 * 1000;
     return playerNames.map((name, ci) => {
-        const sessions = [], sessionDated = [];
+        const sessions = [];
         for (let i = 0; i < oc.length; i++) {
             const cell = oc[i][ci];
             if (cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0) {
                 sessions.push(Number(cell));
-                sessionDated.push({ idx: i, val: Number(cell), date: storedDates[i] });
             }
         }
         const cum = storedCumulative[ci];
         let total = 0;
         for (let j = cum.length - 1; j >= 0; j--) { if (cum[j] != null) { total = cum[j]; break; } }
-        let streak = 0, maxStreak = 0;
-        sessions.forEach(v => { if (v > 0) { streak++; if (streak > maxStreak) maxStreak = streak; } else streak = 0; });
-        // Best/worst week: sliding window of 7 days
-        let tiltWeek = 0, bestWeek = 0;
-        for (let i = 0; i < sessionDated.length; i++) {
-            if (!sessionDated[i].date) continue;
-            let sum = 0;
-            for (let j = i; j < sessionDated.length; j++) {
-                if (!sessionDated[j].date) continue;
-                if (sessionDated[j].date - sessionDated[i].date > MS_WEEK) break;
-                sum += sessionDated[j].val;
-            }
-            if (sum < tiltWeek) tiltWeek = sum;
-            if (sum > bestWeek) bestWeek = sum;
-        }
-        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, streak: 0, tiltWeek: 0, bestWeek: 0, color: playerColors[name] };
+        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, color: playerColors[name] };
         return {
             name: name.split('/')[0].trim(),
             fullName: name,
@@ -349,9 +287,6 @@ function computeStats() {
             worst: Math.min(...sessions),
             total,
             games: sessions.length,
-            streak: maxStreak,
-            tiltWeek,
-            bestWeek,
             color: playerColors[name]
         };
     });
@@ -374,7 +309,7 @@ function renderStatsTable() {
     const arrow = col => statsSortCol === col ? (statsSortAsc ? ' ▲' : ' ▼') : '';
     const c = v => v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
     const f = v => v > 0 ? `+${v}` : `${v}`;
-    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th><th data-col="streak">Série výher${arrow('streak')}</th><th data-col="bestWeek">Nejlepší týden${arrow('bestWeek')}</th><th data-col="tiltWeek">Týden tiltu${arrow('tiltWeek')}</th></tr>`;
+    let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th></tr>`;
     sorted.forEach(s => {
         const sel = selectedPlayer === s.fullName ? ' class="selected"' : '';
         html += `<tr data-player="${s.fullName}"${sel}>` +
@@ -384,9 +319,6 @@ function renderStatsTable() {
             `<td class="${c(s.avg)}">${f(s.avg)}</td>` +
             `<td class="${c(s.best)}">${f(s.best)}</td>` +
             `<td class="${c(s.worst)}">${f(s.worst)}</td>` +
-            `<td>${s.streak >= 2 ? s.streak : ''}</td>` +
-            `<td class="${c(s.bestWeek)}">${s.bestWeek ? f(s.bestWeek) : '0'}</td>` +
-            `<td class="${c(s.tiltWeek)}">${s.tiltWeek ? f(s.tiltWeek) : '0'}</td>` +
             `</tr>`;
     });
     html += '</table>';
