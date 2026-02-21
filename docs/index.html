@@ -294,7 +294,7 @@ function setRulesLang(lang) {
   document.getElementById('btnUA').classList.toggle('active', lang === 'ua');
   document.querySelectorAll('.pravidlo-card').forEach(function(card) {
     if (lang === 'ua') {
-      card.innerHTML = card.getAttribute('data-cs') + '<hr style="border:0;border-top:1px solid #444;margin:8px 0;">' + card.getAttribute('data-ua');
+      card.innerHTML = card.getAttribute('data-cs') + '<hr style="border:0;border-top:1px solid #444;margin:8px 0;"><span style="font-family:\'Noto Sans\',sans-serif;">' + card.getAttribute('data-ua') + '</span>';
     } else {
       card.innerHTML = card.getAttribute('data-cs');
     }
