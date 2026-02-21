@@ -254,9 +254,16 @@ handleHash();
 if (!location.hash) {
   try { var saved = localStorage.getItem('activeTab'); if (saved) switchTab(saved); } catch(e) {}
 }
+function syncShimmerDelays() {
+  var active = document.querySelectorAll('.pravidlo-card.active');
+  active.forEach(function(card, i) {
+    card.style.animationDelay = (i * 0.3) + 's';
+  });
+}
 document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) {
   card.addEventListener('click', function() {
     this.classList.toggle('active');
+    if (!this.classList.contains('active')) this.style.animationDelay = '';
     var list = this.parentNode;
     if (this.classList.contains('active')) {
       var firstInactive = list.querySelector('.pravidlo-card:not(.active)');
@@ -264,6 +271,7 @@ document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) 
     } else {
       list.appendChild(this);
     }
+    syncShimmerDelays();
   });
 });
 </script>
