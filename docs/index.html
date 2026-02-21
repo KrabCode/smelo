@@ -33,7 +33,7 @@
     <div id="statsTableDiv"></div>
   </div>
   <div class="tab-panel" data-tab="pravidla">
-    <div style="text-align:center;margin:12px 0 4px;">
+    <div style="text-align:center;margin:12px 0 16px;">
       <button id="btnCZ" class="range-btn active">CZ</button>
       <button id="btnUA" class="range-btn">UA</button>
     </div>
@@ -293,7 +293,11 @@ function setRulesLang(lang) {
   document.getElementById('btnCZ').classList.toggle('active', lang === 'cs');
   document.getElementById('btnUA').classList.toggle('active', lang === 'ua');
   document.querySelectorAll('.pravidlo-card').forEach(function(card) {
-    card.innerHTML = card.getAttribute('data-' + lang);
+    if (lang === 'ua') {
+      card.innerHTML = card.getAttribute('data-cs') + '<hr style="border:0;border-top:1px solid #444;margin:8px 0;">' + card.getAttribute('data-ua');
+    } else {
+      card.innerHTML = card.getAttribute('data-cs');
+    }
   });
 }
 </script>
