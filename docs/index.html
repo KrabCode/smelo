@@ -184,8 +184,9 @@
           <label for="sessionDate">Datum (YYYY-MM-DD)</label>
           <input type="text" id="sessionDate" pattern="\d{4}-\d{2}-\d{2}" placeholder="2026-02-17" required>
         </div>
+        <div id="playerChips" class="player-chips"></div>
         <div id="entriesContainer"></div>
-        <button type="button" id="addEntryBtn" class="btn" style="width:100%; border-style:dashed; color:#888;">+ Přidat hráče</button>
+        <button type="button" id="addEntryBtn" class="btn" style="width:100%; border-style:dashed; color:#888;">+ Jiný hráč</button>
         <button type="submit" class="btn btn-submit">Odeslat</button>
         <div id="status"></div>
       </form>
@@ -203,7 +204,6 @@
         </div>
       </details>
     </div>
-    <datalist id="playerList"></datalist>
   </div>
 </div>
 <script src="chart.js"></script>

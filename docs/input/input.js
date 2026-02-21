@@ -8,7 +8,7 @@ const sessionDate = document.getElementById('sessionDate');
 const statusEl = document.getElementById('status');
 const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
-const playerList = document.getElementById('playerList');
+const playerChips = document.getElementById('playerChips');
 
 let knownPlayers = [];
 
@@ -43,17 +43,34 @@ function fetchPlayers() {
             const headers = csv.split('\n')[0].split(',');
             // Skip col 0 (index) and col 1 (date), rest are player names
             knownPlayers = headers.slice(2).map(h => h.trim()).filter(Boolean);
-            populateDatalist();
+            populateChips();
         })
         .catch(() => {});
 }
 
-function populateDatalist() {
-    playerList.innerHTML = '';
+function populateChips() {
+    playerChips.innerHTML = '';
     knownPlayers.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        playerList.appendChild(opt);
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'player-chip';
+        chip.textContent = name;
+        chip.addEventListener('click', () => {
+            addEntry(name);
+            updateChipStates();
+        });
+        playerChips.appendChild(chip);
+    });
+}
+
+function updateChipStates() {
+    const usedNames = new Set();
+    entriesContainer.querySelectorAll('.entry-name').forEach(input => {
+        const val = input.value.trim();
+        if (val) usedNames.add(val);
+    });
+    playerChips.querySelectorAll('.player-chip').forEach(chip => {
+        chip.classList.toggle('used', usedNames.has(chip.textContent));
     });
 }
 
@@ -64,7 +81,7 @@ function createEntry(name, amount) {
     div.innerHTML =
         '<div class="name-col">' +
             '<label>Hráč</label>' +
-            '<input type="text" class="entry-name" list="playerList" placeholder="Jméno hráče" value="' + (name || '') + '">' +
+            '<input type="text" class="entry-name" placeholder="Jméno hráče" value="' + (name || '') + '">' +
         '</div>' +
         '<div class="amount-col">' +
             '<label>Výsledek</label>' +
@@ -75,15 +92,21 @@ function createEntry(name, amount) {
         '</div>';
     div.querySelector('.btn-remove').addEventListener('click', () => {
         div.remove();
+        updateChipStates();
         if (entriesContainer.children.length === 0) addEntry();
     });
+    div.querySelector('.entry-name').addEventListener('input', () => updateChipStates());
     entriesContainer.appendChild(div);
     return div;
 }
 
 function addEntry(name, amount) {
     const entry = createEntry(name, amount);
-    entry.querySelector('.entry-name').focus();
+    if (name) {
+        entry.querySelector('.entry-amount').focus();
+    } else {
+        entry.querySelector('.entry-name').focus();
+    }
 }
 
 // --- Form submission ---
@@ -132,6 +155,7 @@ form.addEventListener('submit', async (e) => {
             setStatus('Záznam přidán.', false);
             entriesContainer.innerHTML = '';
             addEntry();
+            updateChipStates();
         } else {
             setStatus('Chyba: ' + (json && json.error ? json.error : text || res.statusText), true);
         }
@@ -149,6 +173,5 @@ function setStatus(msg, isError) {
 sessionDate.value = new Date().toISOString().slice(0, 10);
 loadSettings();
 fetchPlayers();
-addEntry();
 
 addEntryBtn.addEventListener('click', () => addEntry());
