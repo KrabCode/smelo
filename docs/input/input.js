@@ -202,6 +202,6 @@ addEntryBtn.addEventListener('click', () => addEntry());
 
 document.getElementById('refreshChartBtn').addEventListener('click', () => {
     try { localStorage.removeItem('smelo_graph_csv'); localStorage.removeItem('smelo_graph_csv_ts'); } catch(e) {}
-    location.hash = 'vysledky';
-    location.reload();
+    switchTab('vysledky');
+    fetchAndRender();
 });
