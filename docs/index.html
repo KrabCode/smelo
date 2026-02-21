@@ -254,31 +254,23 @@ handleHash();
 if (!location.hash) {
   try { var saved = localStorage.getItem('activeTab'); if (saved) switchTab(saved); } catch(e) {}
 }
-function syncShimmerDelays() {
-  var active = document.querySelectorAll('.pravidlo-card.active');
-  active.forEach(function(card, i) {
-    card.classList.remove('active');
-    card.style.animationDelay = '';
-  });
-  // force reflow so animations fully reset
-  void document.body.offsetHeight;
-  active.forEach(function(card, i) {
-    card.style.animationDelay = (i * 0.3) + 's';
-    card.classList.add('active');
-  });
-}
+var shimmerEpoch = null;
 document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) {
   card.addEventListener('click', function() {
     this.classList.toggle('active');
     var list = this.parentNode;
     if (this.classList.contains('active')) {
+      if (!shimmerEpoch) shimmerEpoch = Date.now();
+      var elapsed = ((Date.now() - shimmerEpoch) / 1000) % 5;
+      var index = list.querySelectorAll('.pravidlo-card.active').length - 1;
+      this.style.animationDelay = (-elapsed + index * 0.3) + 's';
       var firstInactive = list.querySelector('.pravidlo-card:not(.active)');
       if (firstInactive) list.insertBefore(this, firstInactive);
     } else {
       this.style.animationDelay = '';
       list.appendChild(this);
+      if (!list.querySelector('.pravidlo-card.active')) shimmerEpoch = null;
     }
-    syncShimmerDelays();
   });
 });
 </script>
