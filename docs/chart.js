@@ -15,7 +15,7 @@ let chart = null, chartData = null, playerNames = [], playerColors = {}, selecte
 let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedDates = null;
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
-const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 3600000;
+const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 300000;
 
 function fetchCSV() {
     const cached = localStorage.getItem(CACHE_KEY), cachedTs = localStorage.getItem(CACHE_TS_KEY);
