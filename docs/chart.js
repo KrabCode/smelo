@@ -208,10 +208,14 @@ function drawChart() {
         chartData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
         chartData.addColumn({ type: 'string', role: 'style' });
     });
+    chartData.addColumn('number', '_mirror');
     for (let i = 0; i < sessionLabels.length; i++) {
         const row = [sessionLabels[i]];
+        let rowMax = null;
         playerNames.forEach((name, ci) => {
-            row.push(cumulative[ci][i]);
+            const v = cumulative[ci][i];
+            row.push(v);
+            if (v != null && (rowMax == null || Math.abs(v) > Math.abs(rowMax))) rowMax = v;
             row.push(buildTooltip(i, highlightTooltips, name));
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
@@ -226,6 +230,7 @@ function drawChart() {
                 row.push(null);
             }
         });
+        row.push(rowMax);
         chartData.addRow(row);
     }
 
@@ -238,16 +243,18 @@ function drawChart() {
     const series = {};
     playerNames.forEach((name, i) => {
         const color = playerColors[name];
-        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true };
-        else if (selectedPlayer) series[i] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false };
-        else series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true };
+        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+        else if (selectedPlayer) series[i] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
+        else series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
     });
+    series[playerNames.length] = { targetAxisIndex: 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
+    const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' };
     const options = {
         title: 'Kumulativní šmelo', titleTextStyle: { fontSize: 14, color: '#eee' },
         legend: 'none', interpolateNulls: false, dataOpacity: 1.0, series,
         hAxis: { textStyle: { fontSize: 10, color: '#aaa' }, slantedText: true, slantedTextAngle: 45, gridlines: { color: '#333' }, baselineColor: '#444' },
-        vAxis: { title: 'pošmel / výšmel', titleTextStyle: { color: '#aaa', italic: false }, textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' },
-        chartArea: { left: 60, top: 40, right: 20, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
+        vAxes: { 0: vAxisShared, 1: { ...vAxisShared, gridlines: { color: 'transparent' } } },
+        chartArea: { left: 60, top: 40, right: 60, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { isHtml: true, trigger: 'both' },
         explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
