@@ -20,7 +20,7 @@ exit /b 1
 :build_pre
 echo Building preflop trainer...
 cd /d "%FLASH_CARDS_DIR%" || exit /b 1
-call flutter build web --release || exit /b 1
+call flutter build web --release --base-href /pre/ || exit /b 1
 echo Deploying to docs/pre/...
 rmdir /s /q "%SMELO_DIR%docs\pre" 2>nul
 mkdir "%SMELO_DIR%docs\pre"
@@ -32,7 +32,7 @@ goto :eof
 :build_hand
 echo Building hand tracker...
 cd /d "%HAND_TRACKER_DIR%" || exit /b 1
-call flutter build web --release || exit /b 1
+call flutter build web --release --base-href /hand/ || exit /b 1
 echo Deploying to docs/hand/...
 rmdir /s /q "%SMELO_DIR%docs\hand" 2>nul
 mkdir "%SMELO_DIR%docs\hand"
