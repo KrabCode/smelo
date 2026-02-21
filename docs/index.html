@@ -33,24 +33,29 @@
     <div id="statsTableDiv"></div>
   </div>
   <div class="tab-panel" data-tab="pravidla">
+    <div style="text-align:center;margin:12px 0 4px;">
+      <button id="btnCZ" class="range-btn active">CZ</button>
+      <button id="btnUA" class="range-btn">UA</button>
+    </div>
     <div class="pravidla-list" style="max-width:600px;margin:0 auto;padding:0 20px;">
-      <div class="pravidlo-card" data-toggle>Nezdržuj.</div>
-      <div class="pravidlo-card" data-toggle>Sleduj hru.</div>
-      <div class="pravidlo-card" data-toggle>Hraj jen když jsi na řadě.</div>
-      <div class="pravidlo-card" data-toggle>Řekni nahlas co děláš za akci.</div>
-      <div class="pravidlo-card" data-toggle>Nesplashuj pot.</div>
-      <div class="pravidlo-card" data-toggle>Měj jasně oddělené sázky v tomto kole.</div>
-      <div class="pravidlo-card" data-toggle>Pokud máš dostat vráceno, počkej na konec sázecího kola.</div>
-      <div class="pravidlo-card" data-toggle>Řekni číslo — žádný string betting.</div>
-	  <div class="pravidlo-card" data-toggle>Neházej karty do vzduchu.</div>
-      <div class="pravidlo-card" data-toggle>Neruš hrající.</div>
-      <div class="pravidlo-card" data-toggle>Neříkej cos měl, dokud se ještě hraje.</div>
-      <div class="pravidlo-card" data-toggle>Žádný slow roll — ukaž karty.<br>(Když jsi agresor nebo máš nuts)</div>
-      <div class="pravidlo-card" data-toggle>Pokud chceš vyhrát pot, musíš ukázat obě karty.</div>
-      <div class="pravidlo-card" data-toggle>Žetony měj na stole, viditelně a ve sloupcích.</div>
-      <div class="pravidlo-card" data-toggle>Nešahej na cizí žetony (cizí blind dát můžeš)</div>
-      <div class="pravidlo-card" data-toggle>Ukázals karty jednomu — ukaž je všem.</div>
-      <div class="pravidlo-card" data-toggle>Nelze se vykešovat částečně. Všechno nebo nic.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Nezdržuj." data-ua="Не гальмуй.">Nezdržuj.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Sleduj hru." data-ua="Слідкуй за грою.">Sleduj hru.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Hraj jen když jsi na řadě." data-ua="Грай тільки коли твоя черга.">Hraj jen když jsi na řadě.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Řekni nahlas co děláš za akci." data-ua="Скажи вголос, яку дію робиш.">Řekni nahlas co děláš za akci.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Nesplashuj pot." data-ua="Не сплешуй пот.">Nesplashuj pot.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Měj jasně oddělené sázky v tomto kole." data-ua="Ставки в цьому колі мають бути чітко розділені.">Měj jasně oddělené sázky v tomto kole.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Pokud máš dostat vráceno, počkej na konec sázecího kola." data-ua="Якщо тобі мають повернути, зачекай до кінця раунду ставок.">Pokud máš dostat vráceno, počkej na konec sázecího kola.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Řekni číslo — žádný string betting." data-ua="Назви число — ніякого стрінг бетінгу.">Řekni číslo — žádný string betting.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Neházej karty do vzduchu." data-ua="Не кидай карти в повітря.">Neházej karty do vzduchu.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Neruš hrající." data-ua="Не заважай тим, хто грає.">Neruš hrající.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Neříkej cos měl, dokud se ještě hraje." data-ua="Не кажи що мав, поки ще грають.">Neříkej cos měl, dokud se ještě hraje.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Žádný slow roll — ukaž karty.<br>(Když jsi agresor nebo máš nuts)" data-ua="Ніякого слоу ролу — покажи карти.<br>(Коли ти агресор або маєш натс)">Žádný slow roll — ukaž karty.<br>(Když jsi agresor nebo máš nuts)</div>
+      <div class="pravidlo-card" data-toggle data-cs="Pokud chceš vyhrát pot, musíš ukázat obě karty." data-ua="Якщо хочеш виграти пот, покажи обидві карти.">Pokud chceš vyhrát pot, musíš ukázat obě karty.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Žetony měj na stole, viditelně a ve sloupcích." data-ua="Фішки тримай на столі, видно і стовпчиками.">Žetony měj na stole, viditelně a ve sloupcích.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Nešahej na cizí žetony (cizí blind dát můžeš)" data-ua="Не чіпай чужі фішки (чужий блайнд поставити можеш)">Nešahej na cizí žetony (cizí blind dát můžeš)</div>
+      <div class="pravidlo-card" data-toggle data-cs="Ukázals karty jednomu — ukaž je všem." data-ua="Показав карти одному — покажи всім.">Ukázals karty jednomu — ukaž je všem.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Nelze se vykešovat částečně. Všechno nebo nic." data-ua="Не можна викешувати частково. Все або нічого.">Nelze se vykešovat částečně. Všechno nebo nic.</div>
+      <div class="pravidlo-card" data-toggle data-cs="Poprosím blindy." data-ua="Попрошу блайнди.">Poprosím blindy.</div>
     </div>
   </div>
   <div class="tab-panel" data-tab="teorie">
@@ -282,6 +287,15 @@ document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) 
     }
   });
 });
+document.getElementById('btnCZ').addEventListener('click', function() { setRulesLang('cs'); });
+document.getElementById('btnUA').addEventListener('click', function() { setRulesLang('ua'); });
+function setRulesLang(lang) {
+  document.getElementById('btnCZ').classList.toggle('active', lang === 'cs');
+  document.getElementById('btnUA').classList.toggle('active', lang === 'ua');
+  document.querySelectorAll('.pravidlo-card').forEach(function(card) {
+    card.innerHTML = card.getAttribute('data-' + lang);
+  });
+}
 </script>
 <script src="reveal.js"></script>
 </body>
