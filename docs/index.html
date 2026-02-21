@@ -33,10 +33,6 @@
     <div id="statsTableDiv"></div>
   </div>
   <div class="tab-panel" data-tab="pravidla">
-    <div style="text-align:center;margin:12px 0 16px;">
-      <button id="btnCZ" class="range-btn active">CZ</button>
-      <button id="btnUA" class="range-btn">UA</button>
-    </div>
     <div class="pravidla-list" style="max-width:600px;margin:0 auto;padding:0 20px;">
       <div class="pravidlo-card" data-toggle data-cs="Nezdržuj." data-ua="Не гальмуй.">Nezdržuj.</div>
       <div class="pravidlo-card" data-toggle data-cs="Sleduj hru." data-ua="Слідкуй за грою.">Sleduj hru.</div>
@@ -56,6 +52,9 @@
       <div class="pravidlo-card" data-toggle data-cs="Ukázals karty jednomu — ukaž je všem." data-ua="Показав карти одному — покажи всім.">Ukázals karty jednomu — ukaž je všem.</div>
       <div class="pravidlo-card" data-toggle data-cs="Nelze se vykešovat částečně. Všechno nebo nic." data-ua="Не можна викешувати частково. Все або нічого.">Nelze se vykešovat částečně. Všechno nebo nic.</div>
       <div class="pravidlo-card" data-toggle data-cs="Poprosím blindy." data-ua="Попрошу блайнди.">Poprosím blindy.</div>
+      <div style="text-align:center;margin-top:16px;">
+        <button id="btnUA" class="range-btn">UA</button>
+      </div>
     </div>
   </div>
   <div class="tab-panel" data-tab="teorie">
@@ -287,19 +286,18 @@ document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) 
     }
   });
 });
-document.getElementById('btnCZ').addEventListener('click', function() { setRulesLang('cs'); });
-document.getElementById('btnUA').addEventListener('click', function() { setRulesLang('ua'); });
-function setRulesLang(lang) {
-  document.getElementById('btnCZ').classList.toggle('active', lang === 'cs');
-  document.getElementById('btnUA').classList.toggle('active', lang === 'ua');
+var uaBtn = document.getElementById('btnUA');
+uaBtn.addEventListener('click', function() {
+  var showUa = !uaBtn.classList.contains('active');
+  uaBtn.classList.toggle('active', showUa);
   document.querySelectorAll('.pravidlo-card').forEach(function(card) {
-    if (lang === 'ua') {
+    if (showUa) {
       card.innerHTML = card.getAttribute('data-cs') + '<hr style="border:0;border-top:1px solid #444;margin:8px 0;"><span style="font-family:\'Noto Sans\',sans-serif;">' + card.getAttribute('data-ua') + '</span>';
     } else {
       card.innerHTML = card.getAttribute('data-cs');
     }
   });
-}
+});
 </script>
 <script src="reveal.js"></script>
 </body>
