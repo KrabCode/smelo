@@ -6,7 +6,7 @@ set FLASH_CARDS_DIR=%SMELO_DIR%..\poker_flash_cards
 set HAND_TRACKER_DIR=%SMELO_DIR%..\poker-hand-tracker
 
 if "%1"=="" (
-    echo Usage: deploy.bat [pre^|hand^|all]
+    echo Usage: deploy_subprojects.bat [pre^|hand^|all]
     exit /b 1
 )
 
@@ -14,7 +14,7 @@ if "%1"=="pre" goto build_pre
 if "%1"=="hand" goto build_hand
 if "%1"=="all" goto build_all
 echo Unknown target: %1
-echo Usage: deploy.bat [pre^|hand^|all]
+echo Usage: deploy_subprojects.bat [pre^|hand^|all]
 exit /b 1
 
 :build_pre
@@ -50,3 +50,10 @@ goto end
 :end
 cd /d "%SMELO_DIR%"
 echo Deploy complete.
+echo.
+set /p COMMIT="Commit and push? [y/N] "
+if /i "%COMMIT%"=="y" (
+    git add docs/pre docs/hand
+    git commit -m "Rebuild subprojects"
+    git push
+)
