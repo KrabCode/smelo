@@ -224,8 +224,15 @@ a.card { color: var(--text); text-decoration: none; }
     box-sizing: border-box; font-size: 0.95em;
 }
 .input-panel input:focus { outline: none; border-color: #888; }
+.player-section {
+    border: 1px solid #333; border-radius: 8px; padding: 12px;
+    margin-bottom: 14px; background: #1a1a1a;
+}
+.player-section-label {
+    display: block; font-size: 0.85em; color: #888; margin-bottom: 8px;
+}
 .player-search {
-    border-radius: 20px !important; padding: 8px 16px !important; margin-bottom: 10px;
+    border-radius: 20px !important; padding: 8px 16px !important; margin-bottom: 0;
     background: #1a1a1a !important; border: 1px solid #333 !important;
 }
 .player-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }

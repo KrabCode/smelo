@@ -40,6 +40,7 @@
       <div class="pravidlo-card" data-toggle>Řekni nahlas co děláš za akci.</div>
       <div class="pravidlo-card" data-toggle>Nesplashuj pot.</div>
       <div class="pravidlo-card" data-toggle>Měj jasně oddělené sázky v tomto kole.</div>
+      <div class="pravidlo-card" data-toggle>Pokud calluješ s vyšším žetonem, vrátíme ti až na konci sázecího kola.</div>
       <div class="pravidlo-card" data-toggle>Řekni číslo — žádný string betting.</div>
 	  <div class="pravidlo-card" data-toggle>Neházej karty do vzduchu.</div>
       <div class="pravidlo-card" data-toggle>Neruš hrající.</div>
@@ -48,7 +49,6 @@
       <div class="pravidlo-card" data-toggle>Pokud chceš vyhrát pot, musíš ukázat obě karty.</div>
       <div class="pravidlo-card" data-toggle>Žetony měj na stole, viditelně a ve sloupcích.</div>
       <div class="pravidlo-card" data-toggle>Nešahej na cizí žetony (cizí blind dát můžeš).</div>
-      <div class="pravidlo-card" data-toggle>Pokud calluješ s vyšším žetonem, vrátíme ti až na konci sázecího kola.</div>
       <div class="pravidlo-card" data-toggle>Ukázals karty jednomu — ukaž je všem.</div>
       <div class="pravidlo-card" data-toggle>Nelze se vykešovat částečně. Všechno nebo nic.</div>
     </div>
@@ -186,9 +186,11 @@
   <div class="tab-panel" data-tab="input">
     <div class="input-panel">
       <h3 style="text-align:center; color:#888; font-family:inherit;">Přidat záznam</h3>
-      <div id="playerChips" class="player-chips"></div>
-      <input type="text" id="playerSearch" class="player-search" placeholder="Hledat hráče…">
-      <hr style="border:none; border-top:1px solid #333; margin:12px 0;">
+      <div class="player-section">
+        <label class="player-section-label">Hráči</label>
+        <div id="playerChips" class="player-chips"></div>
+        <input type="text" id="playerSearch" class="player-search" placeholder="Hledat…">
+      </div>
       <form id="inputForm" autocomplete="off">
         <div style="margin-bottom:12px;">
           <label for="sessionDate">Datum (YYYY-MM-DD)</label>
