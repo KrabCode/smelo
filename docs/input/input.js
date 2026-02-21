@@ -9,6 +9,7 @@ const statusEl = document.getElementById('status');
 const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
 const playerChips = document.getElementById('playerChips');
+const playerSearch = document.getElementById('playerSearch');
 const sumDisplay = document.getElementById('sumDisplay');
 
 let knownPlayers = [];
@@ -60,10 +61,21 @@ function populateChips() {
         chip.addEventListener('click', () => {
             addEntry(name);
             updateChipStates();
+            playerSearch.value = '';
+            filterChips();
         });
         playerChips.appendChild(chip);
     });
 }
+
+function filterChips() {
+    const q = playerSearch.value.trim().toLowerCase();
+    playerChips.querySelectorAll('.player-chip').forEach(chip => {
+        chip.style.display = (!q || chip.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+}
+
+playerSearch.addEventListener('input', filterChips);
 
 function updateChipStates() {
     const usedNames = new Set();
