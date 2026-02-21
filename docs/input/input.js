@@ -9,6 +9,7 @@ const statusEl = document.getElementById('status');
 const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
 const playerChips = document.getElementById('playerChips');
+const sumDisplay = document.getElementById('sumDisplay');
 
 let knownPlayers = [];
 
@@ -43,6 +44,7 @@ function fetchPlayers() {
             const headers = csv.split('\n')[0].split(',');
             // Skip col 0 (index) and col 1 (date), rest are player names
             knownPlayers = headers.slice(2).map(h => h.trim()).filter(Boolean);
+            knownPlayers.sort((a, b) => a.localeCompare(b, 'cs'));
             populateChips();
         })
         .catch(() => {});
@@ -74,6 +76,22 @@ function updateChipStates() {
     });
 }
 
+function updateSum() {
+    let sum = 0;
+    let count = 0;
+    entriesContainer.querySelectorAll('.entry-amount').forEach(input => {
+        const v = Number(input.value);
+        if (input.value !== '' && !isNaN(v)) { sum += v; count++; }
+    });
+    if (count === 0) {
+        sumDisplay.textContent = '';
+        sumDisplay.className = 'sum-display';
+    } else {
+        sumDisplay.textContent = 'Součet: ' + sum;
+        sumDisplay.className = sum === 0 ? 'sum-display' : 'sum-display sum-nonzero';
+    }
+}
+
 // --- Entry rows ---
 function createEntry(name, amount) {
     const div = document.createElement('div');
@@ -93,9 +111,11 @@ function createEntry(name, amount) {
     div.querySelector('.btn-remove').addEventListener('click', () => {
         div.remove();
         updateChipStates();
+        updateSum();
         if (entriesContainer.children.length === 0) addEntry();
     });
     div.querySelector('.entry-name').addEventListener('input', () => updateChipStates());
+    div.querySelector('.entry-amount').addEventListener('input', () => updateSum());
     entriesContainer.appendChild(div);
     return div;
 }
@@ -138,6 +158,9 @@ form.addEventListener('submit', async (e) => {
         return;
     }
 
+    const summary = entries.map(e => e.name + ': ' + e.amount).join('\n');
+    if (!confirm('Odeslat záznam za ' + date + '?\n\n' + summary)) return;
+
     setStatus('Odesílám…');
     saveSettings();
 
@@ -156,6 +179,7 @@ form.addEventListener('submit', async (e) => {
             entriesContainer.innerHTML = '';
             addEntry();
             updateChipStates();
+            updateSum();
         } else {
             setStatus('Chyba: ' + (json && json.error ? json.error : text || res.statusText), true);
         }
