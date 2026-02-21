@@ -247,7 +247,16 @@ if (!location.hash) {
   try { var saved = localStorage.getItem('activeTab'); if (saved) switchTab(saved); } catch(e) {}
 }
 document.querySelectorAll('.pravidlo-card[data-toggle]').forEach(function(card) {
-  card.addEventListener('click', function() { this.classList.toggle('active'); });
+  card.addEventListener('click', function() {
+    this.classList.toggle('active');
+    var list = this.parentNode;
+    if (this.classList.contains('active')) {
+      var firstInactive = list.querySelector('.pravidlo-card:not(.active)');
+      if (firstInactive) list.insertBefore(this, firstInactive);
+    } else {
+      list.appendChild(this);
+    }
+  });
 });
 </script>
 <script src="reveal.js"></script>
