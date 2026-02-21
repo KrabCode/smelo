@@ -251,6 +251,7 @@ a.card { color: var(--text); text-decoration: none; }
 .btn-remove:hover { color: #f87171; }
 .btn-submit { background: #4E79A7; border-color: #4E79A7; width: 100%; margin-top: 12px; font-size: 1em; padding: 10px; }
 .btn-submit:hover { background: #5a8ab5; }
+.btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
 #status { margin-top: 10px; font-size: 0.9em; text-align: center; min-height: 1.2em; }
 .status-ok { color: #4ade80; }
 .status-err { color: #f87171; }

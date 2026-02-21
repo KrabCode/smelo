@@ -104,6 +104,7 @@ function updateSum() {
         sumDisplay.textContent = 'Součet: ' + sum;
         sumDisplay.className = sum === 0 ? 'sum-display' : 'sum-display sum-nonzero';
     }
+    document.getElementById('submitBtn').disabled = entriesContainer.children.length === 0;
 }
 
 // --- Entry rows ---
