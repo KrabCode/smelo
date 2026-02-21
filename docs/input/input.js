@@ -1,5 +1,6 @@
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv';
 const SETTINGS_KEY = 'smelo_input_settings';
+const DEFAULT_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxU2-HMmck8ljuCMSYXqtG4o7UC4tRApexvwWvvNoaVKlgUoae1FrAShNGO4ZGf5Ruv/exec';
 
 const form = document.getElementById('inputForm');
 const entriesContainer = document.getElementById('entriesContainer');
@@ -22,6 +23,7 @@ function loadSettings() {
             if (s.url) webappUrlInput.value = s.url;
             if (s.secret) secretInput.value = s.secret;
         }
+        if (!webappUrlInput.value) webappUrlInput.value = DEFAULT_WEBAPP_URL;
     } catch(e) {}
 }
 
