@@ -26,19 +26,20 @@
 
         /* --- Center overlay --- */
         #overlay {
-            position: fixed; top: clamp(20px, 4vh, 60px); left: 50%; transform: translateX(-50%);
-            z-index: 5;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 5;
             display: flex; flex-direction: column;
             align-items: center;
-            padding: 20px 36px 16px;
+            padding-top: clamp(40px, 6vh, 80px);
             pointer-events: none; text-align: center;
-            background: rgba(0, 0, 0, 0.45);
-            border-radius: 12px;
-            animation: fadeUp 1.5s ease-out both;
+            animation: fadeIn 1.5s ease-out both;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes fadeUp {
             from { opacity: 0; transform: translateX(-50%) translateY(30px); }
-            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to   { opacity: 1; transform: translateX(-50%); }
         }
 
         #overlay h1 {
@@ -95,7 +96,6 @@
         }
         @media (max-width: 480px) {
             #footer { padding: 10px 16px; font-size: 0.7rem; line-height: 1.7; bottom: 12px; }
-            #overlay { padding: 12px 20px 10px; }
         }
         #footer span { color: #ffb300; }
     </style>
