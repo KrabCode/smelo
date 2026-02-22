@@ -482,6 +482,28 @@
             camera.lookAt(0, 0.5, 0);
         }
 
+        // Patch webm Duration field so players/uploaders know the length
+        function fixWebmDuration(blob, durationMs) {
+            return blob.arrayBuffer().then(buf => {
+                const bytes = new Uint8Array(buf);
+                // Search for EBML Duration element ID: 0x44 0x89
+                for (let i = 0; i < bytes.length - 10; i++) {
+                    if (bytes[i] === 0x44 && bytes[i + 1] === 0x89) {
+                        const size = bytes[i + 2];
+                        if (size === 0x88) { // 8-byte float64
+                            new DataView(buf, i + 3, 8).setFloat64(0, durationMs);
+                            return new Blob([bytes], { type: blob.type });
+                        }
+                        if (size === 0x84) { // 4-byte float32
+                            new DataView(buf, i + 3, 4).setFloat32(0, durationMs);
+                            return new Blob([bytes], { type: blob.type });
+                        }
+                    }
+                }
+                return blob; // not found, return as-is
+            });
+        }
+
         function recordLoop() {
             recording = true;
             const fps = 30;
@@ -594,15 +616,17 @@
             const chunks = [];
             mediaRecorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
             mediaRecorder.onstop = () => {
-                const blob = new Blob(chunks, { type: 'video/webm' });
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'turnaj-loop.webm';
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                rec.remove();
-                recording = false;
+                const raw = new Blob(chunks, { type: 'video/webm' });
+                fixWebmDuration(raw, duration * 1000).then(blob => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'turnaj-loop.webm';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    rec.remove();
+                    recording = false;
+                });
             };
 
             mediaRecorder.start();
