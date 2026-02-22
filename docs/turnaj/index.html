@@ -426,39 +426,21 @@
         let orbitAngle = -30 * Math.PI / 180;
         let dragging = false;
         let lastMouseX = 0;
-        renderer.domElement.addEventListener('pointerdown', (e) => { dragging = true; lastMouseX = e.clientX; });
+        let lastMouseY = 0;
+        renderer.domElement.addEventListener('pointerdown', (e) => { dragging = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
         window.addEventListener('pointerup', () => { dragging = false; });
         window.addEventListener('pointermove', (e) => {
             if (!dragging) return;
             orbitAngle += (e.clientX - lastMouseX) * 0.005;
+            orbitRadius = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, orbitRadius + (e.clientY - lastMouseY) * 0.03));
             lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
         });
 
         // Mouse wheel zoom
         renderer.domElement.addEventListener('wheel', (e) => {
             e.preventDefault();
             orbitRadius = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, orbitRadius + e.deltaY * 0.01));
-        }, { passive: false });
-
-        // Pinch-to-zoom
-        let lastPinchDist = 0;
-        renderer.domElement.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                lastPinchDist = Math.sqrt(dx * dx + dy * dy);
-            }
-        }, { passive: true });
-        renderer.domElement.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2) {
-                e.preventDefault();
-                const dx = e.touches[0].clientX - e.touches[1].clientX;
-                const dy = e.touches[0].clientY - e.touches[1].clientY;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                const delta = lastPinchDist - dist;
-                orbitRadius = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, orbitRadius + delta * 0.03));
-                lastPinchDist = dist;
-            }
         }, { passive: false });
 
         // --- Resize ---
