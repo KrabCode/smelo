@@ -611,7 +611,7 @@
             rec.textContent = 'REC';
             document.body.appendChild(rec);
 
-            const stream = comp.captureStream();
+            const stream = comp.captureStream(fps);
             const mediaRecorder = new MediaRecorder(stream, {
                 mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
                     ? 'video/webm;codecs=vp9' : 'video/webm',
@@ -634,15 +634,20 @@
             };
 
             mediaRecorder.start();
-            let frame = 0;
+            const recStart = performance.now();
+            let lastT = 0;
 
             function captureFrame() {
-                if (frame >= totalFrames) { mediaRecorder.stop(); return; }
+                const elapsed = (performance.now() - recStart) / 1000;
+                if (elapsed >= duration) { mediaRecorder.stop(); return; }
 
-                const simTime = simTimeOffset + frame * dt;
+                const mixerDt = elapsed - lastT;
+                lastT = elapsed;
+
+                const simTime = simTimeOffset + elapsed;
                 orbitAngle = fixedAngle;
                 updateCamera();
-                updateFish(simTime, dt);
+                updateFish(simTime, mixerDt);
 
                 renderer.render(scene, camera);
 
@@ -650,9 +655,8 @@
                 ctx.drawImage(renderer.domElement, 0, 0);
                 drawOverlay();
 
-                rec.textContent = 'REC ' + Math.floor((frame / totalFrames) * 100) + '%';
-                frame++;
-                setTimeout(captureFrame, 1000 / fps);
+                rec.textContent = 'REC ' + Math.floor((elapsed / duration) * 100) + '%';
+                requestAnimationFrame(captureFrame);
             }
             captureFrame();
         }
