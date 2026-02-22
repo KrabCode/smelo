@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnaj – SMELO.CZ</title>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #0a0a0a; font-family: 'DM Sans', sans-serif; }
+        canvas { display: block; }
+
+        #back-link {
+            position: fixed; top: 20px; left: 20px; z-index: 10;
+            color: #888; text-decoration: none; font-size: 0.95em;
+            letter-spacing: 1px; transition: color 0.2s;
+        }
+        #back-link:hover { color: #ccc; }
+
+        /* --- Vignette --- */
+        #vignette {
+            position: fixed; inset: 0; z-index: 3; pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+        }
+
+        /* --- Center overlay --- */
+        #overlay {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+            display: flex; flex-direction: column;
+            align-items: center;
+            padding-top: clamp(40px, 6vh, 80px);
+            pointer-events: none; text-align: center;
+            animation: fadeUp 1.5s ease-out both;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        #overlay h1 {
+            font-family: 'Staatliches', sans-serif;
+            font-size: clamp(4rem, 14vw, 10rem);
+            letter-spacing: 0.2em;
+            color: #ffb300;
+            text-transform: uppercase;
+            text-shadow:
+                0 0 60px rgba(255, 179, 0, 0.4),
+                0 0 120px rgba(255, 179, 0, 0.15),
+                0 4px 30px rgba(0, 0, 0, 0.7);
+            animation: glow 4s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 60px rgba(255,179,0,0.4), 0 0 120px rgba(255,179,0,0.15), 0 4px 30px rgba(0,0,0,0.7); }
+            to   { text-shadow: 0 0 80px rgba(255,179,0,0.6), 0 0 160px rgba(255,179,0,0.25), 0 4px 30px rgba(0,0,0,0.7); }
+        }
+
+        .divider {
+            width: clamp(80px, 20vw, 200px); height: 2px;
+            background: linear-gradient(90deg, transparent, #ffb300, transparent);
+            margin: 0.8em 0;
+        }
+
+        #overlay .date {
+            font-size: clamp(1rem, 2.8vw, 1.6rem);
+            color: #ccc;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+        }
+
+        #overlay .time {
+            margin-top: 0.3em;
+            font-family: 'Staatliches', sans-serif;
+            font-size: clamp(1.6rem, 5vw, 3rem);
+            letter-spacing: 0.15em;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255,255,255,0.15), 0 2px 12px rgba(0,0,0,0.9);
+        }
+
+        /* --- Footer --- */
+        #footer {
+            position: fixed; bottom: 28px; left: 0; right: 0;
+            z-index: 5; text-align: center; pointer-events: none;
+            font-size: clamp(0.8rem, 1.8vw, 1rem);
+            color: #777; letter-spacing: 0.05em; line-height: 1.8;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            animation: fadeUp 1.5s 0.5s ease-out both;
+        }
+        #footer span { color: #ffb300; }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- <a id="back-link" href="../">← SMELO.CZ</a> -->
+    <div id="vignette"></div>
+    <div id="overlay">
+        <h1>Turnaj</h1>
+        <div class="divider"></div>
+        <div class="date">Sobota 28. února</div>
+        <div class="time">19:00 – 23:30</div>
+    </div>
+    <div id="footer">
+        Buy-in: <span>400</span><br>
+        Re-buy možný do <span>21:30</span><br>
+        Přestávka <span>21:00</span>–<span>21:30</span><br>
+        Prvních <span>25%</span> hráčů vyhrává<br>
+        Vítěz získá <span>40%</span> vkladů<br>
+        Po turnaji Cash Game
+    </div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+
+        /* ================================================
+           Dimensions from table_specs (1 unit = 30 cm)
+           Table: 208 × 106 × 3 cm   Felt: 180 × 79 cm
+           Armrest: 13.5 cm           Cups: Ø 8 cm × 10
+           ================================================ */
+        const S = 1 / 30;
+
+        const OUTER_R  = (106 / 2) * S;
+        const OUTER_HS = (208 / 2) * S - OUTER_R;
+
+        const INNER_R  = (79 / 2) * S;
+        const INNER_HS = (180 / 2) * S - INNER_R;
+
+        const CUP_R = (8 / 2) * S;
+        const MID_HS = (OUTER_HS + INNER_HS) / 2;
+        const MID_R  = (OUTER_R + INNER_R) / 2;
+
+        const BASE_Y = 0.35;
+        const FELT_H = 0.06;
+        const RIM_H  = 0.14;
+
+        // --- Renderer ---
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+        document.body.appendChild(renderer.domElement);
+
+        // --- Scene ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0a0a);
+        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.035);
+
+        // --- Camera ---
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(6, 5, 8);
+
+        // --- Stadium shape helpers ---
+        function stadiumPoints(hs, r, segments = 64) {
+            const pts = [];
+            const arcSegs = Math.floor(segments / 2);
+            for (let i = 0; i <= arcSegs; i++) {
+                const a = -Math.PI / 2 + (Math.PI * i / arcSegs);
+                pts.push(new THREE.Vector2(hs + r * Math.cos(a), r * Math.sin(a)));
+            }
+            for (let i = 0; i <= arcSegs; i++) {
+                const a = Math.PI / 2 + (Math.PI * i / arcSegs);
+                pts.push(new THREE.Vector2(-hs + r * Math.cos(a), r * Math.sin(a)));
+            }
+            return pts;
+        }
+
+        function makeStadiumShape(hs, r) {
+            const shape = new THREE.Shape();
+            const pts = stadiumPoints(hs, r);
+            shape.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) shape.lineTo(pts[i].x, pts[i].y);
+            shape.closePath();
+            return shape;
+        }
+
+        function makeStadiumHole(hs, r) {
+            const hole = new THREE.Path();
+            const pts = stadiumPoints(hs, r);
+            hole.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) hole.lineTo(pts[i].x, pts[i].y);
+            hole.closePath();
+            return hole;
+        }
+
+        // --- Perimeter parameterisation ---
+        function stadiumPerimeterPoint(t, hs, r) {
+            const straightLen = 2 * hs;
+            const arcLen = Math.PI * r;
+            const total = 2 * straightLen + 2 * arcLen;
+            let d = ((t % 1) + 1) % 1 * total;
+            if (d < arcLen) {
+                const a = -Math.PI / 2 + d / r;
+                return { x: hs + r * Math.cos(a), z: r * Math.sin(a) };
+            }
+            d -= arcLen;
+            if (d < straightLen) {
+                return { x: hs - (d / straightLen) * 2 * hs, z: r };
+            }
+            d -= straightLen;
+            if (d < arcLen) {
+                const a = Math.PI / 2 + d / r;
+                return { x: -hs + r * Math.cos(a), z: r * Math.sin(a) };
+            }
+            d -= arcLen;
+            return { x: -hs + (d / straightLen) * 2 * hs, z: -r };
+        }
+
+        // --- Procedural leather bump map ---
+        function makeLeatherBump(size = 512) {
+            const c = document.createElement('canvas');
+            c.width = c.height = size;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(0, 0, size, size);
+            for (let i = 0; i < 10000; i++) {
+                const x = Math.random() * size;
+                const y = Math.random() * size;
+                const rx = Math.random() * 3.5 + 0.8;
+                const ry = rx * (0.4 + Math.random() * 0.5);
+                const v = Math.floor(Math.random() * 50 + 105);
+                ctx.fillStyle = `rgb(${v},${v},${v})`;
+                ctx.beginPath();
+                ctx.ellipse(x, y, rx, ry, Math.random() * Math.PI, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            const tex = new THREE.CanvasTexture(c);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(12, 4);
+            return tex;
+        }
+
+        const leatherBump = makeLeatherBump();
+
+        // --- Felt ---
+        const feltGeo = new THREE.ExtrudeGeometry(makeStadiumShape(INNER_HS, INNER_R), {
+            depth: FELT_H, bevelEnabled: false
+        });
+        feltGeo.rotateX(-Math.PI / 2);
+        feltGeo.translate(0, BASE_Y, 0);
+
+        const felt = new THREE.Mesh(feltGeo, new THREE.MeshStandardMaterial({
+            color: 0xcc1111, roughness: 0.95, metalness: 0.0
+        }));
+        felt.castShadow = true;
+        felt.receiveShadow = true;
+        scene.add(felt);
+
+        // --- Rim / armrest (with cup holder holes cut in) ---
+        const rimShape = makeStadiumShape(OUTER_HS, OUTER_R);
+        rimShape.holes.push(makeStadiumHole(INNER_HS, INNER_R));
+
+        const cupPositions = [];
+        for (let i = 0; i < 10; i++) {
+            const t = (i + 0.5) / 10;
+            const p = stadiumPerimeterPoint(t, MID_HS, MID_R);
+            cupPositions.push(p);
+            const hole = new THREE.Path();
+            for (let j = 0; j <= 32; j++) {
+                const a = (j / 32) * Math.PI * 2;
+                const cx = p.x + CUP_R * Math.cos(a);
+                const cy = p.z + CUP_R * Math.sin(a);
+                if (j === 0) hole.moveTo(cx, cy);
+                else hole.lineTo(cx, cy);
+            }
+            hole.closePath();
+            rimShape.holes.push(hole);
+        }
+
+        const rimGeo = new THREE.ExtrudeGeometry(rimShape, {
+            depth: RIM_H,
+            bevelEnabled: true,
+            bevelThickness: 0.055,
+            bevelSize: 0.05,
+            bevelSegments: 10
+        });
+        rimGeo.rotateX(-Math.PI / 2);
+        rimGeo.translate(0, BASE_Y - 0.02, 0);
+
+        const rim = new THREE.Mesh(rimGeo, new THREE.MeshStandardMaterial({
+            color: 0x1a1a1a,
+            roughness: 0.65,
+            metalness: 0.02,
+            bumpMap: leatherBump,
+            bumpScale: 0.012,
+        }));
+        rim.castShadow = true;
+        rim.receiveShadow = true;
+        scene.add(rim);
+
+        // Dark bottoms for cup holder holes
+        const cupBottomGeo = new THREE.CircleGeometry(CUP_R, 32);
+        const cupBottomMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9 });
+        cupPositions.forEach(p => {
+            const disc = new THREE.Mesh(cupBottomGeo, cupBottomMat);
+            disc.rotation.x = -Math.PI / 2;
+            disc.position.set(p.x, BASE_Y - 0.02, p.z);
+            scene.add(disc);
+        });
+
+        // --- Figurines on the table ---
+        const FELT_TOP = BASE_Y + FELT_H;
+        const RIM_TOP = BASE_Y - 0.02 + RIM_H + 0.055; // base + extrude depth + bevel
+
+        function addToScene(group, x, z, y) {
+            group.position.set(x, y !== undefined ? y : RIM_TOP, z);
+            group.rotation.y = Math.atan2(x, z);
+            group.scale.setScalar(2.5);
+            group.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+            scene.add(group);
+        }
+
+        // Clown fish school — 3 fish swimming around the table
+        const fishMixers = [];
+        const fishModels = [];
+        // Fish swim on the surface of a torus around the table
+        const torusRx = 1.8;       // ellipse semi-major
+        const torusRz = 1.0;       // ellipse semi-minor
+        const torusY = FELT_TOP + 0.3; // center height
+        const tubeR = 0.35;        // tube radius
+        const fishSpeed = 0.22;
+
+        const fishPaths = [
+            { scale: 2.8, tubeAngle: 0,              phase: 0 },
+            { scale: 2.0, tubeAngle: Math.PI * 0.55,  phase: -0.5 },
+            { scale: 1.4, tubeAngle: -Math.PI * 0.4,  phase: -0.9 },
+        ];
+
+        const loader = new GLTFLoader();
+        loader.load('assets/clown_fish_low_poly_animated.glb', (gltf) => {
+            // Fix swim clip once
+            const swimClip = gltf.animations.find(c => c.name === 'swim');
+            if (swimClip) {
+                swimClip.resetDuration();
+                const minTime = swimClip.tracks.reduce((m, t) => Math.min(m, t.times[0]), Infinity);
+                if (minTime > 0) {
+                    swimClip.tracks.forEach(t => {
+                        for (let i = 0; i < t.times.length; i++) t.times[i] -= minTime;
+                    });
+                    swimClip.resetDuration();
+                }
+            }
+
+            fishPaths.forEach((fp, idx) => {
+                const model = idx === 0 ? gltf.scene : SkeletonUtils.clone(gltf.scene);
+                model.scale.setScalar(fp.scale);
+                model.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+                scene.add(model);
+                fishModels.push(model);
+
+                if (swimClip) {
+                    const mixer = new THREE.AnimationMixer(model);
+                    const action = mixer.clipAction(swimClip.clone());
+                    action.setLoop(THREE.LoopRepeat, Infinity);
+                    action.clampWhenFinished = false;
+                    action.timeScale = 0.5 + idx * 0.1;
+                    action.play();
+                    fishMixers.push(mixer);
+                }
+            });
+        });
+
+
+        // --- Ground ---
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(60, 60),
+            new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = -0.01;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // --- Lighting ---
+        scene.add(new THREE.AmbientLight(0x404050, 0.6));
+
+        const keyLight = new THREE.SpotLight(0xffeedd, 60);
+        keyLight.position.set(3, 8, 4);
+        keyLight.angle = Math.PI / 5;
+        keyLight.penumbra = 0.7;
+        keyLight.decay = 1.5;
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.set(2048, 2048);
+        keyLight.shadow.bias = -0.001;
+        keyLight.target.position.set(0, 0, 0);
+        scene.add(keyLight);
+        scene.add(keyLight.target);
+
+        const fillLight = new THREE.SpotLight(0xaabbff, 15);
+        fillLight.position.set(-5, 4, -3);
+        fillLight.angle = Math.PI / 4;
+        fillLight.penumbra = 0.8;
+        fillLight.decay = 1.5;
+        scene.add(fillLight);
+
+        const rimAccent = new THREE.PointLight(0xff9966, 8);
+        rimAccent.position.set(-2, 3, -6);
+        rimAccent.decay = 2;
+        scene.add(rimAccent);
+
+        // --- Auto-orbit ---
+        const orbitRadius = 10;
+        const orbitHeight = 4.2;
+        const orbitSpeed = 0.08;
+        let orbitAngle = -30 * Math.PI / 180;
+        let dragging = false;
+        let lastMouseX = 0;
+        renderer.domElement.addEventListener('pointerdown', (e) => { dragging = true; lastMouseX = e.clientX; });
+        window.addEventListener('pointerup', () => { dragging = false; });
+        window.addEventListener('pointermove', (e) => {
+            if (!dragging) return;
+            orbitAngle += (e.clientX - lastMouseX) * 0.005;
+            lastMouseX = e.clientX;
+        });
+
+        // --- Resize ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- Loop recorder (Ctrl+Shift+L) ---
+        let recording = false;
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && (e.key === 'L' || e.key === 'l')) {
+                e.preventDefault();
+                if (recording) return;
+                recordLoop();
+            }
+        });
+
+        function updateFish(simTime, dt) {
+            fishMixers.forEach(m => m.update(dt));
+            fishModels.forEach((model, i) => {
+                const fp = fishPaths[i];
+                const t = simTime * fishSpeed + fp.phase;
+
+                // Center of elliptical path
+                const cx = Math.cos(t) * torusRx;
+                const cz = Math.sin(t) * torusRz;
+
+                // Outward radial direction (normalized) on the ellipse
+                const dx = -Math.sin(t) * torusRx;
+                const dz =  Math.cos(t) * torusRz;
+                const outLen = Math.sqrt(cx * cx + cz * cz) || 1;
+                const outX = cx / outLen;
+                const outZ = cz / outLen;
+
+                // Offset on torus tube cross-section
+                const ta = fp.tubeAngle;
+                const offY = Math.cos(ta) * tubeR;
+                const offOut = Math.sin(ta) * tubeR;
+
+                model.position.set(
+                    cx + outX * offOut,
+                    torusY + offY,
+                    cz + outZ * offOut
+                );
+
+                // Face swimming direction (tangent)
+                model.rotation.y = Math.atan2(dx, dz);
+                model.rotation.z = Math.sin(t) * 0.03;
+            });
+        }
+
+        function updateCamera() {
+            camera.position.set(
+                orbitRadius * Math.cos(orbitAngle),
+                orbitHeight,
+                orbitRadius * Math.sin(orbitAngle)
+            );
+            camera.lookAt(0, 0.5, 0);
+        }
+
+        function recordLoop() {
+            recording = true;
+            const fps = 30;
+            const duration = (2 * Math.PI) / fishSpeed; // one full fish revolution
+            const totalFrames = Math.round(fps * duration);
+            const dt = 1 / fps;
+            const fixedAngle = orbitAngle;
+            const simTimeOffset = (7 * Math.PI / 6) / fishSpeed;
+
+            // Composite canvas (draws 3D + text overlay)
+            const comp = document.createElement('canvas');
+            const w = renderer.domElement.width;
+            const h = renderer.domElement.height;
+            comp.width = w;
+            comp.height = h;
+            const ctx = comp.getContext('2d');
+
+            function drawOverlay() {
+                // Vignette
+                const vg = ctx.createRadialGradient(w/2, h/2, w*0.2, w/2, h/2, w*0.55);
+                vg.addColorStop(0, 'rgba(0,0,0,0)');
+                vg.addColorStop(1, 'rgba(0,0,0,0.7)');
+                ctx.fillStyle = vg;
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // Title
+                const titleSize = Math.min(w * 0.13, h * 0.15);
+                ctx.font = `${titleSize}px Staatliches`;
+                ctx.fillStyle = '#ffb300';
+                ctx.shadowColor = 'rgba(255,179,0,0.4)';
+                ctx.shadowBlur = titleSize * 0.4;
+                ctx.fillText('TURNAJ', w/2, h * 0.12);
+                ctx.shadowBlur = 0;
+
+                // Divider
+                const divW = w * 0.15;
+                const divY = h * 0.18;
+                const grad = ctx.createLinearGradient(w/2 - divW, divY, w/2 + divW, divY);
+                grad.addColorStop(0, 'transparent');
+                grad.addColorStop(0.5, '#ffb300');
+                grad.addColorStop(1, 'transparent');
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(w/2 - divW, divY);
+                ctx.lineTo(w/2 + divW, divY);
+                ctx.stroke();
+
+                // Date
+                const dateSize = Math.min(w * 0.028, h * 0.035);
+                ctx.font = `${dateSize}px DM Sans`;
+                ctx.fillStyle = '#ccc';
+                ctx.shadowColor = 'rgba(0,0,0,0.9)';
+                ctx.shadowBlur = 12;
+                ctx.fillText('Sobota 28. února', w/2, h * 0.22);
+
+                // Time
+                const timeSize = Math.min(w * 0.05, h * 0.06);
+                ctx.font = `${timeSize}px Staatliches`;
+                ctx.fillStyle = '#fff';
+                ctx.fillText('19:00 – 23:30', w/2, h * 0.27);
+                ctx.shadowBlur = 0;
+
+                // Footer
+                const footSize = Math.min(w * 0.018, h * 0.022);
+                ctx.font = `${footSize}px DM Sans`;
+                ctx.shadowColor = 'rgba(0,0,0,0.8)';
+                ctx.shadowBlur = 8;
+                const lines = [
+                    [{t:'Buy-in: ',c:'#777'},{t:'400',c:'#ffb300'}],
+                    [{t:'Re-buy možný do ',c:'#777'},{t:'21:30',c:'#ffb300'}],
+                    [{t:'Přestávka ',c:'#777'},{t:'21:00',c:'#ffb300'},{t:'–',c:'#777'},{t:'21:30',c:'#ffb300'}],
+                    [{t:'Prvních ',c:'#777'},{t:'25%',c:'#ffb300'},{t:' hráčů vyhrává',c:'#777'}],
+                    [{t:'Vítěz získá ',c:'#777'},{t:'40%',c:'#ffb300'},{t:' vkladů',c:'#777'}],
+                    [{t:'Po turnaji Cash Game',c:'#777'}],
+                ];
+                const lineH = footSize * 1.8;
+                const footTop = h - 28 * (h / window.innerHeight) - (lines.length - 1) * lineH;
+                lines.forEach((segs, li) => {
+                    const y = footTop + li * lineH;
+                    // Measure total width to center
+                    let totalW = 0;
+                    segs.forEach(s => { totalW += ctx.measureText(s.t).width; });
+                    let x = (w - totalW) / 2;
+                    ctx.textAlign = 'left';
+                    segs.forEach(s => {
+                        ctx.fillStyle = s.c;
+                        ctx.fillText(s.t, x, y);
+                        x += ctx.measureText(s.t).width;
+                    });
+                });
+                ctx.textAlign = 'center';
+                ctx.shadowBlur = 0;
+            }
+
+            const rec = document.createElement('div');
+            rec.style.cssText = 'position:fixed;top:20px;right:20px;z-index:20;color:#f44;font:bold 14px sans-serif;letter-spacing:2px;';
+            rec.textContent = 'REC';
+            document.body.appendChild(rec);
+
+            const stream = comp.captureStream();
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+                    ? 'video/webm;codecs=vp9' : 'video/webm',
+                videoBitsPerSecond: 8000000
+            });
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'turnaj-loop.webm';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                rec.remove();
+                recording = false;
+            };
+
+            mediaRecorder.start();
+            let frame = 0;
+
+            function captureFrame() {
+                if (frame >= totalFrames) { mediaRecorder.stop(); return; }
+
+                const simTime = simTimeOffset + frame * dt;
+                orbitAngle = fixedAngle;
+                updateCamera();
+                updateFish(simTime, dt);
+
+                renderer.render(scene, camera);
+
+                // Composite: 3D scene + text overlay
+                ctx.drawImage(renderer.domElement, 0, 0);
+                drawOverlay();
+
+                rec.textContent = 'REC ' + Math.floor((frame / totalFrames) * 100) + '%';
+                frame++;
+                requestAnimationFrame(captureFrame);
+            }
+            captureFrame();
+        }
+
+        // --- Animate ---
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            if (recording) return;
+            const delta = clock.getDelta();
+            updateFish(clock.elapsedTime, delta);
+
+            updateCamera();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+</body>
+</html>
