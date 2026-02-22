@@ -79,11 +79,14 @@
 
         /* --- Footer --- */
         #footer {
-            position: fixed; bottom: 28px; left: 0; right: 0;
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
             z-index: 5; text-align: center; pointer-events: none;
             font-size: clamp(0.8rem, 1.8vw, 1rem);
             color: #777; letter-spacing: 0.05em; line-height: 1.8;
             text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.45);
+            padding: 12px 28px;
+            border-radius: 12px;
             animation: fadeUp 1.5s 0.5s ease-out both;
         }
         #footer span { color: #ffb300; }
