@@ -255,7 +255,7 @@
         felt.receiveShadow = true;
         scene.add(felt);
 
-        // --- Rim / armrest (with cup holder holes cut in) ---
+        // --- Rim / armrest (with cup holder holes) ---
         const rimShape = makeStadiumShape(OUTER_HS, OUTER_R);
         rimShape.holes.push(makeStadiumHole(INNER_HS, INNER_R));
 
@@ -297,19 +297,23 @@
         rim.receiveShadow = true;
         scene.add(rim);
 
-        // Dark bottoms for cup holder holes
-        const cupBottomGeo = new THREE.CircleGeometry(CUP_R, 32);
-        const cupBottomMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9 });
-        cupPositions.forEach(p => {
-            const disc = new THREE.Mesh(cupBottomGeo, cupBottomMat);
-            disc.rotation.x = -Math.PI / 2;
-            disc.position.set(p.x, BASE_Y - 0.02, p.z);
-            scene.add(disc);
+        const RIM_TOP = BASE_Y - 0.02 + RIM_H + 0.055;
+
+        // Invisible blocker under rim to stop light through cup holes
+        const blockerGeo = new THREE.ExtrudeGeometry(makeStadiumShape(OUTER_HS, OUTER_R), {
+            depth: 0.01, bevelEnabled: false
         });
+        blockerGeo.rotateX(-Math.PI / 2);
+        blockerGeo.translate(0, BASE_Y - 0.03, 0);
+        const blockerMat = new THREE.MeshBasicMaterial();
+        blockerMat.colorWrite = false;
+        blockerMat.depthWrite = false;
+        const blocker = new THREE.Mesh(blockerGeo, blockerMat);
+        blocker.castShadow = true;
+        scene.add(blocker);
 
         // --- Figurines on the table ---
         const FELT_TOP = BASE_Y + FELT_H;
-        const RIM_TOP = BASE_Y - 0.02 + RIM_H + 0.055; // base + extrude depth + bevel
 
         function addToScene(group, x, z, y) {
             group.position.set(x, y !== undefined ? y : RIM_TOP, z);
@@ -506,7 +510,7 @@
 
         function recordLoop() {
             recording = true;
-            const fps = 30;
+            const fps = 15;
             const duration = (2 * Math.PI) / fishSpeed; // one full fish revolution
             const totalFrames = Math.round(fps * duration);
             const dt = 1 / fps;
@@ -648,7 +652,7 @@
 
                 rec.textContent = 'REC ' + Math.floor((frame / totalFrames) * 100) + '%';
                 frame++;
-                requestAnimationFrame(captureFrame);
+                setTimeout(captureFrame, 1000 / fps);
             }
             captureFrame();
         }
