@@ -918,6 +918,27 @@
         });
     }
 
+    // ─── Level Change Sound ─────────────────────────────────────
+    let prevLevel = -1;
+    function playLevelSound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [660, 880, 1100];
+            notes.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = freq;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.3);
+                osc.start(ctx.currentTime + i * 0.15);
+                osc.stop(ctx.currentTime + i * 0.15 + 0.3);
+            });
+        } catch (e) {}
+    }
+
     // ─── Firebase Listener ──────────────────────────────────────
     tournamentRef.on('value', (snap) => {
         const data = snap.val();
@@ -941,6 +962,12 @@
         }
         T.players = { ...DEFAULTS.players, ...rawPlayers };
         T.blindStructure = data.blindStructure || [];
+
+        // Play sound on level change
+        if (prevLevel >= 0 && T.state.currentLevel !== prevLevel && T.state.status === 'running') {
+            playLevelSound();
+        }
+        prevLevel = T.state.currentLevel;
 
         render();
     });
