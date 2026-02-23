@@ -243,6 +243,15 @@
         .btn.danger { border-color: var(--red); color: var(--red); }
         .btn.danger:hover { background: rgba(248,113,113,0.1); }
 
+        /* Frozen admin section */
+        .admin-section.frozen { opacity: 0.45; pointer-events: none; }
+        .admin-section.frozen h3::after {
+            content: ' (uzamčeno)';
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
         /* Break state */
         .blinds-current.on-break { color: var(--green); }
         .progress-bar.on-break { background: var(--green); }
@@ -365,8 +374,8 @@
         <details>
             <summary>ADMIN OVLÁDÁNÍ</summary>
 
-            <!-- Config -->
-            <div class="admin-section">
+            <!-- Tournament config (frozen when running) -->
+            <div class="admin-section" id="section-config">
                 <h3>Nastavení turnaje</h3>
                 <div class="config-grid">
                     <div class="config-field">
@@ -406,7 +415,14 @@
                         <input type="number" id="cfg-buyin-amount" value="400">
                     </div>
                 </div>
-                <h3 style="margin-top:16px">Hráči</h3>
+                <div class="btn-row" style="margin-top:12px">
+                    <button class="btn accent" id="btn-save-config">Uložit nastavení</button>
+                </div>
+            </div>
+
+            <!-- Player counters (always editable) -->
+            <div class="admin-section" id="section-players">
+                <h3>Hráči</h3>
                 <div class="config-grid">
                     <div class="config-field">
                         <label>Přihlášení (buy-ins)</label>
@@ -432,7 +448,7 @@
                     <button class="btn" id="btn-rebuy">+ Re-buy</button>
                 </div>
                 <div class="btn-row" style="margin-top:12px">
-                    <button class="btn accent" id="btn-save-config">Uložit nastavení</button>
+                    <button class="btn accent" id="btn-save-players">Uložit hráče</button>
                 </div>
             </div>
 
@@ -589,7 +605,9 @@
         }
 
         // Insert break as its own level after the configured blind level
-        if (hasBreak && breakAfter <= levels.length) {
+        // Skip if frozen levels already contain a break
+        const alreadyHasBreak = levels.some(l => l.isBreak);
+        if (hasBreak && !alreadyHasBreak && breakAfter <= levels.length) {
             levels.splice(breakAfter, 0, {
                 small: 0, big: 0,
                 duration: breakDur,
@@ -835,6 +853,12 @@
         // Payout (always visible)
         renderPayout();
 
+        // Freeze tournament config when not in waiting state
+        if (isAdmin) {
+            const frozen = state.status !== 'waiting';
+            document.getElementById('section-config').classList.toggle('frozen', frozen);
+        }
+
         // Populate config + player inputs from current data
         if (isAdmin) {
             const ids = {
@@ -995,8 +1019,9 @@
 
     // ─── Admin Actions ──────────────────────────────────────────
     if (isAdmin) {
-        // Save config
+        // Save tournament config (only possible in waiting state)
         document.getElementById('btn-save-config').addEventListener('click', () => {
+            if (T.state.status !== 'waiting') return;
             const config = {
                 startingStack: parseInt(document.getElementById('cfg-stack').value) || 5000,
                 levelDuration: parseInt(document.getElementById('cfg-level-dur').value) || 20,
@@ -1008,24 +1033,31 @@
                 breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
                 buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400
             };
-            const playerData = {
-                buyIns: parseInt(document.getElementById('cfg-buyins').value) || 0,
-                activePlayers: parseInt(document.getElementById('cfg-active').value) || 0,
-                rebuys: parseInt(document.getElementById('cfg-rebuys').value) || 0,
-                bonuses: parseInt(document.getElementById('cfg-bonuses').value) || 0,
-                totalChips: 0
-            };
 
-            Promise.all([
-                tournamentRef.child('config').set(config),
-                tournamentRef.child('players').update(playerData)
-            ]).then(() => {
+            tournamentRef.child('config').set(config).then(() => {
                 T.config = config;
-                T.players = { ...T.players, ...playerData };
                 recalcAndSync();
                 const btn = document.getElementById('btn-save-config');
                 btn.textContent = 'Nastavení uloženo ✓';
                 setTimeout(() => { btn.textContent = 'Uložit nastavení'; }, 2000);
+            });
+        });
+
+        // Save player counters (always available)
+        document.getElementById('btn-save-players').addEventListener('click', () => {
+            const playerData = {
+                buyIns: parseInt(document.getElementById('cfg-buyins').value) || 0,
+                activePlayers: parseInt(document.getElementById('cfg-active').value) || 0,
+                rebuys: parseInt(document.getElementById('cfg-rebuys').value) || 0,
+                bonuses: parseInt(document.getElementById('cfg-bonuses').value) || 0
+            };
+
+            tournamentRef.child('players').update(playerData).then(() => {
+                T.players = { ...T.players, ...playerData };
+                recalcAndSync();
+                const btn = document.getElementById('btn-save-players');
+                btn.textContent = 'Hráči uloženi ✓';
+                setTimeout(() => { btn.textContent = 'Uložit hráče'; }, 2000);
             });
         });
 
