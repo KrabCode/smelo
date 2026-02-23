@@ -421,7 +421,13 @@
 
     function calculateBlinds(config, totalChips, freezeUpTo) {
         const { levelDuration, tournamentLength, smallestChip } = config;
-        const numLevels = Math.max(2, Math.floor(tournamentLength / levelDuration));
+        const breakAfter = config.breakAfterLevel || 0;
+        const breakDur = config.breakDuration || 30;
+        const hasBreak = breakAfter > 0;
+
+        // Subtract break from playing time before computing number of blind levels
+        const playingTime = hasBreak ? tournamentLength - breakDur : tournamentLength;
+        const numLevels = Math.max(2, Math.floor(playingTime / levelDuration));
         const finalBigBlind = roundToChip(totalChips / 3, smallestChip);
         const finalSmall = finalBigBlind / 2;
         const startSmall = smallestChip;
@@ -449,7 +455,6 @@
                     : 1;
 
                 for (let i = 0; i < remaining; i++) {
-                    const blindIdx = frozenBlindCount + i;
                     const small = i === remaining - 1
                         ? newFinalSmall
                         : roundToChip(currentSmall * Math.pow(ratio, i + 1), smallestChip);
@@ -474,10 +479,8 @@
             }
         }
 
-        // Insert break after the configured level (if set)
-        const breakAfter = config.breakAfterLevel || 0;
-        const breakDur = config.breakDuration || 30;
-        if (breakAfter > 0 && breakAfter <= levels.length) {
+        // Insert break as its own level after the configured blind level
+        if (hasBreak && breakAfter <= levels.length) {
             levels.splice(breakAfter, 0, {
                 small: 0, big: 0,
                 duration: breakDur,
