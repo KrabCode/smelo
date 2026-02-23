@@ -339,6 +339,8 @@
     <!-- Header -->
     <div class="tracker-header">
         <div class="stats">
+            Buy-in: <span id="hd-buyin-amount">400 Kč</span> &nbsp;|&nbsp;
+            Re-buy do: <span id="hd-rebuy-cutoff">L4</span> &nbsp;|&nbsp;
             Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span> &nbsp;|&nbsp;
             Žetony: <span id="hd-chips">0</span> &nbsp;|&nbsp;
             Prize pool: <span id="hd-pool">0 Kč</span> &nbsp;|&nbsp;
@@ -712,6 +714,8 @@
         document.getElementById('hd-active').textContent = players.activePlayers;
         document.getElementById('hd-buyin').textContent = players.buyIns;
         document.getElementById('hd-chips').textContent = players.totalChips.toLocaleString('cs');
+        document.getElementById('hd-buyin-amount').textContent = (config.buyInAmount || 400).toLocaleString('cs') + ' Kč';
+        document.getElementById('hd-rebuy-cutoff').textContent = 'L' + (config.rebuyCutoff || 4);
 
         // Admin player counts — now handled by config input sync below
 
