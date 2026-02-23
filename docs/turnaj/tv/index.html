@@ -344,6 +344,7 @@
         <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span></div>
         <div class="stat-item">Hráčů v penězích: <span id="hd-places">0</span></div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
+        <div class="stat-item" id="hd-to-money"></div>
         <div class="stat-item" id="hd-winners"></div>
     </div>
 
@@ -667,6 +668,14 @@
         document.getElementById('pay-buyin').textContent = buyIns;
         document.getElementById('hd-pool').textContent = prizePool.toLocaleString('cs') + ' Kč';
         document.getElementById('hd-places').textContent = paidPlaces;
+
+        const toMoney = activePlayers - paidPlaces;
+        const toMoneyEl = document.getElementById('hd-to-money');
+        if (toMoney > 0 && activePlayers > 0) {
+            toMoneyEl.innerHTML = 'Do výhry zbývá vyřadit <span>' + toMoney + '</span> hráčů';
+        } else {
+            toMoneyEl.textContent = '';
+        }
 
         const tbody = document.getElementById('payout-body');
         tbody.innerHTML = '';
