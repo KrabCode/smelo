@@ -246,25 +246,23 @@
         /* Waiting state */
         .display.waiting .timer { color: var(--text-muted); font-size: clamp(2rem, 8vw, 4rem); }
 
-        /* Payout section — fixed top-left */
+        /* Payout section */
         .payout-section {
-            position: fixed;
-            top: 48px;
-            left: 12px;
-            z-index: 10;
-            padding: 12px 16px;
-            background: var(--bg-card);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 10px;
-            font-size: 0.85em;
+            max-width: 600px;
+            margin: 8px auto 24px;
+            padding: 0 20px;
         }
         .payout-header {
-            font-size: 0.9em;
+            text-align: center;
+            font-size: 0.95em;
             color: var(--text-secondary);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .payout-header strong { color: var(--accent); }
         .payout-table {
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
             border-collapse: collapse;
             font-size: 0.9em;
         }
@@ -365,7 +363,17 @@
         <div id="winner-list"></div>
     </div>
 
-    <!-- Payout section -->
+    <!-- Blind structure table -->
+    <div class="structure-wrap">
+        <table class="structure-table">
+            <thead>
+                <tr><th>Čas</th><th>Level</th><th>SB</th><th>BB</th></tr>
+            </thead>
+            <tbody id="structure-body"></tbody>
+        </table>
+    </div>
+
+    <!-- Payout section (below structure, appears as levels shrink) -->
     <div class="payout-section" id="payout-section">
         <div class="bubble-banner" id="bubble-banner" style="display:none">BUBBLE!</div>
         <div class="payout-header">
@@ -374,16 +382,6 @@
         <table class="payout-table">
             <thead><tr><th>Místo</th><th>%</th><th>Výhra</th></tr></thead>
             <tbody id="payout-body"></tbody>
-        </table>
-    </div>
-
-    <!-- Blind structure table -->
-    <div class="structure-wrap">
-        <table class="structure-table">
-            <thead>
-                <tr><th>Čas</th><th>Level</th><th>SB</th><th>BB</th></tr>
-            </thead>
-            <tbody id="structure-body"></tbody>
         </table>
     </div>
 
