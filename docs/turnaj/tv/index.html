@@ -672,8 +672,10 @@
         const toMoney = activePlayers - paidPlaces;
         const toMoneyEl = document.getElementById('hd-to-money');
         if (toMoney > 0 && activePlayers > 0) {
-            const hracLabel = toMoney === 1 ? 'hráče' : (toMoney >= 2 && toMoney <= 4 ? 'hráče' : 'hráčů');
+            const hracLabel = toMoney <= 4 ? 'hráče' : 'hráčů';
             toMoneyEl.innerHTML = 'Do výhry zbývá vyřadit <span>' + toMoney + '</span> ' + hracLabel;
+        } else if (activePlayers > 0) {
+            toMoneyEl.innerHTML = '<span>Všichni zbývající hráči dostanou zaplaceno</span>';
         } else {
             toMoneyEl.textContent = '';
         }
