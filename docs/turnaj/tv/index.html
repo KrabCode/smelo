@@ -255,6 +255,85 @@
 
         /* Waiting state */
         .display.waiting .timer { color: var(--text-muted); font-size: clamp(2rem, 8vw, 4rem); }
+
+        /* Payout section */
+        .payout-section {
+            max-width: 600px;
+            margin: 0 auto 8px;
+            padding: 16px 20px;
+        }
+        .payout-header {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            font-size: 0.95em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        .payout-header strong { color: var(--accent); }
+        .payout-table {
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        .payout-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+            text-align: center;
+            padding: 4px 8px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85em;
+            letter-spacing: 1px;
+        }
+        .payout-table td {
+            text-align: center;
+            padding: 6px 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+        }
+        .bubble-banner {
+            text-align: center;
+            font-family: 'Staatliches', sans-serif;
+            font-size: 1.6em;
+            letter-spacing: 4px;
+            color: var(--green);
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 2px solid var(--green);
+            border-radius: 10px;
+            animation: bubble-pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes bubble-pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Winner banner */
+        .winner-banner {
+            text-align: center;
+            padding: 16px;
+            margin: 0 auto 8px;
+            max-width: 600px;
+        }
+        .winner-banner .winner-label {
+            font-family: 'Staatliches', sans-serif;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            color: var(--text-muted);
+        }
+        .winner-banner .winner-name {
+            font-family: 'Staatliches', sans-serif;
+            font-size: 2.5em;
+            letter-spacing: 3px;
+            color: var(--accent);
+            margin-top: 4px;
+        }
+
+        .btn.knockout { border-color: var(--red); color: var(--red); }
+        .btn.knockout:hover { background: rgba(248,113,113,0.1); }
     </style>
 </head>
 <body>
@@ -262,7 +341,7 @@
     <div class="tracker-header">
         <a href="../">← Turnaj</a>
         <div class="stats">
-            Hráči: <span id="hd-players">0</span> &nbsp;|&nbsp;
+            Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span> &nbsp;|&nbsp;
             Žetony: <span id="hd-chips">0</span>
         </div>
     </div>
@@ -277,6 +356,25 @@
         <div class="blinds-current" id="blinds-current">– / –</div>
         <div class="blinds-sub" id="blinds-sub"></div>
         <div class="next-level" id="next-level"></div>
+    </div>
+
+    <!-- Winner banner (shown when tournament ends) -->
+    <div class="winner-banner" id="winner-banner" style="display:none">
+        <div class="winner-label">VÍTĚZ TURNAJE</div>
+        <div class="winner-name" id="winner-name"></div>
+    </div>
+
+    <!-- Payout section -->
+    <div class="payout-section" id="payout-section">
+        <div class="bubble-banner" id="bubble-banner" style="display:none">BUBBLE!</div>
+        <div class="payout-header">
+            <div>Prize pool: <strong id="pay-pool">0 Kč</strong></div>
+            <div>Vyplácí se: <strong id="pay-places">0</strong> místa</div>
+        </div>
+        <table class="payout-table">
+            <thead><tr><th>Místo</th><th>%</th><th>Výplata</th></tr></thead>
+            <tbody id="payout-body"></tbody>
+        </table>
     </div>
 
     <!-- Blind structure table -->
@@ -334,6 +432,14 @@
                         <label>Začátek turnaje (čas)</label>
                         <input type="time" id="cfg-start-time" value="19:00">
                     </div>
+                    <div class="config-field">
+                        <label>Buy-in (Kč)</label>
+                        <input type="number" id="cfg-buyin-amount" value="400">
+                    </div>
+                    <div class="config-field">
+                        <label>Datum turnaje</label>
+                        <input type="date" id="cfg-date">
+                    </div>
                 </div>
                 <div class="btn-row" style="margin-top:12px">
                     <button class="btn accent" id="btn-save-config">Uložit nastavení</button>
@@ -344,15 +450,32 @@
             <div class="admin-section">
                 <h3>Hráči</h3>
                 <div class="player-counts">
-                    Hráči: <span id="ad-players">0</span>&nbsp;&nbsp;
+                    Přihlášení: <span id="ad-buyins">0</span>&nbsp;&nbsp;
+                    Ve hře: <span id="ad-active">0</span>&nbsp;&nbsp;
                     Rebuys: <span id="ad-rebuys">0</span>&nbsp;&nbsp;
                     Bonusy: <span id="ad-bonuses">0</span>
                 </div>
                 <div class="btn-row">
                     <button class="btn" id="btn-add-player">+ Hráč</button>
                     <button class="btn" id="btn-remove-player">− Hráč</button>
+                    <button class="btn knockout" id="btn-knockout">Vypadl hráč</button>
+                </div>
+                <div class="btn-row">
                     <button class="btn" id="btn-rebuy">Re-buy</button>
+                    <button class="btn" id="btn-remove-rebuy">− Re-buy</button>
                     <button class="btn" id="btn-bonus">Bonus</button>
+                </div>
+            </div>
+
+            <!-- End tournament -->
+            <div class="admin-section">
+                <h3>Ukončení turnaje</h3>
+                <div class="config-field" style="margin-bottom:8px">
+                    <label>Jméno vítěze</label>
+                    <input type="text" id="cfg-winner" placeholder="Zadej jméno vítěze...">
+                </div>
+                <div class="btn-row">
+                    <button class="btn accent" id="btn-end-tournament">Ukončit turnaj</button>
                 </div>
             </div>
 
@@ -398,17 +521,21 @@
             rebuyCutoff: 4,
             breakAfterLevel: 0,
             breakDuration: 30,
-            startTime: '19:00'
+            startTime: '19:00',
+            buyInAmount: 400,
+            date: ''
         },
         state: {
-            status: 'waiting',   // waiting | running | paused
+            status: 'waiting',   // waiting | running | paused | finished
             currentLevel: 0,
             timerEnd: 0,
             pausedRemaining: 0,
-            startedAt: 0
+            startedAt: 0,
+            winner: ''
         },
         players: {
-            count: 6,
+            buyIns: 6,
+            activePlayers: 6,
             rebuys: 0,
             bonuses: 0,
             totalChips: 0
@@ -499,7 +626,59 @@
     function recalcTotalChips() {
         const p = T.players;
         const c = T.config;
-        return (p.count + p.rebuys) * c.startingStack + p.bonuses * c.bonusAmount;
+        return (p.buyIns + p.rebuys) * c.startingStack + p.bonuses * c.bonusAmount;
+    }
+
+    // ─── Payout Calculation ──────────────────────────────────────
+    const PAYOUT_STRUCTURES = {
+        1: [100],
+        2: [65, 35],
+        3: [50, 30, 20]
+    };
+
+    function getPayoutDistribution(paidPlaces) {
+        if (paidPlaces <= 0) return [];
+        if (PAYOUT_STRUCTURES[paidPlaces]) return PAYOUT_STRUCTURES[paidPlaces];
+        // 4+ spots: 1st=40%, 2nd=25%, 3rd=18%, rest split evenly
+        const remaining = 17;
+        const extraPlaces = paidPlaces - 3;
+        const perExtra = Math.round(remaining / extraPlaces * 10) / 10;
+        const dist = [40, 25, 18];
+        for (let i = 0; i < extraPlaces; i++) dist.push(perExtra);
+        return dist;
+    }
+
+    function renderPayout() {
+        const { players, config, state } = T;
+        const buyIns = players.buyIns || 0;
+        const rebuys = players.rebuys || 0;
+        const activePlayers = players.activePlayers || 0;
+        const buyInAmount = config.buyInAmount || 400;
+
+        const prizePool = (buyIns + rebuys) * buyInAmount;
+        const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
+        const dist = getPayoutDistribution(paidPlaces);
+
+        document.getElementById('pay-pool').textContent =
+            prizePool.toLocaleString('cs') + ' Kč';
+        document.getElementById('pay-places').textContent = paidPlaces;
+
+        const tbody = document.getElementById('payout-body');
+        tbody.innerHTML = '';
+        dist.forEach((pct, i) => {
+            const tr = document.createElement('tr');
+            const amount = Math.round(prizePool * pct / 100);
+            tr.innerHTML =
+                '<td>' + (i + 1) + '.</td>' +
+                '<td>' + pct + '%</td>' +
+                '<td>' + amount.toLocaleString('cs') + ' Kč</td>';
+            tbody.appendChild(tr);
+        });
+
+        // Bubble indicator
+        const bubble = document.getElementById('bubble-banner');
+        const isBubble = state.status !== 'waiting' && activePlayers === paidPlaces + 1 && activePlayers > 1;
+        bubble.style.display = isBubble ? '' : 'none';
     }
 
     function recalcAndSync() {
@@ -524,14 +703,25 @@
         const { config, state, players, blindStructure } = T;
 
         // Header stats
-        document.getElementById('hd-players').textContent = players.count;
+        document.getElementById('hd-active').textContent = players.activePlayers;
+        document.getElementById('hd-buyin').textContent = players.buyIns;
         document.getElementById('hd-chips').textContent = players.totalChips.toLocaleString('cs');
 
         // Admin player counts
         if (isAdmin) {
-            document.getElementById('ad-players').textContent = players.count;
+            document.getElementById('ad-buyins').textContent = players.buyIns;
+            document.getElementById('ad-active').textContent = players.activePlayers;
             document.getElementById('ad-rebuys').textContent = players.rebuys;
             document.getElementById('ad-bonuses').textContent = players.bonuses;
+        }
+
+        // Winner banner
+        const winnerBanner = document.getElementById('winner-banner');
+        if (state.status === 'finished' && state.winner) {
+            winnerBanner.style.display = '';
+            document.getElementById('winner-name').textContent = state.winner;
+        } else {
+            winnerBanner.style.display = 'none';
         }
 
         // Status banner
@@ -541,6 +731,9 @@
             banner.className = 'status-banner';
         } else if (state.status === 'paused') {
             banner.textContent = 'PAUZA';
+            banner.className = 'status-banner';
+        } else if (state.status === 'finished') {
+            banner.textContent = 'TURNAJ UKONČEN';
             banner.className = 'status-banner';
         } else {
             banner.className = 'status-banner running';
@@ -638,6 +831,9 @@
             tbody.appendChild(tr);
         });
 
+        // Payout (always visible)
+        renderPayout();
+
         // Populate config inputs from current data
         if (isAdmin) {
             const ids = {
@@ -649,7 +845,9 @@
                 'cfg-rebuy-cutoff': config.rebuyCutoff,
                 'cfg-break-after': config.breakAfterLevel,
                 'cfg-break-dur': config.breakDuration,
-                'cfg-start-time': config.startTime
+                'cfg-start-time': config.startTime,
+                'cfg-buyin-amount': config.buyInAmount,
+                'cfg-date': config.date
             };
             for (const [id, val] of Object.entries(ids)) {
                 const el = document.getElementById(id);
@@ -657,14 +855,17 @@
             }
 
             // Rebuy cutoff enforcement
+            const rebuyClosed = state.currentLevel >= config.rebuyCutoff && state.status !== 'waiting';
             const rebuyBtn = document.getElementById('btn-rebuy');
-            if (state.currentLevel >= config.rebuyCutoff && state.status !== 'waiting') {
+            const removeRebuyBtn = document.getElementById('btn-remove-rebuy');
+            if (rebuyClosed) {
                 rebuyBtn.disabled = true;
                 rebuyBtn.title = 'Rebuy uzavřen po levelu ' + config.rebuyCutoff;
             } else {
                 rebuyBtn.disabled = false;
                 rebuyBtn.title = '';
             }
+            removeRebuyBtn.disabled = players.rebuys <= 0;
         }
     }
 
@@ -743,7 +944,15 @@
 
         T.config = { ...DEFAULTS.config, ...data.config };
         T.state = { ...DEFAULTS.state, ...data.state };
-        T.players = { ...DEFAULTS.players, ...data.players };
+
+        // Migrate old "count" field to "buyIns" / "activePlayers"
+        const rawPlayers = data.players || {};
+        if (rawPlayers.count !== undefined && rawPlayers.buyIns === undefined) {
+            rawPlayers.buyIns = rawPlayers.count;
+            rawPlayers.activePlayers = rawPlayers.count;
+            delete rawPlayers.count;
+        }
+        T.players = { ...DEFAULTS.players, ...rawPlayers };
         T.blindStructure = data.blindStructure || [];
 
         render();
@@ -762,7 +971,9 @@
                 rebuyCutoff: parseInt(document.getElementById('cfg-rebuy-cutoff').value) || 4,
                 breakAfterLevel: parseInt(document.getElementById('cfg-break-after').value) || 0,
                 breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
-                startTime: document.getElementById('cfg-start-time').value || '19:00'
+                startTime: document.getElementById('cfg-start-time').value || '19:00',
+                buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400,
+                date: document.getElementById('cfg-date').value || ''
             };
             tournamentRef.child('config').set(config).then(() => {
                 T.config = config;
@@ -772,20 +983,54 @@
 
         // Player buttons
         document.getElementById('btn-add-player').addEventListener('click', () => {
-            tournamentRef.child('players/count').transaction(v => (v || 0) + 1, () => recalcAndSync());
+            const updates = {};
+            updates['players/buyIns'] = (T.players.buyIns || 0) + 1;
+            updates['players/activePlayers'] = (T.players.activePlayers || 0) + 1;
+            tournamentRef.update(updates).then(() => recalcAndSync());
         });
 
         document.getElementById('btn-remove-player').addEventListener('click', () => {
-            tournamentRef.child('players/count').transaction(v => Math.max(0, (v || 0) - 1), () => recalcAndSync());
+            const updates = {};
+            updates['players/buyIns'] = Math.max(0, (T.players.buyIns || 0) - 1);
+            updates['players/activePlayers'] = Math.max(0, (T.players.activePlayers || 0) - 1);
+            tournamentRef.update(updates).then(() => recalcAndSync());
+        });
+
+        document.getElementById('btn-knockout').addEventListener('click', () => {
+            if (T.players.activePlayers <= 0) return;
+            tournamentRef.child('players/activePlayers').set(T.players.activePlayers - 1);
         });
 
         document.getElementById('btn-rebuy').addEventListener('click', () => {
             if (T.state.currentLevel >= T.config.rebuyCutoff && T.state.status !== 'waiting') return;
-            tournamentRef.child('players/rebuys').transaction(v => (v || 0) + 1, () => recalcAndSync());
+            const updates = {};
+            updates['players/rebuys'] = (T.players.rebuys || 0) + 1;
+            updates['players/buyIns'] = (T.players.buyIns || 0) + 1;
+            updates['players/activePlayers'] = (T.players.activePlayers || 0) + 1;
+            tournamentRef.update(updates).then(() => recalcAndSync());
+        });
+
+        document.getElementById('btn-remove-rebuy').addEventListener('click', () => {
+            if (T.players.rebuys <= 0) return;
+            const updates = {};
+            updates['players/rebuys'] = Math.max(0, (T.players.rebuys || 0) - 1);
+            updates['players/buyIns'] = Math.max(0, (T.players.buyIns || 0) - 1);
+            updates['players/activePlayers'] = Math.max(0, (T.players.activePlayers || 0) - 1);
+            tournamentRef.update(updates).then(() => recalcAndSync());
         });
 
         document.getElementById('btn-bonus').addEventListener('click', () => {
             tournamentRef.child('players/bonuses').transaction(v => (v || 0) + 1, () => recalcAndSync());
+        });
+
+        // End tournament
+        document.getElementById('btn-end-tournament').addEventListener('click', () => {
+            const winner = document.getElementById('cfg-winner').value.trim();
+            if (!winner) { alert('Zadej jméno vítěze!'); return; }
+            tournamentRef.child('state').update({
+                status: 'finished',
+                winner: winner
+            });
         });
 
         // Timer controls
