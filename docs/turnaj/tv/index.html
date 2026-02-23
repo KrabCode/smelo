@@ -984,6 +984,9 @@
             tournamentRef.child('config').set(config).then(() => {
                 T.config = config;
                 recalcAndSync();
+                const btn = document.getElementById('btn-save-config');
+                btn.textContent = 'Nastavení uloženo ✓';
+                setTimeout(() => { btn.textContent = 'Uložit nastavení'; }, 2000);
             });
         });
 
