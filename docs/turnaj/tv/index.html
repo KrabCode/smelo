@@ -283,7 +283,7 @@
     <div class="structure-wrap">
         <table class="structure-table">
             <thead>
-                <tr><th>Level</th><th>SB</th><th>BB</th></tr>
+                <tr><th>Čas</th><th>Level</th><th>SB</th><th>BB</th></tr>
             </thead>
             <tbody id="structure-body"></tbody>
         </table>
@@ -329,6 +329,10 @@
                     <div class="config-field">
                         <label>Délka přestávky (min)</label>
                         <input type="number" id="cfg-break-dur" value="30" min="1">
+                    </div>
+                    <div class="config-field">
+                        <label>Začátek turnaje (čas)</label>
+                        <input type="time" id="cfg-start-time" value="19:00">
                     </div>
                 </div>
                 <div class="btn-row" style="margin-top:12px">
@@ -393,7 +397,8 @@
             bonusAmount: 5000,
             rebuyCutoff: 4,
             breakAfterLevel: 0,
-            breakDuration: 30
+            breakDuration: 30,
+            startTime: '19:00'
         },
         state: {
             status: 'waiting',   // waiting | running | paused
@@ -599,6 +604,10 @@
         // Structure table
         const tbody = document.getElementById('structure-body');
         tbody.innerHTML = '';
+        // Compute absolute start times from config
+        const startTimeParts = (config.startTime || '19:00').split(':');
+        let runningMinutes = parseInt(startTimeParts[0]) * 60 + parseInt(startTimeParts[1]);
+
         let levelNum = 0;
         struct.forEach((s, i) => {
             const tr = document.createElement('tr');
@@ -606,18 +615,26 @@
             if (i === lvl) classes.push('current-level');
             else if (i < lvl) classes.push('past-level');
 
+            const hh = String(Math.floor(runningMinutes / 60) % 24).padStart(2, '0');
+            const mm = String(runningMinutes % 60).padStart(2, '0');
+            const timeStr = hh + ':' + mm;
+
             if (s.isBreak) {
                 classes.push('break-row');
                 tr.className = classes.join(' ');
-                tr.innerHTML = '<td colspan="3">PŘESTÁVKA</td>';
+                tr.innerHTML =
+                    '<td>' + timeStr + '</td>' +
+                    '<td colspan="3">PŘESTÁVKA</td>';
             } else {
                 levelNum++;
                 tr.className = classes.join(' ');
                 tr.innerHTML =
+                    '<td>' + timeStr + '</td>' +
                     '<td>' + levelNum + '</td>' +
                     '<td>' + s.small.toLocaleString('cs') + '</td>' +
                     '<td>' + s.big.toLocaleString('cs') + '</td>';
             }
+            runningMinutes += s.duration;
             tbody.appendChild(tr);
         });
 
@@ -631,7 +648,8 @@
                 'cfg-bonus': config.bonusAmount,
                 'cfg-rebuy-cutoff': config.rebuyCutoff,
                 'cfg-break-after': config.breakAfterLevel,
-                'cfg-break-dur': config.breakDuration
+                'cfg-break-dur': config.breakDuration,
+                'cfg-start-time': config.startTime
             };
             for (const [id, val] of Object.entries(ids)) {
                 const el = document.getElementById(id);
@@ -743,7 +761,8 @@
                 bonusAmount: parseInt(document.getElementById('cfg-bonus').value) || 5000,
                 rebuyCutoff: parseInt(document.getElementById('cfg-rebuy-cutoff').value) || 4,
                 breakAfterLevel: parseInt(document.getElementById('cfg-break-after').value) || 0,
-                breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30
+                breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
+                startTime: document.getElementById('cfg-start-time').value || '19:00'
             };
             tournamentRef.child('config').set(config).then(() => {
                 T.config = config;
