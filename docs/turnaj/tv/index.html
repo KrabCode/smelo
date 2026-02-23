@@ -442,6 +442,12 @@
                         <input type="number" id="cfg-bonuses" value="0" min="0">
                     </div>
                 </div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn" id="btn-add-player">+ Hráč</button>
+                    <button class="btn" id="btn-rebuy">+ Re-buy</button>
+                    <button class="btn" id="btn-bonus">+ Bonus</button>
+                    <button class="btn" id="btn-knockout">Vypadl hráč</button>
+                </div>
                 <div class="btn-row" style="margin-top:12px">
                     <button class="btn accent" id="btn-save-config">Uložit nastavení</button>
                 </div>
@@ -973,6 +979,31 @@
                 btn.textContent = 'Nastavení uloženo ✓';
                 setTimeout(() => { btn.textContent = 'Uložit nastavení'; }, 2000);
             });
+        });
+
+        // Quick-action player buttons (increment + auto-save)
+        document.getElementById('btn-add-player').addEventListener('click', () => {
+            const updates = {};
+            updates['players/buyIns'] = (T.players.buyIns || 0) + 1;
+            updates['players/activePlayers'] = (T.players.activePlayers || 0) + 1;
+            tournamentRef.update(updates).then(() => recalcAndSync());
+        });
+
+        document.getElementById('btn-rebuy').addEventListener('click', () => {
+            const updates = {};
+            updates['players/rebuys'] = (T.players.rebuys || 0) + 1;
+            updates['players/buyIns'] = (T.players.buyIns || 0) + 1;
+            updates['players/activePlayers'] = (T.players.activePlayers || 0) + 1;
+            tournamentRef.update(updates).then(() => recalcAndSync());
+        });
+
+        document.getElementById('btn-bonus').addEventListener('click', () => {
+            tournamentRef.child('players/bonuses').transaction(v => (v || 0) + 1, () => recalcAndSync());
+        });
+
+        document.getElementById('btn-knockout').addEventListener('click', () => {
+            if (T.players.activePlayers <= 0) return;
+            tournamentRef.child('players/activePlayers').set(T.players.activePlayers - 1);
         });
 
         // End tournament
