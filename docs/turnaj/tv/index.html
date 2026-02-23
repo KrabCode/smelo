@@ -1014,28 +1014,31 @@
         });
 
         // Quick-action player buttons (increment + auto-save)
+        function getField(id) { return parseInt(document.getElementById(id).value) || 0; }
+
         document.getElementById('btn-add-player').addEventListener('click', () => {
             const updates = {};
-            updates['players/buyIns'] = (T.players.buyIns || 0) + 1;
-            updates['players/activePlayers'] = (T.players.activePlayers || 0) + 1;
+            updates['players/buyIns'] = getField('cfg-buyins') + 1;
+            updates['players/activePlayers'] = getField('cfg-active') + 1;
             tournamentRef.update(updates).then(() => recalcAndSync());
         });
 
         document.getElementById('btn-rebuy').addEventListener('click', () => {
             const updates = {};
-            updates['players/rebuys'] = (T.players.rebuys || 0) + 1;
-            updates['players/buyIns'] = (T.players.buyIns || 0) + 1;
-            updates['players/activePlayers'] = (T.players.activePlayers || 0) + 1;
+            updates['players/rebuys'] = getField('cfg-rebuys') + 1;
+            updates['players/buyIns'] = getField('cfg-buyins') + 1;
+            updates['players/activePlayers'] = getField('cfg-active') + 1;
             tournamentRef.update(updates).then(() => recalcAndSync());
         });
 
         document.getElementById('btn-bonus').addEventListener('click', () => {
-            tournamentRef.child('players/bonuses').transaction(v => (v || 0) + 1, () => recalcAndSync());
+            tournamentRef.child('players/bonuses').set(getField('cfg-bonuses') + 1).then(() => recalcAndSync());
         });
 
         document.getElementById('btn-knockout').addEventListener('click', () => {
-            if (T.players.activePlayers <= 0) return;
-            tournamentRef.child('players/activePlayers').set(T.players.activePlayers - 1);
+            const active = getField('cfg-active');
+            if (active <= 0) return;
+            tournamentRef.child('players/activePlayers').set(active - 1);
         });
 
         // End tournament
