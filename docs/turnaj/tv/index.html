@@ -340,7 +340,6 @@
 <body>
     <!-- Header -->
     <div class="tracker-header">
-        <a href="../">← Turnaj</a>
         <div class="stats">
             Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span> &nbsp;|&nbsp;
             Žetony: <span id="hd-chips">0</span>
@@ -369,6 +368,7 @@
     <div class="payout-section" id="payout-section">
         <div class="bubble-banner" id="bubble-banner" style="display:none">BUBBLE!</div>
         <div class="payout-header">
+            <div>Hráči: <strong id="pay-active">0</strong> / <strong id="pay-buyin">0</strong></div>
             <div>Prize pool: <strong id="pay-pool">0 Kč</strong></div>
             <div>Vyplácí se: <strong id="pay-places">0</strong> místa</div>
         </div>
@@ -430,16 +430,8 @@
                         <input type="number" id="cfg-break-dur" value="30" min="1">
                     </div>
                     <div class="config-field">
-                        <label>Plánovaný začátek (orientační)</label>
-                        <input type="time" id="cfg-start-time" value="19:00">
-                    </div>
-                    <div class="config-field">
                         <label>Buy-in (Kč)</label>
                         <input type="number" id="cfg-buyin-amount" value="400">
-                    </div>
-                    <div class="config-field">
-                        <label>Datum turnaje</label>
-                        <input type="date" id="cfg-date">
                     </div>
                 </div>
                 <div class="btn-row" style="margin-top:12px">
@@ -510,6 +502,13 @@
     const isAdmin = location.search.includes('admin');
 
     if (isAdmin) document.getElementById('admin-panel').style.display = '';
+
+    // ─── Server Time Sync ────────────────────────────────────────
+    let serverTimeOffset = 0;
+    db.ref('.info/serverTimeOffset').on('value', (snap) => {
+        serverTimeOffset = snap.val() || 0;
+    });
+    function serverNow() { return Date.now() + serverTimeOffset; }
 
     // ─── Default data ───────────────────────────────────────────
     const DEFAULTS = {
@@ -660,6 +659,8 @@
         const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
         const dist = getPayoutDistribution(paidPlaces);
 
+        document.getElementById('pay-active').textContent = activePlayers;
+        document.getElementById('pay-buyin').textContent = buyIns;
         document.getElementById('pay-pool').textContent =
             prizePool.toLocaleString('cs') + ' Kč';
         document.getElementById('pay-places').textContent = paidPlaces;
@@ -855,9 +856,7 @@
                 'cfg-rebuy-cutoff': config.rebuyCutoff,
                 'cfg-break-after': config.breakAfterLevel,
                 'cfg-break-dur': config.breakDuration,
-                'cfg-start-time': config.startTime,
-                'cfg-buyin-amount': config.buyInAmount,
-                'cfg-date': config.date
+                'cfg-buyin-amount': config.buyInAmount
             };
             for (const [id, val] of Object.entries(ids)) {
                 const el = document.getElementById(id);
@@ -893,7 +892,7 @@
         const progressEl = document.getElementById('progress-bar');
 
         if (state.status === 'running' && state.timerEnd > 0) {
-            const remaining = state.timerEnd - Date.now();
+            const remaining = state.timerEnd - serverNow();
             timerEl.textContent = formatTime(remaining);
             timerEl.classList.remove('paused');
             timerEl.classList.toggle('warning', remaining <= 30000 && remaining > 0);
@@ -936,7 +935,7 @@
         const duration = (struct[nextLevel]?.duration || 20) * 60 * 1000;
         tournamentRef.child('state').update({
             currentLevel: nextLevel,
-            timerEnd: Date.now() + duration,
+            timerEnd: serverNow() + duration,
             pausedRemaining: 0
         });
     }
@@ -981,9 +980,7 @@
                 rebuyCutoff: parseInt(document.getElementById('cfg-rebuy-cutoff').value) || 4,
                 breakAfterLevel: parseInt(document.getElementById('cfg-break-after').value) || 0,
                 breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
-                startTime: document.getElementById('cfg-start-time').value || '19:00',
-                buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400,
-                date: document.getElementById('cfg-date').value || ''
+                buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400
             };
             tournamentRef.child('config').set(config).then(() => {
                 T.config = config;
@@ -1055,7 +1052,7 @@
                 // Resume
                 tournamentRef.child('state').update({
                     status: 'running',
-                    timerEnd: Date.now() + T.state.pausedRemaining,
+                    timerEnd: serverNow() + T.state.pausedRemaining,
                     pausedRemaining: 0
                 });
             } else {
@@ -1064,16 +1061,16 @@
                 const duration = (struct[T.state.currentLevel]?.duration || 20) * 60 * 1000;
                 tournamentRef.child('state').update({
                     status: 'running',
-                    timerEnd: Date.now() + duration,
+                    timerEnd: serverNow() + duration,
                     pausedRemaining: 0,
-                    startedAt: Date.now()
+                    startedAt: serverNow()
                 });
             }
         });
 
         document.getElementById('btn-pause').addEventListener('click', () => {
             if (T.state.status !== 'running') return;
-            const remaining = Math.max(0, T.state.timerEnd - Date.now());
+            const remaining = Math.max(0, T.state.timerEnd - serverNow());
             tournamentRef.child('state').update({
                 status: 'paused',
                 timerEnd: 0,
@@ -1095,7 +1092,7 @@
             if (T.state.status === 'running') {
                 tournamentRef.child('state').update({
                     currentLevel: newLevel,
-                    timerEnd: Date.now() + duration,
+                    timerEnd: serverNow() + duration,
                     pausedRemaining: 0
                 });
             } else {
