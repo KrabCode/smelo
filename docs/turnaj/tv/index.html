@@ -17,17 +17,21 @@
         /* Header bar */
         .tracker-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 12px 24px;
+            flex-wrap: wrap;
+            gap: 12px 24px;
+            padding: 14px 24px;
             border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
         }
-        .tracker-header a { text-decoration: none; font-size: 0.95em; }
-        .tracker-header .stats {
-            font-size: 0.95em;
+        .tracker-header .stat-item {
+            font-size: 0.9em;
             color: var(--text-secondary);
+            white-space: nowrap;
         }
-        .tracker-header .stats span { color: var(--accent); font-weight: bold; }
+        .tracker-header .stat-item span { color: var(--accent); font-weight: bold; }
+        .tracker-header .stat-item .muted { color: var(--text-secondary); font-weight: normal; }
 
         /* Main display */
         .display { text-align: center; padding: 24px 20px 12px; }
@@ -334,15 +338,13 @@
 <body>
     <!-- Header -->
     <div class="tracker-header">
-        <div class="stats">
-            Buy-in: <span id="hd-buyin-amount">400 Kč</span> &nbsp;|&nbsp;
-            <span id="hd-rebuy-cutoff" style="color:var(--text-secondary);font-weight:normal">Re-buy pouze před přestávkou</span> &nbsp;|&nbsp;
-            Žetony: <span id="hd-chips">0</span> &nbsp;|&nbsp;
-            Prize pool: <span id="hd-pool">0 Kč</span> &nbsp;|&nbsp;
-            Hráčů v penězích: <span id="hd-places">0</span> &nbsp;|&nbsp;
-            Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span>
-            <span id="hd-winners"></span>
-        </div>
+        <div class="stat-item">Buy-in: <span id="hd-buyin-amount">400 Kč</span></div>
+        <div class="stat-item"><span class="muted">Re-buy pouze před přestávkou</span></div>
+        <div class="stat-item">Žetony: <span id="hd-chips">0</span></div>
+        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span></div>
+        <div class="stat-item">Hráčů v penězích: <span id="hd-places">0</span></div>
+        <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
+        <div class="stat-item" id="hd-winners"></div>
     </div>
 
     <!-- Display -->
