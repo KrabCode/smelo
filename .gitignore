@@ -1,3 +1,2 @@
 .claude/settings.local.json
-docs/turnaj/tv/config.txt
-docs/turnaj/tv/db_url.txt
+docs/turnaj/tv/secrets/*
