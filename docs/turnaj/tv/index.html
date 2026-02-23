@@ -256,13 +256,6 @@
             margin: 8px auto 24px;
             padding: 0 20px;
         }
-        .payout-header {
-            text-align: center;
-            font-size: 0.95em;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-        }
-        .payout-header strong { color: var(--accent); }
         .payout-table {
             width: 100%;
             max-width: 360px;
@@ -362,9 +355,6 @@
 
     <!-- Payout section (below structure, appears as levels shrink) -->
     <div class="payout-section" id="payout-section">
-        <div class="payout-header">
-            <div>Hráči: <strong id="pay-active">0</strong> / <strong id="pay-buyin">0</strong></div>
-        </div>
         <table class="payout-table">
             <thead><tr><th>Místo</th><th>%</th><th>Výhra</th></tr></thead>
             <tbody id="payout-body"></tbody>
@@ -647,8 +637,6 @@
         const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
         const dist = getPayoutDistribution(paidPlaces);
 
-        document.getElementById('pay-active').textContent = activePlayers;
-        document.getElementById('pay-buyin').textContent = buyIns;
         document.getElementById('hd-pool').textContent = prizePool.toLocaleString('cs') + ' Kč';
         document.getElementById('hd-places').textContent = paidPlaces;
 
