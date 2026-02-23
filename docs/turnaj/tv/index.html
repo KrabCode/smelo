@@ -546,11 +546,10 @@
 
     // ─── Blind Calculation ──────────────────────────────────────
     function roundToChip(val, chip) {
-        // Use progressively rounder units as values grow
-        let unit = chip;
-        if (val >= 10000) unit = Math.max(unit, 1000);
-        else if (val >= 1000) unit = Math.max(unit, 100);
-        else if (val >= 100) unit = Math.max(unit, 50);
+        let unit;
+        if (val >= 1000) unit = 100;
+        else if (val >= 100) unit = 25;
+        else unit = 5;
         return Math.max(chip, Math.round(val / unit) * unit);
     }
 
