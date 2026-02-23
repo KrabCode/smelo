@@ -1078,6 +1078,7 @@
         document.getElementById('btn-start').addEventListener('click', () => {
             const status = T.state.status;
             if (status === 'running') return;
+            if (!confirm('Spustit timer?')) return;
 
             if (status === 'paused' && T.state.pausedRemaining > 0) {
                 // Resume
@@ -1101,6 +1102,7 @@
 
         document.getElementById('btn-pause').addEventListener('click', () => {
             if (T.state.status !== 'running') return;
+            if (!confirm('Pozastavit timer?')) return;
             const remaining = Math.max(0, T.state.timerEnd - serverNow());
             tournamentRef.child('state').update({
                 status: 'paused',
@@ -1110,12 +1112,14 @@
         });
 
         document.getElementById('btn-reset').addEventListener('click', () => {
+            if (!confirm('Opravdu resetovat celý turnaj?')) return;
             tournamentRef.child('state').set(DEFAULTS.state);
             tournamentRef.child('players').set(DEFAULTS.players);
             recalcAndSync();
         });
 
         document.getElementById('btn-prev-level').addEventListener('click', () => {
+            if (!confirm('Vrátit se na předchozí level?')) return;
             const newLevel = Math.max(0, T.state.currentLevel - 1);
             const struct = T.blindStructure || [];
             const duration = (struct[newLevel]?.duration || 20) * 60 * 1000;
@@ -1135,6 +1139,7 @@
         });
 
         document.getElementById('btn-next-level').addEventListener('click', () => {
+            if (!confirm('Přeskočit na další level?')) return;
             advanceLevel();
         });
     }
