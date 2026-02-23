@@ -285,22 +285,6 @@
             border-bottom: 1px solid rgba(255,255,255,0.04);
             color: var(--text-secondary);
         }
-        .bubble-banner {
-            text-align: center;
-            font-family: 'Staatliches', sans-serif;
-            font-size: 1.6em;
-            letter-spacing: 4px;
-            color: var(--green);
-            padding: 8px;
-            margin-bottom: 8px;
-            border: 2px solid var(--green);
-            border-radius: 10px;
-            animation: bubble-pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes bubble-pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
 
         /* Winner banner */
         .winner-banner {
@@ -378,7 +362,6 @@
 
     <!-- Payout section (below structure, appears as levels shrink) -->
     <div class="payout-section" id="payout-section">
-        <div class="bubble-banner" id="bubble-banner" style="display:none">BUBBLE!</div>
         <div class="payout-header">
             <div>Hráči: <strong id="pay-active">0</strong> / <strong id="pay-buyin">0</strong></div>
         </div>
@@ -692,10 +675,6 @@
             tbody.appendChild(tr);
         });
 
-        // Bubble indicator
-        const bubble = document.getElementById('bubble-banner');
-        const isBubble = state.status !== 'waiting' && activePlayers === paidPlaces + 1 && activePlayers > 1;
-        bubble.style.display = isBubble ? '' : 'none';
     }
 
     function recalcAndSync() {
