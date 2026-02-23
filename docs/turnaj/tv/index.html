@@ -315,13 +315,22 @@
             letter-spacing: 4px;
             color: var(--text-muted);
         }
-        .winner-banner .winner-name {
+        .winner-entry {
             font-family: 'Staatliches', sans-serif;
-            font-size: clamp(3rem, 10vw, 6rem);
-            letter-spacing: 4px;
-            color: var(--accent);
+            letter-spacing: 3px;
             margin-top: 8px;
-            line-height: 1.1;
+            line-height: 1.3;
+        }
+        .winner-entry .place { color: var(--text-muted); }
+        .winner-entry .name { color: var(--accent); }
+        .winner-entry:first-child {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+        }
+        .winner-entry:nth-child(2) {
+            font-size: clamp(1.8rem, 5vw, 3rem);
+        }
+        .winner-entry:nth-child(n+3) {
+            font-size: clamp(1.2rem, 3vw, 2rem);
         }
 
     </style>
@@ -331,7 +340,10 @@
     <div class="tracker-header">
         <div class="stats">
             Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span> &nbsp;|&nbsp;
-            Žetony: <span id="hd-chips">0</span>
+            Žetony: <span id="hd-chips">0</span> &nbsp;|&nbsp;
+            Prize pool: <span id="hd-pool">0 Kč</span> &nbsp;|&nbsp;
+            Vyplácí se: <span id="hd-places">0</span>
+            <span id="hd-winners"></span>
         </div>
     </div>
 
@@ -347,10 +359,10 @@
         <div class="next-level" id="next-level"></div>
     </div>
 
-    <!-- Winner banner (shown when tournament ends) -->
+    <!-- Winner banner (shown when all places declared) -->
     <div class="winner-banner" id="winner-banner" style="display:none">
-        <div class="winner-label">VÍTĚZ TURNAJE</div>
-        <div class="winner-name" id="winner-name"></div>
+        <div class="winner-label">VÝSLEDKY TURNAJE</div>
+        <div id="winner-list"></div>
     </div>
 
     <!-- Payout section -->
@@ -358,8 +370,6 @@
         <div class="bubble-banner" id="bubble-banner" style="display:none">BUBBLE!</div>
         <div class="payout-header">
             <div>Hráči: <strong id="pay-active">0</strong> / <strong id="pay-buyin">0</strong></div>
-            <div>Prize pool: <strong id="pay-pool">0 Kč</strong></div>
-            <div>Vyplácí se: <strong id="pay-places">0</strong> místa</div>
         </div>
         <table class="payout-table">
             <thead><tr><th>Místo</th><th>%</th><th>Výhra</th></tr></thead>
@@ -453,15 +463,12 @@
                 </div>
             </div>
 
-            <!-- End tournament -->
+            <!-- Winners -->
             <div class="admin-section">
-                <h3>Ukončení turnaje</h3>
-                <div class="config-field" style="margin-bottom:8px">
-                    <label>Jméno vítěze</label>
-                    <input type="text" id="cfg-winner" placeholder="Zadej jméno vítěze...">
-                </div>
-                <div class="btn-row">
-                    <button class="btn accent" id="btn-end-tournament">Ukončit turnaj</button>
+                <h3>Výsledky</h3>
+                <div id="winners-fields"></div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn accent" id="btn-save-winners">Uložit výsledky</button>
                 </div>
             </div>
 
@@ -524,7 +531,7 @@
             timerEnd: 0,
             pausedRemaining: 0,
             startedAt: 0,
-            winner: ''
+            winners: {}       // { "1": "Franta", "2": "Humr", ... }
         },
         players: {
             buyIns: 6,
@@ -659,9 +666,8 @@
 
         document.getElementById('pay-active').textContent = activePlayers;
         document.getElementById('pay-buyin').textContent = buyIns;
-        document.getElementById('pay-pool').textContent =
-            prizePool.toLocaleString('cs') + ' Kč';
-        document.getElementById('pay-places').textContent = paidPlaces;
+        document.getElementById('hd-pool').textContent = prizePool.toLocaleString('cs') + ' Kč';
+        document.getElementById('hd-places').textContent = paidPlaces;
 
         const tbody = document.getElementById('payout-body');
         tbody.innerHTML = '';
@@ -709,14 +715,37 @@
 
         // Admin player counts — now handled by config input sync below
 
-        // Winner banner — hide timer/blinds/structure when finished
-        const isFinished = state.status === 'finished' && state.winner;
+        // Winners logic
+        const winners = state.winners || {};
+        const winnerEntries = Object.keys(winners).filter(k => winners[k]).sort((a, b) => a - b);
+        const buyIns = players.buyIns || 0;
+        const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
+        const allDeclared = winnerEntries.length >= paidPlaces && paidPlaces > 0;
+
+        // Header winners
+        const hdWinners = document.getElementById('hd-winners');
+        if (winnerEntries.length > 0) {
+            hdWinners.innerHTML = '&nbsp;|&nbsp;' + winnerEntries
+                .map(k => k + '. ' + winners[k]).join(', ');
+        } else {
+            hdWinners.textContent = '';
+        }
+
+        // Winner banner — hide timer/blinds/structure only when all places declared
         const winnerBanner = document.getElementById('winner-banner');
-        document.getElementById('display').style.display = isFinished ? 'none' : '';
-        document.querySelector('.structure-wrap').style.display = isFinished ? 'none' : '';
-        if (isFinished) {
+        document.getElementById('display').style.display = allDeclared ? 'none' : '';
+        document.querySelector('.structure-wrap').style.display = allDeclared ? 'none' : '';
+        if (allDeclared) {
             winnerBanner.style.display = '';
-            document.getElementById('winner-name').textContent = state.winner;
+            const listEl = document.getElementById('winner-list');
+            listEl.innerHTML = winnerEntries.map(k =>
+                '<div class="winner-entry"><span class="place">' + k + '. místo: </span>' +
+                '<span class="name">' + winners[k] + '</span></div>'
+            ).join('');
+            // Stop tournament when all winners declared
+            if (state.status === 'running' || state.status === 'paused') {
+                if (isAdmin) tournamentRef.child('state/status').set('finished');
+            }
         } else {
             winnerBanner.style.display = 'none';
         }
@@ -857,6 +886,24 @@
             for (const [id, val] of Object.entries(ids)) {
                 const el = document.getElementById(id);
                 if (el && document.activeElement !== el) el.value = val;
+            }
+
+            // Generate winner input fields for each paid place
+            const wf = document.getElementById('winners-fields');
+            const currentFields = wf.querySelectorAll('input');
+            const hasFocus = Array.from(currentFields).some(el => el === document.activeElement);
+            if (!hasFocus) {
+                const html = [];
+                for (let i = 1; i <= paidPlaces; i++) {
+                    html.push(
+                        '<div class="config-field" style="margin-bottom:6px">' +
+                        '<label>' + i + '. místo</label>' +
+                        '<input type="text" id="cfg-winner-' + i + '" placeholder="Jméno hráče..." value="' +
+                        ((winners[i] || '').replace(/"/g, '&quot;')) + '">' +
+                        '</div>'
+                    );
+                }
+                wf.innerHTML = html.join('');
             }
         }
     }
@@ -1041,13 +1088,20 @@
             tournamentRef.child('players/activePlayers').set(active - 1);
         });
 
-        // End tournament
-        document.getElementById('btn-end-tournament').addEventListener('click', () => {
-            const winner = document.getElementById('cfg-winner').value.trim();
-            if (!winner) { alert('Zadej jméno vítěze!'); return; }
-            tournamentRef.child('state').update({
-                status: 'finished',
-                winner: winner
+        // Save winners
+        document.getElementById('btn-save-winners').addEventListener('click', () => {
+            const winners = {};
+            const buyIns = T.players.buyIns || 0;
+            const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
+            for (let i = 1; i <= paidPlaces; i++) {
+                const el = document.getElementById('cfg-winner-' + i);
+                const name = el ? el.value.trim() : '';
+                if (name) winners[i] = name;
+            }
+            tournamentRef.child('state/winners').set(winners).then(() => {
+                const btn = document.getElementById('btn-save-winners');
+                btn.textContent = 'Výsledky uloženy ✓';
+                setTimeout(() => { btn.textContent = 'Uložit výsledky'; }, 2000);
             });
         });
 
