@@ -322,7 +322,6 @@
         <div class="stat-item">Hráčů v penězích: <span id="hd-places">0</span></div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
         <div class="stat-item" id="hd-to-money"></div>
-        <div class="stat-item" id="hd-winners"></div>
     </div>
 
     <!-- Display -->
@@ -700,15 +699,6 @@
         const buyIns = players.buyIns || 0;
         const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
         const allDeclared = winnerEntries.length >= paidPlaces && paidPlaces > 0;
-
-        // Header winners
-        const hdWinners = document.getElementById('hd-winners');
-        if (winnerEntries.length > 0) {
-            hdWinners.innerHTML = '&nbsp;|&nbsp;' + winnerEntries
-                .map(k => k + '. ' + winners[k]).join(', ');
-        } else {
-            hdWinners.textContent = '';
-        }
 
         // Winner banner — hide timer/blinds/structure only when all places declared
         const winnerBanner = document.getElementById('winner-banner');
