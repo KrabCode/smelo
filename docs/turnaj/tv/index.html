@@ -797,9 +797,15 @@
         // Structure table
         const tbody = document.getElementById('structure-body');
         tbody.innerHTML = '';
-        // Compute absolute start times from config
-        const startTimeParts = (config.startTime || '19:00').split(':');
-        let runningMinutes = parseInt(startTimeParts[0]) * 60 + parseInt(startTimeParts[1]);
+        // Use actual startedAt timestamp when tournament has started, otherwise config startTime
+        let runningMinutes;
+        if (state.startedAt) {
+            const d = new Date(state.startedAt);
+            runningMinutes = d.getHours() * 60 + d.getMinutes();
+        } else {
+            const startTimeParts = (config.startTime || '19:00').split(':');
+            runningMinutes = parseInt(startTimeParts[0]) * 60 + parseInt(startTimeParts[1]);
+        }
 
         let levelNum = 0;
         struct.forEach((s, i) => {
