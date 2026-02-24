@@ -1164,20 +1164,29 @@ if (isAdmin) {
     document.getElementById('section-config').addEventListener('change', saveConfig);
 
     // Guard toggles — start locked
-    document.getElementById('cfg-blind-curve').disabled = true;
-    document.getElementById('section-payout-config').classList.add('guarded');
+    const GUARD_SECTIONS = {
+        'guard-blind-curve': 'cfg-blind-curve',
+        'guard-payout': 'section-payout-config',
+        'guard-timer': 'section-timer',
+        'guard-players': 'section-players',
+        'guard-seating': 'section-table-locks',
+        'guard-winners': 'section-winners',
+    };
+    Object.entries(GUARD_SECTIONS).forEach(([btnId, targetId]) => {
+        const el = document.getElementById(targetId);
+        if (btnId === 'guard-blind-curve') el.disabled = true;
+        else el.classList.add('guarded');
+    });
 
     document.querySelectorAll('.guard-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
             const locked = btn.textContent.trim() === '\u{1F512}';
             btn.textContent = locked ? '\u{1F513}' : '\u{1F512}';
-            if (btn.id === 'guard-blind-curve') {
-                const slider = document.getElementById('cfg-blind-curve');
-                slider.disabled = !locked;
-            } else if (btn.id === 'guard-payout') {
-                const section = document.getElementById('section-payout-config');
-                section.classList.toggle('guarded', !locked);
-            }
+            const targetId = GUARD_SECTIONS[btn.id];
+            if (!targetId) return;
+            const el = document.getElementById(targetId);
+            if (btn.id === 'guard-blind-curve') el.disabled = !locked;
+            else el.classList.toggle('guarded', !locked);
         });
     });
 

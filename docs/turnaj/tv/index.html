@@ -158,7 +158,7 @@
 
             <!-- Player list -->
             <div class="admin-section" id="section-players">
-                <h3>Hráči</h3>
+                <h3><button type="button" class="guard-toggle" id="guard-players">🔒</button> Hráči</h3>
                 <div class="player-add-row">
                     <input type="text" id="new-player-name" placeholder="Jméno hráče...">
                     <button class="btn" id="btn-add-player">+ Hráč</button>
@@ -171,7 +171,7 @@
 
             <!-- Table locks -->
             <div class="admin-section" id="section-table-locks">
-                <h3>Zasedací pořádek</h3>
+                <h3><button type="button" class="guard-toggle" id="guard-seating">🔒</button> Zasedací pořádek</h3>
                 <div id="table-locks-ui"></div>
                 <div class="btn-row" style="margin-top:12px">
                     <button class="btn" id="btn-reshuffle-seats">Přepočítat</button>
@@ -192,8 +192,8 @@
             </div>
 
             <!-- Winners -->
-            <div class="admin-section">
-                <h3>Výsledky</h3>
+            <div class="admin-section" id="section-winners">
+                <h3><button type="button" class="guard-toggle" id="guard-winners">🔒</button> Výsledky</h3>
                 <div id="winners-fields"></div>
                 <div class="btn-row" style="margin-top:8px">
                     <button class="btn accent" id="btn-save-winners">Ukončit turnaj</button>
@@ -201,8 +201,8 @@
             </div>
 
             <!-- Timer controls -->
-            <div class="admin-section">
-                <h3>Timer</h3>
+            <div class="admin-section" id="section-timer">
+                <h3><button type="button" class="guard-toggle" id="guard-timer">🔒</button> Timer</h3>
                 <div class="btn-row">
                     <button class="btn accent" id="btn-start">Start</button>
                     <button class="btn danger" id="btn-reset">Reset</button>
