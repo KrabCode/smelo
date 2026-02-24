@@ -599,20 +599,18 @@ function formatTime(ms) {
 
 window.addEventListener('resize', fitBlindsText);
 
+const _fitCtx = document.createElement('canvas').getContext('2d');
 function fitBlindsText() {
     const el = document.getElementById('blinds-current');
     const container = el.parentElement;
     const maxPx = parseFloat(getComputedStyle(document.getElementById('timer')).fontSize);
     const style = getComputedStyle(container);
     const avail = container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-    el.style.fontSize = maxPx + 'px';
-    // Measure actual text width
-    el.style.display = 'inline-block';
-    const textWidth = el.offsetWidth;
-    el.style.display = '';
-    if (textWidth > avail) {
-        el.style.fontSize = (maxPx * avail / textWidth) + 'px';
-    }
+    const elStyle = getComputedStyle(el);
+    const font = '700 ' + maxPx + 'px ' + elStyle.fontFamily;
+    _fitCtx.font = font;
+    const textWidth = _fitCtx.measureText(el.textContent).width + el.textContent.length * parseFloat(elStyle.letterSpacing);
+    el.style.fontSize = (textWidth > avail ? maxPx * avail / textWidth : maxPx) + 'px';
 }
 
 function render() {
