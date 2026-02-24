@@ -382,6 +382,8 @@ function render() {
     const stats = derivePlayerStats(list);
     document.getElementById('hd-active').textContent = stats.activePlayers;
     document.getElementById('remaining-count').textContent = stats.activePlayers;
+    document.getElementById('remaining-verb').textContent = stats.activePlayers >= 5 ? 'zbývá' : 'zbývají';
+    document.getElementById('remaining-noun').textContent = stats.activePlayers >= 5 ? 'hráčů' : 'hráči';
     document.getElementById('hd-buyin').textContent = stats.buyIns;
     document.getElementById('hd-chips').textContent = (players.totalChips || 0).toLocaleString('cs');
     const avgStack = stats.activePlayers > 0 ? Math.round((players.totalChips || 0) / stats.activePlayers) : 0;
@@ -430,11 +432,19 @@ function render() {
     document.querySelector('.sidebar-right').style.display = allDeclared ? 'none' : '';
     if (allDeclared) {
         winnerBanner.style.display = '';
+        const buyInAmount = config.buyInAmount || 400;
+        const addonPrice = config.addonAmount || 0;
+        const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+        const dist = getPayoutDistribution(paidPlaces);
         const listEl = document.getElementById('winner-list');
-        listEl.innerHTML = winnerEntries.map(k =>
-            '<div class="winner-entry"><span class="place">' + k + '. místo: </span>' +
-            '<span class="name">' + winners[k] + '</span></div>'
-        ).join('');
+        listEl.innerHTML = winnerEntries.map(k => {
+            const idx = parseInt(k) - 1;
+            const pct = dist[idx] || 0;
+            const amount = Math.round(prizePool * pct / 100);
+            return '<div class="winner-entry"><span class="place">' + k + '. místo: </span>' +
+                '<span class="name">' + winners[k] + '</span>' +
+                '<span class="payout"> — ' + amount.toLocaleString('cs') + ' Kč</span></div>';
+        }).join('');
         // Stop tournament when all winners declared
         if (state.status === 'running') {
             if (isAdmin) tournamentRef.child('state/status').set('finished');
@@ -916,6 +926,7 @@ if (isAdmin) {
                     if (list[idx].buys > 1) list[idx].buys--;
                 } else {
                     list[idx].buys++;
+                    list[idx].active = true;
                 }
                 savePlayerList();
                 render();
