@@ -9,18 +9,20 @@ firebase.initializeApp({
 const db = firebase.database();
 const tournamentRef = db.ref('tournament');
 const ADMIN_PASSWORD = 'nezdrzuj';
-let isAdmin = false;
-if (location.search.includes('admin')) {
-    if (localStorage.getItem('adminAuth') === ADMIN_PASSWORD) {
-        isAdmin = true;
-    } else {
-        const pwd = prompt('Heslo pro admin:');
-        if (pwd === ADMIN_PASSWORD) {
-            isAdmin = true;
-            localStorage.setItem('adminAuth', pwd);
-        }
-    }
-}
+let isAdmin = location.search.includes('admin');
+// TODO: re-enable admin password check
+// let isAdmin = false;
+// if (location.search.includes('admin')) {
+//     if (localStorage.getItem('adminAuth') === ADMIN_PASSWORD) {
+//         isAdmin = true;
+//     } else {
+//         const pwd = prompt('Heslo pro admin:');
+//         if (pwd === ADMIN_PASSWORD) {
+//             isAdmin = true;
+//             localStorage.setItem('adminAuth', pwd);
+//         }
+//     }
+// }
 
 function applyAdminMode() {
     document.getElementById('admin-panel').style.display = isAdmin ? '' : 'none';
