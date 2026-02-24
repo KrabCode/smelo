@@ -439,6 +439,14 @@ function render() {
     const curveLabel = document.getElementById('blind-curve-val');
     if (curveLabel) curveLabel.textContent = parseFloat(config.blindCurve || 1.0).toFixed(1);
 
+    // Chip totals in config
+    const chipTotalsEl = document.getElementById('chip-totals');
+    if (chipTotalsEl) {
+        const totalChips = recalcTotalChips();
+        const avg = stats.activePlayers > 0 ? Math.round(totalChips / stats.activePlayers) : 0;
+        chipTotalsEl.textContent = totalChips.toLocaleString('cs') + ' celkem | ' + avg.toLocaleString('cs') + ' průměr';
+    }
+
     // Player list
     renderPlayerList();
     const sumEl = document.getElementById('player-summary');
