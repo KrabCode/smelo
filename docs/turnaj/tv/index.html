@@ -20,7 +20,6 @@
         <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> <span id="hd-places-label">výherců</span></div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
         <div class="stat-item">Průměrný stack: <span id="hd-avg">0</span></div>
-        <div class="stat-item" id="hd-start-item" style="display:none">Start: <span id="hd-start">–</span></div>
         <div class="zoom-controls">
             <div class="table-tabs" id="table-tabs"></div>
             <button id="btn-toggle-admin" title="Admin režim">⚙</button>
@@ -29,6 +28,7 @@
             <button id="btn-fullscreen" title="Celá obrazovka">⛶</button>
             <button id="btn-test-sound" title="Test zvuku">♪</button>
             <button id="btn-toggle-ticker" title="Zobrazit/skrýt ticker">T</button>
+            <button id="btn-toggle-seating" title="Zobrazit/skrýt stůl">⬡</button>
         </div>
     </div>
     <div class="main-content">
@@ -100,6 +100,10 @@
                         <input type="number" id="cfg-max-levels" value="12" min="2">
                     </div>
                     <div class="config-field">
+                        <label>Min SB</label>
+                        <input type="number" id="cfg-smallest" value="25">
+                    </div>
+                    <div class="config-field">
                         <label>Max BB</label>
                         <input type="number" id="cfg-max-bb" value="10000" min="100">
                     </div>
@@ -131,10 +135,6 @@
                         <input type="number" id="cfg-stack" value="5000">
                     </div>
                     <div class="config-field">
-                        <label>Nejmenší žeton</label>
-                        <input type="number" id="cfg-smallest" value="25">
-                    </div>
-                    <div class="config-field">
                         <label>Bonus žetony za včasný příchod</label>
                         <input type="number" id="cfg-bonus" value="5000">
                     </div>
@@ -144,7 +144,7 @@
                         <input type="number" id="cfg-addon-amount" value="0" min="0">
                     </div>
                     <div class="config-field">
-                        <label>Add-on žetony (0 = žádný)</label>
+                        <label>Add-on žetony</label>
                         <input type="number" id="cfg-addon-chips" value="0" min="0">
                     </div>
                 </div>
@@ -172,6 +172,18 @@
                     <button class="btn" id="btn-reshuffle-seats">Přepočítat</button>
                 </div>
                 <p class="config-hint" style="margin-top:12px">Když jeden stůl má o 2 hráče méně než jiný, zvažme přemístit nejchudšího hráče z plnějšího stolu k prázdnějšímu — zůstane tak na všech stolech relativně stejně žetonů.</p>
+            </div>
+
+            <!-- Payout config -->
+            <div class="admin-section" id="section-payout-config">
+                <h3>Výplaty</h3>
+                <div id="payout-config-rows"></div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn" id="btn-payout-add">+ Místo</button>
+                    <button class="btn" id="btn-payout-remove">− Místo</button>
+                    <button class="btn" id="btn-payout-auto">Auto</button>
+                </div>
+                <div class="payout-config-total" id="payout-config-total"></div>
             </div>
 
             <!-- Winners -->

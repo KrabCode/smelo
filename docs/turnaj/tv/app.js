@@ -63,6 +63,20 @@ tickerBtn.addEventListener('click', () => {
     render();
 });
 
+// Seating visual toggle
+let seatingHidden = localStorage.getItem('seatingHidden') === '1';
+const seatingBtn = document.getElementById('btn-toggle-seating');
+function updateSeatingBtn() {
+    seatingBtn.style.opacity = seatingHidden ? '0.4' : '';
+    document.querySelector('.seating-section').style.display = seatingHidden ? 'none' : '';
+}
+updateSeatingBtn();
+seatingBtn.addEventListener('click', () => {
+    seatingHidden = !seatingHidden;
+    localStorage.setItem('seatingHidden', seatingHidden ? '1' : '0');
+    updateSeatingBtn();
+});
+
 // ─── Table Definitions ──────────────────────────────────────
 const TABLES = [
     { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 8 },
@@ -211,6 +225,7 @@ const DEFAULTS = {
     blindStructure: [],
     blindOverrides: {},
     tableLocks: {},
+    payoutConfig: null,
     breakMessage: '',
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
@@ -250,15 +265,12 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
     const startSB = smallestChip;
     const targetSB = Math.min(maxBB / 2, ceilingSmall);
 
-    // Generate full curve of unique SB values (deduped after rounding)
     function generateCurve(N, fromSB, toSB) {
         const raw = [];
         if (N <= 1) { raw.push(fromSB); return raw; }
-        let prev = -1;
         for (let i = 0; i < N; i++) {
             const t = i / (N - 1);
-            const sb = roundToChip(fromSB * Math.pow(toSB / fromSB, Math.pow(t, curve)), smallestChip);
-            if (sb !== prev) { raw.push(sb); prev = sb; }
+            raw.push(roundToChip(fromSB * Math.pow(toSB / fromSB, Math.pow(t, curve)), smallestChip));
         }
         return raw;
     }
@@ -286,23 +298,18 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
             const tStart = Math.pow(Math.min(1, Math.max(0, ratio)), 1 / curve);
 
             // Generate remaining levels from tStart to 1
-            let prev = lastSB;
             for (let i = 1; i <= remaining; i++) {
                 const t = tStart + (1 - tStart) * (i / remaining);
-                const sb = roundToChip(startSB * Math.pow(targetSB / startSB, Math.pow(t, curve)), smallestChip);
-                if (sb > ceilingSmall) break;
-                if (sb !== prev) {
-                    levels.push({ small: sb, big: sb * 2, duration: levelDuration });
-                    prev = sb;
-                }
+                const sb = Math.min(roundToChip(startSB * Math.pow(targetSB / startSB, Math.pow(t, curve)), smallestChip), ceilingSmall);
+                levels.push({ small: sb, big: sb * 2, duration: levelDuration });
             }
         }
     } else {
         // Fresh calculation using curve
         const sbValues = generateCurve(numLevels, startSB, targetSB);
         for (const sb of sbValues) {
-            if (sb > ceilingSmall) break;
-            levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+            const capped = Math.min(sb, ceilingSmall);
+            levels.push({ small: capped, big: capped * 2, duration: levelDuration });
         }
     }
 
@@ -397,9 +404,9 @@ const PAYOUT_STRUCTURES = {
     3: [50, 30, 20]
 };
 
-function getPayoutDistribution(paidPlaces) {
+function getAutoPayoutDistribution(paidPlaces) {
     if (paidPlaces <= 0) return [];
-    if (PAYOUT_STRUCTURES[paidPlaces]) return PAYOUT_STRUCTURES[paidPlaces];
+    if (PAYOUT_STRUCTURES[paidPlaces]) return PAYOUT_STRUCTURES[paidPlaces].slice();
     // 4+ spots: 1st=40%, 2nd=25%, 3rd=18%, rest split evenly
     const remaining = 17;
     const extraPlaces = paidPlaces - 3;
@@ -407,6 +414,27 @@ function getPayoutDistribution(paidPlaces) {
     const dist = [40, 25, 18];
     for (let i = 0; i < extraPlaces; i++) dist.push(perExtra);
     return dist;
+}
+
+function getPayoutDistribution(paidPlaces) {
+    if (T.payoutConfig && T.payoutConfig.length > 0) return T.payoutConfig;
+    return getAutoPayoutDistribution(paidPlaces);
+}
+
+function getPaidPlaces() {
+    if (T.payoutConfig && T.payoutConfig.length > 0) return T.payoutConfig.length;
+    const list = T.players.list || [];
+    return Math.max(1, Math.floor(list.length * 0.25));
+}
+
+function roundPayouts(dist, prizePool) {
+    if (!dist.length || prizePool <= 0) return dist.map(() => 0);
+    const unit = prizePool >= 1000 ? 100 : 50;
+    const amounts = dist.map(pct => Math.round(prizePool * pct / 100 / unit) * unit);
+    // Adjust 1st place so total matches prize pool exactly
+    const diff = prizePool - amounts.reduce((s, v) => s + v, 0);
+    amounts[0] += diff;
+    return amounts;
 }
 
 function renderPayout() {
@@ -417,7 +445,7 @@ function renderPayout() {
     const buyInAmount = config.buyInAmount || 400;
     const addonPrice = config.addonAmount || 0;
     const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
-    const paidPlaces = Math.max(1, Math.floor(buyIns * 0.25));
+    const paidPlaces = getPaidPlaces();
     const dist = getPayoutDistribution(paidPlaces);
 
     document.getElementById('hd-pool').textContent = prizePool.toLocaleString('cs') + ' Kč';
@@ -428,13 +456,13 @@ function renderPayout() {
 
     const tbody = document.getElementById('payout-body');
     tbody.innerHTML = '';
+    const amounts = roundPayouts(dist, prizePool);
     dist.forEach((pct, i) => {
         const tr = document.createElement('tr');
-        const amount = Math.round(prizePool * pct / 100);
         tr.innerHTML =
             '<td>' + (i + 1) + '.</td>' +
             '<td>' + pct + '%</td>' +
-            '<td>' + amount.toLocaleString('cs') + ' Kč</td>';
+            '<td>' + amounts[i].toLocaleString('cs') + ' Kč</td>';
         tbody.appendChild(tr);
     });
 
@@ -481,6 +509,15 @@ const SEAT_POSITIONS = {
     ]
 };
 
+let lastPlacedSeat = null; // { table, seat }
+let lastPlacedTimer = null;
+
+function setLastPlaced(tableId, seat) {
+    lastPlacedSeat = { table: tableId, seat: seat };
+    if (lastPlacedTimer) clearTimeout(lastPlacedTimer);
+    lastPlacedTimer = setTimeout(() => { lastPlacedSeat = null; }, 4000);
+}
+
 function buildTableVisualHTML(table, opts) {
     opts = opts || {};
     const list = T.players.list || [];
@@ -512,7 +549,8 @@ function buildTableVisualHTML(table, opts) {
         const pos = positions[s - 1];
         const player = seatMap[s];
         const seatLocked = lockedSeats.includes(s);
-        const cls = seatLocked ? 'locked' : (player ? 'occupied' : 'empty');
+        const isLastPlaced = lastPlacedSeat && lastPlacedSeat.table === table.id && lastPlacedSeat.seat === s;
+        const cls = (seatLocked ? 'locked' : (player ? 'occupied' : 'empty')) + (isLastPlaced ? ' last-placed' : '');
         const seatStyle = 'left:' + pos.left + '%;top:' + pos.top + '%' + (counterRot ? ';transform:translate(-50%,-50%) ' + counterRot : '');
         html += '<div class="seating-seat ' + cls + '" style="' + seatStyle + '">' +
             '<div class="seating-seat-num">' + s + '</div>' +
@@ -563,17 +601,6 @@ function render() {
     document.getElementById('hd-avg').textContent = avgStack.toLocaleString('cs');
     document.getElementById('hd-buyin-amount').textContent = (config.buyInAmount || 400).toLocaleString('cs') + ' Kč';
 
-    // Start time in header
-    const hdStartItem = document.getElementById('hd-start-item');
-    if (state.startedAt && state.status === 'running') {
-        const d = new Date(state.startedAt);
-        const hh = String(d.getHours()).padStart(2, '0');
-        const mm = String(d.getMinutes()).padStart(2, '0');
-        document.getElementById('hd-start').textContent = hh + ':' + mm;
-        hdStartItem.style.display = '';
-    } else {
-        hdStartItem.style.display = 'none';
-    }
 
     // Admin start time input (show when running, keep in sync)
     if (isAdmin) {
@@ -595,7 +622,7 @@ function render() {
     // Winners logic
     const winners = state.winners || {};
     const winnerEntries = Object.keys(winners).filter(k => winners[k]).sort((a, b) => a - b);
-    const paidPlaces = Math.max(1, Math.floor(stats.buyIns * 0.25));
+    const paidPlaces = getPaidPlaces();
     const allDeclared = winnerEntries.length >= paidPlaces && paidPlaces > 0;
 
     // Winner banner — hide timer/blinds/structure only when all places declared
@@ -610,11 +637,11 @@ function render() {
         const addonPrice = config.addonAmount || 0;
         const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
         const dist = getPayoutDistribution(paidPlaces);
+        const winAmounts = roundPayouts(dist, prizePool);
         const listEl = document.getElementById('winner-list');
         listEl.innerHTML = winnerEntries.map(k => {
             const idx = parseInt(k) - 1;
-            const pct = dist[idx] || 0;
-            const amount = Math.round(prizePool * pct / 100);
+            const amount = winAmounts[idx] || 0;
             return '<div class="winner-entry"><span class="place">' + k + '. místo: </span>' +
                 '<span class="name">' + winners[k] + '</span>' +
                 '<span class="payout"> — ' + amount.toLocaleString('cs') + ' Kč</span></div>';
@@ -757,7 +784,7 @@ function render() {
                     '<td>' + levelNum + (isOverridden ? ' <button class="blind-reset" data-level="' + levelNum + '" title="Obnovit výchozí">&times;</button>' : '') + '</td>' +
                     '<td>' + timeStr + '</td>' +
                     '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="small" value="' + s.small + '"></td>' +
-                    '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="big" value="' + s.big + '"></td>';
+                    '<td>' + s.big.toLocaleString('cs') + '</td>';
             } else {
                 tr.innerHTML =
                     '<td>' + levelNum + '</td>' +
@@ -854,6 +881,10 @@ function render() {
             renderNoteInputs();
         }
 
+        // Sync payout config (skip if slider is being dragged)
+        const payoutInputActive = document.activeElement && (document.activeElement.classList.contains('payout-config-slider') || document.activeElement.classList.contains('payout-config-pct'));
+        if (typeof renderPayoutConfig === 'function' && !payoutInputActive) renderPayoutConfig();
+
         // Sync table locks UI
         if (renderTableLocksAdmin) renderTableLocksAdmin();
     }
@@ -895,6 +926,7 @@ function renderPlayerList() {
         const curVal = p.table && p.seat ? p.table + '-' + p.seat : '';
         let seatSelect = '<select class="player-seat-select" data-idx="' + i + '">';
         seatSelect += '<option value=""' + (!curVal ? ' selected' : '') + '>—</option>';
+        seatSelect += '<option value="random">Náhodné</option>';
         TABLES.forEach(t => {
             const tl = locks[t.id] || {};
             if (tl.locked) return;
@@ -985,6 +1017,8 @@ startTimerLoop();
 
 // ─── Level Change Sound ─────────────────────────────────────
 const levelSound = new Audio('../assets/whistle.wav');
+levelSound.preload = 'auto';
+levelSound.load();
 function playLevelSound() {
     levelSound.currentTime = 0;
     levelSound.play().catch(() => {});
@@ -1041,6 +1075,7 @@ tournamentRef.on('value', (snap) => {
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
     T.tableLocks = data.tableLocks || {};
+    T.payoutConfig = data.payoutConfig || null;
     T.breakMessage = data.breakMessage || '';
     T.notes = data.notes || DEFAULTS.notes;
 
@@ -1107,6 +1142,7 @@ if (isAdmin) {
         const list = T.players.list || [];
         const player = { name: name, buys: 1, addon: false, bonus: false, active: true };
         assignSeat(player, list);
+        if (player.table && player.seat) setLastPlaced(player.table, player.seat);
         list.push(player);
         T.players.list = list;
         input.value = '';
@@ -1149,7 +1185,11 @@ if (isAdmin) {
         const list = T.players.list || [];
         if (!list[idx]) return;
         const val = e.target.value;
-        if (val) {
+        if (val === 'random') {
+            delete list[idx].table;
+            delete list[idx].seat;
+            assignSeat(list[idx], list);
+        } else if (val) {
             const parts = val.split('-');
             list[idx].table = parseInt(parts[0]);
             list[idx].seat = parseInt(parts[1]);
@@ -1157,6 +1197,7 @@ if (isAdmin) {
             delete list[idx].table;
             delete list[idx].seat;
         }
+        if (list[idx].table && list[idx].seat) setLastPlaced(list[idx].table, list[idx].seat);
         savePlayerList();
         render();
     });
@@ -1214,7 +1255,7 @@ if (isAdmin) {
     // Save winners
     document.getElementById('btn-save-winners').addEventListener('click', () => {
         const winners = {};
-        const paidPlaces = Math.max(1, Math.floor((T.players.list || []).length * 0.25));
+        const paidPlaces = getPaidPlaces();
         for (let i = 1; i <= paidPlaces; i++) {
             const el = document.getElementById('cfg-winner-' + i);
             const name = el ? el.value.trim() : '';
@@ -1248,10 +1289,10 @@ if (isAdmin) {
     });
 
     document.getElementById('btn-reset').addEventListener('click', () => {
-        if (!confirm('Opravdu resetovat celý turnaj?')) return;
+        if (!confirm('Opravdu resetovat timer?')) return;
         tournamentRef.child('state').set(DEFAULTS.state);
-        tournamentRef.child('players').set(DEFAULTS.players);
         tournamentRef.child('blindOverrides').set({});
+        tournamentRef.child('payoutConfig').set(null);
         recalcAndSync();
     });
 
@@ -1347,51 +1388,32 @@ if (isAdmin) {
         if (inputs.length) inputs[inputs.length - 1].focus();
     });
 
-    // Blind structure override editing
+    // Blind structure override editing (SB only, BB = SB * 2)
     document.getElementById('structure-body').addEventListener('change', (e) => {
         if (!e.target.classList.contains('blind-edit')) return;
         const level = parseInt(e.target.dataset.level);
-        const field = e.target.dataset.field;
         const val = parseInt(e.target.value);
-        if (!level || !field || isNaN(val) || val <= 0) return;
+        if (!level || isNaN(val) || val <= 0) return;
 
-        // Get current override or create from current values
-        const ov = T.blindOverrides[level] || {};
-        ov[field] = val;
-
-        // If editing SB only, fill BB from current structure (and vice versa)
-        const struct = T.blindStructure || [];
-        let blindNum = 0;
-        let calcSmall, calcBig;
-        for (const entry of struct) {
-            if (entry.isBreak) continue;
-            blindNum++;
-            if (blindNum === level) {
-                // Recalculate without override to get base values
-                const totalChips = recalcTotalChips();
-                let freezeUpTo = -1;
-                if (T.state.status === 'running' && T.state.startedAt) {
-                    freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
-                }
-                const baseStructure = calculateBlinds(T.config, totalChips, freezeUpTo);
-                let bn = 0;
-                for (const be of baseStructure) {
-                    if (be.isBreak) continue;
-                    bn++;
-                    if (bn === level) { calcSmall = be.small; calcBig = be.big; break; }
-                }
-                break;
-            }
+        // Find the base (auto-calculated) SB for this level
+        const totalChips = recalcTotalChips();
+        let freezeUpTo = -1;
+        if (T.state.status === 'running' && T.state.startedAt) {
+            freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
+        }
+        const baseStructure = calculateBlinds(T.config, totalChips, freezeUpTo);
+        let calcSmall = 0;
+        let bn = 0;
+        for (const be of baseStructure) {
+            if (be.isBreak) continue;
+            bn++;
+            if (bn === level) { calcSmall = be.small; break; }
         }
 
-        if (!ov.small) ov.small = calcSmall || 0;
-        if (!ov.big) ov.big = calcBig || 0;
-
-        // If both match calculated values, remove the override
-        if (ov.small === calcSmall && ov.big === calcBig) {
+        if (val === calcSmall) {
             delete T.blindOverrides[level];
         } else {
-            T.blindOverrides[level] = ov;
+            T.blindOverrides[level] = { small: val, big: val * 2 };
         }
 
         tournamentRef.child('blindOverrides').set(T.blindOverrides);
@@ -1459,7 +1481,7 @@ if (isAdmin) {
             html += '</div>';
             if (!isLocked) {
                 const rot = tl.rotation || 0;
-                html += '<div style="flex:0 0 auto;display:flex;align-items:center;justify-content:center">' +
+                html += '<div style="flex:0 0 auto;display:flex;align-items:center;justify-content:center;transform:translateX(-50%)">' +
                     '<div class="seating-table-visual" style="width:200px;transform:rotate(' + rot + 'deg)">' + buildTableVisualHTML(t, { wallToggles: true }) + '</div>' +
                     '</div>';
             }
@@ -1538,13 +1560,174 @@ if (isAdmin) {
             const locks = T.tableLocks || {};
             const tl = locks[tableId] || {};
             tl.seatCount = val;
+            // Remove locked seats beyond new count
+            if (tl.lockedSeats) {
+                tl.lockedSeats = tl.lockedSeats.filter(s => s <= val);
+            }
             locks[tableId] = tl;
             T.tableLocks = locks;
+
+            // Reassign players on this table to fit within new seat count
+            const list = T.players.list || [];
+            const lockedSeats = tl.lockedSeats || [];
+            const displaced = [];
+            const occupied = new Set();
+            list.forEach(p => {
+                if (p.table === tableId && p.seat) {
+                    if (p.seat > val || lockedSeats.includes(p.seat)) {
+                        displaced.push(p);
+                        delete p.table;
+                        delete p.seat;
+                    } else {
+                        occupied.add(p.seat);
+                    }
+                }
+            });
+            // Place displaced players into free seats on the same table
+            displaced.forEach(p => {
+                for (let s = 1; s <= val; s++) {
+                    if (!occupied.has(s) && !lockedSeats.includes(s)) {
+                        p.table = tableId;
+                        p.seat = s;
+                        occupied.add(s);
+                        break;
+                    }
+                }
+            });
+
             tournamentRef.child('tableLocks').set(locks);
+            savePlayerList();
             renderTableLocks();
             render();
         }
     });
+
+    // ─── Payout Config UI ─────────────────────────────────────
+    let payoutConfigRendered = false;
+
+    function getPayoutConfigValues() {
+        // Return current manual config or auto-calculated values
+        if (T.payoutConfig && T.payoutConfig.length > 0) return T.payoutConfig.slice();
+        const list = T.players.list || [];
+        const paidPlaces = Math.max(1, Math.floor(list.length * 0.25));
+        return getAutoPayoutDistribution(paidPlaces);
+    }
+
+    function renderPayoutConfig() {
+        const container = document.getElementById('payout-config-rows');
+        if (!container) return;
+        const values = getPayoutConfigValues();
+        const isManual = T.payoutConfig && T.payoutConfig.length > 0;
+        const buyInAmount = T.config.buyInAmount || 400;
+        const addonPrice = T.config.addonAmount || 0;
+        const stats = derivePlayerStats(T.players.list || []);
+        const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+
+        const cfgAmounts = roundPayouts(values, prizePool);
+        container.innerHTML = values.map((pct, i) => {
+            return '<div class="payout-config-row">' +
+                '<span class="payout-config-place">' + (i + 1) + '.</span>' +
+                '<input type="range" class="payout-config-slider" data-place="' + i + '" min="0" max="100" step="1" value="' + pct + '">' +
+                '<input type="number" class="payout-config-pct" data-place="' + i + '" min="0" max="100" value="' + pct + '">' +
+                '<span class="payout-config-amount">' + cfgAmounts[i].toLocaleString('cs') + ' Kč</span>' +
+                '</div>';
+        }).join('');
+
+        const total = values.reduce((s, v) => s + v, 0);
+        const totalEl = document.getElementById('payout-config-total');
+        totalEl.textContent = 'Celkem: ' + Math.round(total) + '%';
+        totalEl.style.color = Math.abs(total - 100) < 0.5 ? 'var(--green)' : 'var(--red)';
+
+        payoutConfigRendered = true;
+    }
+
+    function savePayoutConfig(values) {
+        T.payoutConfig = values;
+        tournamentRef.child('payoutConfig').set(values);
+        render();
+    }
+
+    function applyPayoutChange(place, newVal) {
+        const values = getPayoutConfigValues();
+        values[place] = Math.max(0, Math.min(100, newVal));
+
+        // Overflow logic: only when total > 100
+        const total = values.reduce((s, v) => s + v, 0);
+        if (total > 100) {
+            let overflow = total - 100;
+            for (let i = values.length - 1; i > place && overflow > 0; i--) {
+                const take = Math.min(values[i], overflow);
+                values[i] -= take;
+                overflow -= take;
+            }
+            for (let i = place - 1; i >= 0 && overflow > 0; i--) {
+                const take = Math.min(values[i], overflow);
+                values[i] -= take;
+                overflow -= take;
+            }
+        }
+
+        // Update sliders and labels in-place without rebuilding DOM
+        const buyInAmount = T.config.buyInAmount || 400;
+        const addonPrice = T.config.addonAmount || 0;
+        const stats = derivePlayerStats(T.players.list || []);
+        const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+        document.querySelectorAll('.payout-config-slider').forEach(sl => {
+            const i = parseInt(sl.dataset.place);
+            sl.value = values[i];
+        });
+        document.querySelectorAll('.payout-config-pct').forEach(el => {
+            const i = parseInt(el.dataset.place);
+            if (document.activeElement !== el) el.value = values[i];
+        });
+        const dragAmounts = roundPayouts(values, prizePool);
+        document.querySelectorAll('.payout-config-amount').forEach((el, i) => {
+            el.textContent = dragAmounts[i].toLocaleString('cs') + ' Kč';
+        });
+        const newTotal = values.reduce((s, v) => s + v, 0);
+        const totalEl = document.getElementById('payout-config-total');
+        totalEl.textContent = 'Celkem: ' + Math.round(newTotal) + '%';
+        totalEl.style.color = Math.abs(newTotal - 100) < 0.5 ? 'var(--green)' : 'var(--red)';
+
+        T.payoutConfig = values;
+        tournamentRef.child('payoutConfig').set(values);
+        renderPayout();
+    }
+
+    document.getElementById('payout-config-rows').addEventListener('input', (e) => {
+        if (e.target.classList.contains('payout-config-slider')) {
+            applyPayoutChange(parseInt(e.target.dataset.place), parseInt(e.target.value));
+        } else if (e.target.classList.contains('payout-config-pct')) {
+            applyPayoutChange(parseInt(e.target.dataset.place), parseInt(e.target.value) || 0);
+        }
+    });
+
+    document.getElementById('btn-payout-add').addEventListener('click', () => {
+        const values = getPayoutConfigValues();
+        values.push(0);
+        savePayoutConfig(values);
+        renderPayoutConfig();
+    });
+
+    document.getElementById('btn-payout-remove').addEventListener('click', () => {
+        const values = getPayoutConfigValues();
+        if (values.length <= 1) return;
+        const removed = values.pop();
+        if (removed > 0 && values.length > 0) {
+            values[values.length - 1] += removed;
+        }
+        savePayoutConfig(values);
+        renderPayoutConfig();
+    });
+
+    document.getElementById('btn-payout-auto').addEventListener('click', () => {
+        const places = getPayoutConfigValues().length;
+        const auto = getAutoPayoutDistribution(places);
+        savePayoutConfig(auto);
+        renderPayoutConfig();
+    });
+
+    renderPayoutConfig();
 
     // Reshuffle all seats
     document.getElementById('btn-reshuffle-seats').addEventListener('click', () => {
