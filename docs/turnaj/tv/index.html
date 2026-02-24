@@ -24,6 +24,9 @@
             padding: 14px 24px;
             border-bottom: 1px solid var(--border);
             background: var(--bg-card);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .tracker-header .stat-item {
             font-size: 0.9em;
@@ -447,9 +450,7 @@
                     <button class="btn" id="btn-knockout">Vypadl hráč</button>
                     <button class="btn" id="btn-rebuy">+ Re-buy</button>
                 </div>
-                <div class="btn-row" style="margin-top:12px">
-                    <button class="btn accent" id="btn-save-players">Uložit hráče</button>
-                </div>
+                <div id="player-save-status" style="margin-top:8px;font-size:0.8em;color:var(--text-muted);text-align:center;min-height:1.2em"></div>
             </div>
 
             <!-- Winners -->
@@ -1043,22 +1044,36 @@
             });
         });
 
-        // Save player counters (always available)
-        document.getElementById('btn-save-players').addEventListener('click', () => {
-            const playerData = {
-                buyIns: parseInt(document.getElementById('cfg-buyins').value) || 0,
-                activePlayers: parseInt(document.getElementById('cfg-active').value) || 0,
-                rebuys: parseInt(document.getElementById('cfg-rebuys').value) || 0,
-                bonuses: parseInt(document.getElementById('cfg-bonuses').value) || 0
-            };
-
-            tournamentRef.child('players').update(playerData).then(() => {
-                T.players = { ...T.players, ...playerData };
-                recalcAndSync();
-                const btn = document.getElementById('btn-save-players');
-                btn.textContent = 'Hráči uloženi ✓';
-                setTimeout(() => { btn.textContent = 'Uložit hráče'; }, 2000);
-            });
+        // Auto-save player fields on change (debounced)
+        let playerSaveTimer = null;
+        let playerStatusTimer = null;
+        function showPlayerStatus(text) {
+            const el = document.getElementById('player-save-status');
+            clearTimeout(playerStatusTimer);
+            el.textContent = text;
+            if (text.includes('✓')) {
+                playerStatusTimer = setTimeout(() => { el.textContent = ''; }, 2000);
+            }
+        }
+        function autoSavePlayers() {
+            clearTimeout(playerSaveTimer);
+            showPlayerStatus('Ukládám…');
+            playerSaveTimer = setTimeout(() => {
+                const playerData = {
+                    buyIns: parseInt(document.getElementById('cfg-buyins').value) || 0,
+                    activePlayers: parseInt(document.getElementById('cfg-active').value) || 0,
+                    rebuys: parseInt(document.getElementById('cfg-rebuys').value) || 0,
+                    bonuses: parseInt(document.getElementById('cfg-bonuses').value) || 0
+                };
+                tournamentRef.child('players').update(playerData).then(() => {
+                    T.players = { ...T.players, ...playerData };
+                    recalcAndSync();
+                    showPlayerStatus('Uloženo ✓');
+                });
+            }, 800);
+        }
+        ['cfg-buyins', 'cfg-active', 'cfg-rebuys', 'cfg-bonuses'].forEach(id => {
+            document.getElementById(id).addEventListener('input', autoSavePlayers);
         });
 
         // Quick-action player buttons (increment + auto-save)
