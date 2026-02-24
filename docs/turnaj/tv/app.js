@@ -36,7 +36,7 @@ adminDetails.addEventListener('toggle', (e) => {
     localStorage.setItem('adminOpen', e.target.open ? '1' : '0');
 });
 
-if (location.search.includes('wide')) document.body.classList.add('wide');
+document.body.classList.add('wide');
 
 // Zoom controls
 let zoomLevel = 100;
@@ -58,19 +58,6 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
     }
 });
 
-// Wide toggle
-document.getElementById('btn-toggle-wide').addEventListener('click', () => {
-    const params = new URLSearchParams(location.search);
-    if (params.has('wide')) {
-        params.delete('wide');
-        document.body.classList.remove('wide');
-    } else {
-        params.set('wide', '');
-        document.body.classList.add('wide');
-    }
-    const qs = params.toString().replace(/=(&|$)/g, '$1');
-    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
-});
 
 // Admin toggle
 document.getElementById('btn-toggle-admin').addEventListener('click', () => {
