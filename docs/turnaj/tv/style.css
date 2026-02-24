@@ -259,6 +259,9 @@ body { min-height: 100vh; padding-bottom: 48px; }
     color: var(--text-muted);
     margin-bottom: 3px;
 }
+.config-full-row {
+    grid-column: 1 / -1;
+}
 .config-hint {
     display: block;
     font-size: 0.72em;
