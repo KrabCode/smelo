@@ -104,7 +104,8 @@ const DEFAULTS = {
         addonChips: 0,
         addonAmount: 0,
         addonCutoff: 0,
-        blindMultiplier: 2.0,
+        maxBB: 10000,
+        blindCurve: 1.0,
         date: ''
     },
     state: {
@@ -145,11 +146,28 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
     const numLevels = Math.max(2, config.maxLevels || 12);
     const lpb = config.levelsPerBreak || 0;
     const breakDur = config.breakDuration || 30;
-    const multiplier = config.blindMultiplier || 2.0;
+    const curve = config.blindCurve || 1.0;
+    const maxBB = config.maxBB || 10000;
 
     const ceilingSmall = totalChips > 0
         ? roundToChip(totalChips / 3, smallestChip) / 2
         : Infinity;
+
+    const startSB = smallestChip;
+    const targetSB = Math.min(maxBB / 2, ceilingSmall);
+
+    // Generate full curve of unique SB values (deduped after rounding)
+    function generateCurve(N, fromSB, toSB) {
+        const raw = [];
+        if (N <= 1) { raw.push(fromSB); return raw; }
+        let prev = -1;
+        for (let i = 0; i < N; i++) {
+            const t = i / (N - 1);
+            const sb = roundToChip(fromSB * Math.pow(toSB / fromSB, Math.pow(t, curve)), smallestChip);
+            if (sb !== prev) { raw.push(sb); prev = sb; }
+        }
+        return raw;
+    }
 
     const levels = [];
 
@@ -166,25 +184,31 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
 
         if (remaining > 0) {
             const lastBlind = [...levels].reverse().find(l => !l.isBreak);
-            let prevSmall = lastBlind ? lastBlind.small : smallestChip;
+            const lastSB = lastBlind ? lastBlind.small : startSB;
 
-            for (let i = 0; i < remaining; i++) {
-                const small = roundToChip(prevSmall * multiplier, smallestChip);
-                if (small > ceilingSmall) break;
-                levels.push({ small, big: small * 2, duration: levelDuration });
-                prevSmall = small;
+            // Find the t value corresponding to lastSB on the curve
+            // sb = startSB * (targetSB/startSB)^(t^curve)  →  t = (log(sb/startSB) / log(targetSB/startSB))^(1/curve)
+            const ratio = targetSB > startSB ? Math.log(lastSB / startSB) / Math.log(targetSB / startSB) : 1;
+            const tStart = Math.pow(Math.min(1, Math.max(0, ratio)), 1 / curve);
+
+            // Generate remaining levels from tStart to 1
+            let prev = lastSB;
+            for (let i = 1; i <= remaining; i++) {
+                const t = tStart + (1 - tStart) * (i / remaining);
+                const sb = roundToChip(startSB * Math.pow(targetSB / startSB, Math.pow(t, curve)), smallestChip);
+                if (sb > ceilingSmall) break;
+                if (sb !== prev) {
+                    levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+                    prev = sb;
+                }
             }
         }
     } else {
-        // Fresh calculation using fixed multiplier
-        let prevSmall = smallestChip;
-        levels.push({ small: prevSmall, big: prevSmall * 2, duration: levelDuration });
-
-        for (let i = 1; i < numLevels; i++) {
-            const small = roundToChip(prevSmall * multiplier, smallestChip);
-            if (small > ceilingSmall) break;
-            levels.push({ small, big: small * 2, duration: levelDuration });
-            prevSmall = small;
+        // Fresh calculation using curve
+        const sbValues = generateCurve(numLevels, startSB, targetSB);
+        for (const sb of sbValues) {
+            if (sb > ceilingSmall) break;
+            levels.push({ small: sb, big: sb * 2, duration: levelDuration });
         }
     }
 
@@ -536,7 +560,7 @@ function render() {
             tr.className = classes.join(' ');
             if (isAdmin) {
                 tr.innerHTML =
-                    '<td>' + levelNum + '</td>' +
+                    '<td>' + levelNum + (isOverridden ? ' <button class="blind-reset" data-level="' + levelNum + '" title="Obnovit výchozí">&times;</button>' : '') + '</td>' +
                     '<td>' + timeStr + '</td>' +
                     '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="small" value="' + s.small + '"></td>' +
                     '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="big" value="' + s.big + '"></td>';
@@ -584,15 +608,16 @@ function render() {
             'cfg-buyin-amount': config.buyInAmount,
             'cfg-addon-chips': config.addonChips,
             'cfg-addon-amount': config.addonAmount,
-            'cfg-blind-mult': config.blindMultiplier
+            'cfg-max-bb': config.maxBB,
+            'cfg-blind-curve': config.blindCurve
         };
         for (const [id, val] of Object.entries(ids)) {
             const el = document.getElementById(id);
             if (el && document.activeElement !== el) el.value = val;
         }
-        // Update multiplier label
-        const multLabel = document.getElementById('blind-mult-val');
-        if (multLabel) multLabel.textContent = parseFloat(config.blindMultiplier || 2.0).toFixed(1);
+        // Update curve label
+        const curveLabel = document.getElementById('blind-curve-val');
+        if (curveLabel) curveLabel.textContent = parseFloat(config.blindCurve || 1.0).toFixed(1);
 
         // Generate winner input fields for each paid place
         const wf = document.getElementById('winners-fields');
@@ -793,8 +818,19 @@ tournamentRef.on('value', (snap) => {
 
 // ─── Admin Actions ──────────────────────────────────────────
 if (isAdmin) {
-    // Save tournament config (only possible in waiting state)
-    document.getElementById('btn-save-config').addEventListener('click', () => {
+    // Save status indicator helper
+    function showSaveStatus(el, promise) {
+        el.textContent = 'Ukládám...';
+        el.className = 'save-status saving';
+        promise.then(() => {
+            el.textContent = 'Uloženo ✓';
+            el.className = 'save-status saved';
+            setTimeout(() => { el.textContent = ''; el.className = 'save-status'; }, 2000);
+        });
+    }
+
+    // Auto-save tournament config on change
+    function saveConfig() {
         if (T.state.status !== 'waiting') return;
         const config = {
             startingStack: parseInt(document.getElementById('cfg-stack').value) || 5000,
@@ -809,22 +845,25 @@ if (isAdmin) {
             addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
             addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
             addonCutoff: T.config.addonCutoff || 0,
-            blindMultiplier: parseFloat(document.getElementById('cfg-blind-mult').value) || 2.0
+            maxBB: parseInt(document.getElementById('cfg-max-bb').value) || 10000,
+            blindCurve: parseFloat(document.getElementById('cfg-blind-curve').value) || 1.0
         };
 
-        tournamentRef.child('config').set(config).then(() => {
+        const p = tournamentRef.child('config').set(config);
+        showSaveStatus(document.getElementById('config-save-status'), p);
+        p.then(() => {
             T.config = config;
             recalcAndSync();
-            const btn = document.getElementById('btn-save-config');
-            btn.textContent = 'Nastavení uloženo ✓';
-            setTimeout(() => { btn.textContent = 'Uložit nastavení'; }, 2000);
         });
-    });
+    }
 
-    // Live update for blind multiplier slider
-    document.getElementById('cfg-blind-mult').addEventListener('input', (e) => {
-        const label = document.getElementById('blind-mult-val');
+    document.getElementById('section-config').addEventListener('change', saveConfig);
+
+    // Live update for blind curve slider (also saves)
+    document.getElementById('cfg-blind-curve').addEventListener('input', (e) => {
+        const label = document.getElementById('blind-curve-val');
         if (label) label.textContent = parseFloat(e.target.value).toFixed(1);
+        saveConfig();
     });
 
     // Add player
@@ -960,12 +999,22 @@ if (isAdmin) {
 
     renderNoteInputs();
 
+    function saveNotes() {
+        const inputs = document.querySelectorAll('#notes-list input');
+        const notes = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
+        const p = tournamentRef.child('notes').set(notes);
+        showSaveStatus(document.getElementById('notes-save-status'), p);
+    }
+
     document.getElementById('notes-list').addEventListener('click', (e) => {
         if (!e.target.classList.contains('btn-remove-note')) return;
         const idx = parseInt(e.target.dataset.noteIdx);
         T.notes.splice(idx, 1);
         renderNoteInputs();
+        saveNotes();
     });
+
+    document.getElementById('notes-list').addEventListener('change', saveNotes);
 
     document.getElementById('btn-add-note').addEventListener('click', () => {
         T.notes = T.notes || [];
@@ -973,16 +1022,6 @@ if (isAdmin) {
         renderNoteInputs();
         const inputs = document.querySelectorAll('#notes-list input');
         if (inputs.length) inputs[inputs.length - 1].focus();
-    });
-
-    document.getElementById('btn-save-notes').addEventListener('click', () => {
-        const inputs = document.querySelectorAll('#notes-list input');
-        const notes = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
-        tournamentRef.child('notes').set(notes).then(() => {
-            const btn = document.getElementById('btn-save-notes');
-            btn.textContent = 'Poznámky uloženy ✓';
-            setTimeout(() => { btn.textContent = 'Uložit poznámky'; }, 2000);
-        });
     });
 
     // Blind structure override editing
@@ -1036,12 +1075,19 @@ if (isAdmin) {
         recalcAndSync();
     });
 
-    document.getElementById('btn-save-break-message').addEventListener('click', () => {
+    // Remove blind override
+    document.getElementById('structure-body').addEventListener('click', (e) => {
+        if (!e.target.classList.contains('blind-reset')) return;
+        const level = parseInt(e.target.dataset.level);
+        if (!level) return;
+        delete T.blindOverrides[level];
+        tournamentRef.child('blindOverrides').set(T.blindOverrides);
+        recalcAndSync();
+    });
+
+    document.getElementById('cfg-break-message').addEventListener('change', () => {
         const val = (document.getElementById('cfg-break-message').value || '').trim();
-        tournamentRef.child('breakMessage').set(val).then(() => {
-            const btn = document.getElementById('btn-save-break-message');
-            btn.textContent = '✓';
-            setTimeout(() => { btn.textContent = 'Uložit'; }, 2000);
-        });
+        const p = tournamentRef.child('breakMessage').set(val);
+        showSaveStatus(document.getElementById('break-save-status'), p);
     });
 }

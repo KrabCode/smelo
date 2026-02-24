@@ -92,10 +92,22 @@
                         <input type="number" id="cfg-level-dur" value="20">
                     </div>
                     <div class="config-field">
-                        <label>Celková délka turnaje (min)</label>
-                        <input type="number" id="cfg-tourney-len" value="240">
+                        <label>Max levelů</label>
+                        <input type="number" id="cfg-max-levels" value="12" min="2">
+                    </div>
+                    <div class="config-field">
+                        <label>Max BB</label>
+                        <input type="number" id="cfg-max-bb" value="10000" min="100">
+                    </div>
+                    <div class="config-field">
+                        <label>Křivka blindů: <span id="blind-curve-val">1.0</span></label>
+                        <input type="range" id="cfg-blind-curve" min="0.5" max="2.0" step="0.1" value="1.0">
                     </div>
                     <div class="config-sub">Žetony</div>
+                    <div class="config-field">
+                        <label>Buy-in (Kč)</label>
+                        <input type="number" id="cfg-buyin-amount" value="400">
+                    </div>
                     <div class="config-field">
                         <label>Počáteční žetony hráče</label>
                         <input type="number" id="cfg-stack" value="5000">
@@ -107,15 +119,6 @@
                     <div class="config-field">
                         <label>Bonus žetony za včasný příchod</label>
                         <input type="number" id="cfg-bonus" value="5000">
-                    </div>
-                    <div class="config-sub">Buy-in a re-buy</div>
-                    <div class="config-field">
-                        <label>Buy-in (Kč)</label>
-                        <input type="number" id="cfg-buyin-amount" value="400">
-                    </div>
-                    <div class="config-field">
-                        <label>Re-buy povolený do levelu</label>
-                        <input type="number" id="cfg-rebuy-cutoff" value="4">
                     </div>
                     <div class="config-sub">Přestávka</div>
                     <div class="config-field">
@@ -135,14 +138,8 @@
                         <label>Add-on cena (Kč)</label>
                         <input type="number" id="cfg-addon-amount" value="0" min="0">
                     </div>
-                    <div class="config-field">
-                        <label>Add-on do začátku levelu (0 = bez limitu)</label>
-                        <input type="number" id="cfg-addon-cutoff" value="0" min="0">
-                    </div>
                 </div>
-                <div class="btn-row" style="margin-top:12px">
-                    <button class="btn accent" id="btn-save-config">Uložit nastavení</button>
-                </div>
+                <div class="save-status" id="config-save-status"></div>
             </div>
 
             <!-- Player list -->
@@ -151,6 +148,7 @@
                 <div class="player-add-row">
                     <input type="text" id="new-player-name" placeholder="Jméno hráče...">
                     <button class="btn" id="btn-add-player">+ Hráč</button>
+                    <button class="btn" id="btn-add-test-players">+ Test (12)</button>
                 </div>
                 <div id="players-list"></div>
                 <div id="player-summary" class="player-summary"></div>
@@ -161,7 +159,7 @@
                 <h3>Výsledky</h3>
                 <div id="winners-fields"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn accent" id="btn-save-winners">Uložit výsledky</button>
+                    <button class="btn accent" id="btn-save-winners">Ukončit turnaj</button>
                 </div>
             </div>
 
@@ -189,14 +187,12 @@
                 <div id="notes-list"></div>
                 <div class="btn-row" style="margin-top:8px">
                     <button class="btn" id="btn-add-note">+ Poznámka</button>
-                    <button class="btn accent" id="btn-save-notes">Uložit poznámky</button>
+                    <span class="save-status" id="notes-save-status"></span>
                 </div>
                 <div class="config-field" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px">
                     <label>Text při přestávce</label>
-                    <div style="display:flex;gap:6px;align-items:flex-start">
-                        <textarea id="cfg-break-message" rows="2" placeholder="Např. Občerstvení v kuchyni..." style="flex:1"></textarea>
-                        <button class="btn" id="btn-save-break-message" style="flex:0 0 auto;min-width:auto;padding:8px 12px">Uložit</button>
-                    </div>
+                    <textarea id="cfg-break-message" rows="2" placeholder="Např. Občerstvení v kuchyni..." style="width:100%"></textarea>
+                    <span class="save-status" id="break-save-status"></span>
                 </div>
             </div>
         </details>

@@ -197,6 +197,17 @@ body { min-height: 100vh; padding-bottom: 48px; }
 }
 .structure-table tr.overridden-level td { color: var(--accent); font-weight: bold; }
 .structure-table tr.overridden-level .blind-edit { color: var(--accent); font-weight: bold; border-color: var(--accent); }
+.blind-reset {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 0.9em;
+    padding: 0 2px;
+    opacity: 0.6;
+    vertical-align: middle;
+}
+.blind-reset:hover { opacity: 1; }
 
 /* Admin panel */
 .admin-panel {
@@ -345,6 +356,18 @@ body { min-height: 100vh; padding-bottom: 48px; }
 .btn.accent:hover { background: #ffc433; }
 .btn.danger { border-color: var(--red); color: var(--red); }
 .btn.danger:hover { background: rgba(248,113,113,0.1); }
+
+/* Save status indicator */
+.save-status {
+    display: inline-block;
+    font-size: 0.8em;
+    letter-spacing: 1px;
+    padding: 4px 0;
+    min-height: 1.5em;
+    text-align: center;
+}
+.save-status.saving { color: var(--text-muted); }
+.save-status.saved { color: var(--green); }
 
 /* Frozen admin section */
 .admin-section.frozen { opacity: 0.45; pointer-events: none; }
