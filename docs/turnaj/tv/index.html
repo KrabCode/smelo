@@ -1083,7 +1083,7 @@
             const updates = {};
             updates['players/buyIns'] = getField('cfg-buyins') + 1;
             updates['players/activePlayers'] = getField('cfg-active') + 1;
-            tournamentRef.update(updates).then(() => recalcAndSync());
+            tournamentRef.update(updates).then(() => { recalcAndSync(); showPlayerStatus('Uloženo ✓'); });
         });
 
         document.getElementById('btn-rebuy').addEventListener('click', () => {
@@ -1091,17 +1091,17 @@
             updates['players/rebuys'] = getField('cfg-rebuys') + 1;
             updates['players/buyIns'] = getField('cfg-buyins') + 1;
             updates['players/activePlayers'] = getField('cfg-active') + 1;
-            tournamentRef.update(updates).then(() => recalcAndSync());
+            tournamentRef.update(updates).then(() => { recalcAndSync(); showPlayerStatus('Uloženo ✓'); });
         });
 
         document.getElementById('btn-bonus').addEventListener('click', () => {
-            tournamentRef.child('players/bonuses').set(getField('cfg-bonuses') + 1).then(() => recalcAndSync());
+            tournamentRef.child('players/bonuses').set(getField('cfg-bonuses') + 1).then(() => { recalcAndSync(); showPlayerStatus('Uloženo ✓'); });
         });
 
         document.getElementById('btn-knockout').addEventListener('click', () => {
             const active = getField('cfg-active');
             if (active <= 0) return;
-            tournamentRef.child('players/activePlayers').set(active - 1);
+            tournamentRef.child('players/activePlayers').set(active - 1).then(() => showPlayerStatus('Uloženo ✓'));
         });
 
         // Save winners
