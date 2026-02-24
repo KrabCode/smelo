@@ -39,8 +39,38 @@
             text-align: center;
             font-size: 0.78em;
             color: var(--text-muted);
-            padding: 12px 24px;
+            padding: 8px 24px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
         }
+        .zoom-controls {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .tracker-header:hover .zoom-controls { opacity: 1; }
+        .zoom-controls button {
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            color: var(--text-muted);
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 1em;
+            line-height: 1;
+        }
+        .zoom-controls button:hover { border-color: var(--accent); color: var(--text); }
 
         /* Main display */
         .display { text-align: center; padding: 24px 20px 12px; }
@@ -369,6 +399,10 @@
         <div class="stat-item">Žetony: <span id="hd-chips">0</span></div>
         <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> výherci</div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
+        <div class="zoom-controls">
+            <button id="zoom-out">−</button>
+            <button id="zoom-in">+</button>
+        </div>
     </div>
     <div class="main-content">
         <!-- Display -->
@@ -538,6 +572,17 @@
         });
     }
     if (location.search.includes('wide')) document.body.classList.add('wide');
+
+    // Zoom controls
+    let zoomLevel = 100;
+    document.getElementById('zoom-in').addEventListener('click', () => {
+        zoomLevel = Math.min(200, zoomLevel + 10);
+        document.body.style.zoom = zoomLevel + '%';
+    });
+    document.getElementById('zoom-out').addEventListener('click', () => {
+        zoomLevel = Math.max(50, zoomLevel - 10);
+        document.body.style.zoom = zoomLevel + '%';
+    });
 
     // ─── Server Time Sync ────────────────────────────────────────
     let serverTimeOffset = 0;
@@ -869,11 +914,13 @@
             const timeStr = hh + ':' + mm;
 
             if (s.isBreak) {
+                const endMin = runningMinutes + s.duration;
+                const endHH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
+                const endMM = String(endMin % 60).padStart(2, '0');
                 classes.push('break-row');
                 tr.className = classes.join(' ');
                 tr.innerHTML =
-                    '<td></td>' +
-                    '<td colspan="3">PŘESTÁVKA</td>';
+                    '<td colspan="4">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM + '</td>';
             } else {
                 levelNum++;
                 tr.className = classes.join(' ');
