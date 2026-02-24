@@ -36,17 +36,28 @@
         .tracker-header .stat-item span { color: var(--accent); font-weight: bold; }
         .tracker-header .stat-item .muted { color: var(--text-secondary); font-weight: normal; }
         .tracker-footer {
-            text-align: center;
-            font-size: 0.78em;
-            color: var(--text-muted);
-            padding: 8px 24px;
+            font-family: 'Staatliches', sans-serif;
+            font-size: 0.9em;
+            letter-spacing: 2px;
+            color: var(--accent);
             background: var(--bg-card);
-            border-top: 1px solid var(--border);
+            border-top: 2px solid var(--accent);
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             z-index: 100;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 10px 0;
+        }
+        .tracker-footer .ticker {
+            display: inline-block;
+            animation: ticker 30s linear infinite;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-100%); }
         }
         .zoom-controls {
             position: absolute;
@@ -167,7 +178,6 @@
         }
         .structure-table tr.break-row td {
             color: var(--green);
-            font-style: italic;
         }
         .structure-table tr.break-row.current-level td {
             color: var(--green);
@@ -234,6 +244,38 @@
             font-size: 0.95em;
             font-family: monospace;
         }
+        .note-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .note-row input {
+            flex: 1;
+            background: var(--bg-input);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            color: var(--text);
+            padding: 8px 10px;
+            font-size: 0.95em;
+        }
+        .note-row input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(255,179,0,0.15);
+        }
+        .note-row .btn-remove-note {
+            flex: 0 0 auto;
+            background: none;
+            border: none;
+            color: var(--red);
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 4px 8px;
+            opacity: 0.6;
+        }
+        .note-row .btn-remove-note:hover { opacity: 1; }
+
         .config-field input:focus {
             outline: none;
             border-color: var(--accent);
@@ -350,7 +392,7 @@
         /* Tablet mode (?wide) — side-by-side layout for 1920×1200 */
         body.wide { font-size: 1.3em; }
         body.wide .tracker-header { padding: 18px 32px; gap: 16px 32px; }
-        body.wide .tracker-footer { font-size: 0.85em; padding: 12px 32px; }
+        body.wide .tracker-footer { font-size: 1em; }
         body.wide .main-content {
             display: flex;
             align-items: flex-start;
@@ -543,10 +585,20 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Notes (ticker) -->
+            <div class="admin-section">
+                <h3>Poznámky (ticker)</h3>
+                <div id="notes-list"></div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn" id="btn-add-note">+ Poznámka</button>
+                    <button class="btn accent" id="btn-save-notes">Uložit poznámky</button>
+                </div>
+            </div>
         </details>
     </div>
 
-    <div class="tracker-footer" id="tracker-footer">Buy-in a re-buy neomezeně, ale jen do konce přestávky · Nepřítomným hráčům se automaticky platí blindy a foldují karty</div>
+    <div class="tracker-footer" id="tracker-footer"><span class="ticker"></span></div>
 
     <script>
     // ─── Firebase Init ──────────────────────────────────────────
@@ -614,11 +666,17 @@
             bonuses: 0,
             totalChips: 0
         },
-        blindStructure: []
+        blindStructure: [],
+        notes: [
+            'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
+            'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
+            'Kouřit choďte po jednom, ať zbytek stolu může hrát'
+        ]
     };
 
     // Local mirror
     let T = JSON.parse(JSON.stringify(DEFAULTS));
+    T.notes = DEFAULTS.notes.slice();
 
     // ─── Blind Calculation ──────────────────────────────────────
     function roundToChip(val, chip) {
@@ -956,6 +1014,13 @@
             tbody.appendChild(tr);
         });
 
+        // Ticker
+        const notes = T.notes || [];
+        const tickerEl = document.querySelector('.ticker');
+        if (tickerEl) {
+            tickerEl.textContent = notes.join('  ·  ') + (notes.length ? '  ·  ' : '');
+        }
+
         // Payout (always visible)
         renderPayout();
 
@@ -1003,6 +1068,13 @@
                     );
                 }
                 wf.innerHTML = html.join('');
+            }
+
+            // Sync note inputs (only if not editing)
+            const noteInputs = document.querySelectorAll('#notes-list input');
+            const noteHasFocus = Array.from(noteInputs).some(el => el === document.activeElement);
+            if (!noteHasFocus && typeof renderNoteInputs === 'function') {
+                renderNoteInputs();
             }
         }
     }
@@ -1083,6 +1155,7 @@
         }
         T.players = { ...DEFAULTS.players, ...rawPlayers };
         T.blindStructure = data.blindStructure || [];
+        T.notes = data.notes || DEFAULTS.notes;
 
         render();
     });
@@ -1214,6 +1287,45 @@
             tournamentRef.child('state').set(DEFAULTS.state);
             tournamentRef.child('players').set(DEFAULTS.players);
             recalcAndSync();
+        });
+
+        // Notes (ticker)
+        function renderNoteInputs() {
+            const list = document.getElementById('notes-list');
+            const notes = T.notes || [];
+            list.innerHTML = notes.map((note, i) =>
+                '<div class="note-row">' +
+                '<input type="text" value="' + note.replace(/"/g, '&quot;') + '" data-note-idx="' + i + '">' +
+                '<button class="btn-remove-note" data-note-idx="' + i + '">&times;</button>' +
+                '</div>'
+            ).join('');
+        }
+
+        renderNoteInputs();
+
+        document.getElementById('notes-list').addEventListener('click', (e) => {
+            if (!e.target.classList.contains('btn-remove-note')) return;
+            const idx = parseInt(e.target.dataset.noteIdx);
+            T.notes.splice(idx, 1);
+            renderNoteInputs();
+        });
+
+        document.getElementById('btn-add-note').addEventListener('click', () => {
+            T.notes = T.notes || [];
+            T.notes.push('');
+            renderNoteInputs();
+            const inputs = document.querySelectorAll('#notes-list input');
+            if (inputs.length) inputs[inputs.length - 1].focus();
+        });
+
+        document.getElementById('btn-save-notes').addEventListener('click', () => {
+            const inputs = document.querySelectorAll('#notes-list input');
+            const notes = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
+            tournamentRef.child('notes').set(notes).then(() => {
+                const btn = document.getElementById('btn-save-notes');
+                btn.textContent = 'Poznámky uloženy ✓';
+                setTimeout(() => { btn.textContent = 'Uložit poznámky'; }, 2000);
+            });
         });
     }
     </script>
