@@ -1178,7 +1178,10 @@ if (isAdmin) {
 
     document.getElementById('section-config').addEventListener('change', saveConfig);
 
-    // Guard toggles
+    // Guard toggles — start locked
+    document.getElementById('cfg-blind-curve').disabled = true;
+    document.getElementById('section-payout-config').classList.add('guarded');
+
     document.querySelectorAll('.guard-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
             const locked = btn.textContent.trim() === '\u{1F512}';
