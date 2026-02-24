@@ -1338,6 +1338,18 @@ if (isAdmin) {
         tournamentRef.child('state/startedAt').set(d.getTime());
     });
 
+    function shiftLevel(direction) {
+        if (!T.state.startedAt || !T.blindStructure) return;
+        const struct = T.blindStructure;
+        const { levelIndex } = getCurrentLevel(T.state.startedAt, struct);
+        const idx = direction > 0 ? levelIndex : Math.max(0, levelIndex - 1);
+        const dur = (struct[idx] ? struct[idx].duration : 0) * 60000;
+        if (!dur) return;
+        tournamentRef.child('state/startedAt').set(T.state.startedAt - direction * dur);
+    }
+    document.getElementById('btn-level-back').addEventListener('click', () => shiftLevel(-1));
+    document.getElementById('btn-level-fwd').addEventListener('click', () => shiftLevel(1));
+
     document.getElementById('btn-reset').addEventListener('click', () => {
         if (!confirm('Opravdu resetovat timer?')) return;
         tournamentRef.child('state').set(DEFAULTS.state);
