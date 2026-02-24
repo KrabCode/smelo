@@ -931,9 +931,12 @@ function renderPlayerList() {
     const occupied = new Set();
     list.forEach(p => { if (p.table && p.seat) occupied.add(p.table + '-' + p.seat); });
     const locks = T.tableLocks || {};
-    // Sort indices by table then seat (unassigned last)
+    // Sort indices: active players by table/seat, inactive stay at end in original order
     const sorted = list.map((p, i) => i).sort((a, b) => {
         const pa = list[a], pb = list[b];
+        if (pa.active && !pb.active) return -1;
+        if (!pa.active && pb.active) return 1;
+        if (!pa.active && !pb.active) return a - b;
         const ta = pa.table || 999, tb = pb.table || 999;
         if (ta !== tb) return ta - tb;
         const sa = pa.seat || 999, sb = pb.seat || 999;
