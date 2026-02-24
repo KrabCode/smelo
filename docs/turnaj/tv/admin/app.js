@@ -487,26 +487,19 @@ function renderPlayerList() {
         return (pa.seat || 999) - (pb.seat || 999);
     });
 
-    const buyHint = (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs');
-    const addonHint = c.addonChips ? (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') : '';
-    const bonusHint = c.bonusAmount ? c.bonusAmount.toLocaleString('cs') : '';
+    const buyLabel = 'Buys <span class="th-hint">(' + (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs') + ')</span>';
+    const addonLabel = 'Add-on' + (c.addonChips ? ' <span class="th-hint">(' + (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') + ')</span>' : '');
+    const bonusLabel = 'Bonus' + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
 
-    let html = '<div class="player-header">' +
-        '<span class="ph-name">Hráč</span>' +
-        '<span class="ph-seat">Stůl</span>' +
-        '<span class="ph-buys">Buys <small>(' + buyHint + ')</small></span>' +
-        '<span class="ph-toggle">A' + (addonHint ? ' <small>(' + addonHint + ')</small>' : '') + '</span>' +
-        '<span class="ph-toggle">B' + (bonusHint ? ' <small>(' + bonusHint + ')</small>' : '') + '</span>' +
-        '<span class="ph-toggle">Akt</span>' +
-        '<span class="ph-del"></span>' +
-        '</div>';
+    let html = '<table class="player-table"><thead><tr>' +
+        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
+        '</tr></thead><tbody>';
 
     sorted.forEach(i => {
         const p = list[i];
         const nameClass = 'player-name' + (p.active ? '' : ' inactive');
         const curVal = p.table && p.seat ? p.table + '-' + p.seat : '';
 
-        // Seat select
         let seatSelect = '<select class="player-seat-select" data-idx="' + i + '">';
         seatSelect += '<option value=""' + (!curVal ? ' selected' : '') + '>\u2014</option>';
         seatSelect += '<option value="random">Náhodné</option>';
@@ -524,19 +517,17 @@ function renderPlayerList() {
         });
         seatSelect += '</select>';
 
-        html += '<div class="player-card">' +
-            '<div class="' + nameClass + '">' + (p.name || '?') + '</div>' +
-            '<div class="player-controls">' +
-            seatSelect +
-            '<button class="player-btn buys-btn" data-idx="' + i + '" data-dir="-">&minus;</button>' +
-            '<span class="player-buys">' + p.buys + '</span>' +
-            '<button class="player-btn buys-btn" data-idx="' + i + '" data-dir="+">+</button>' +
-            '<button class="player-btn' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon" title="Add-on">A</button>' +
-            '<button class="player-btn' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus" title="Bonus">B</button>' +
-            '<button class="player-btn active-btn' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active" title="Aktivní">&#10003;</button>' +
-            '<button class="player-btn remove-btn" data-idx="' + i + '" title="Odebrat">&times;</button>' +
-            '</div></div>';
+        html += '<tr>' +
+            '<td class="' + nameClass + '">' + (p.name || '?') + '</td>' +
+            '<td>' + seatSelect + '</td>' +
+            '<td><button class="player-btn buys-btn" data-idx="' + i + '" data-dir="-">&minus;</button> ' + p.buys + ' <button class="player-btn buys-btn" data-idx="' + i + '" data-dir="+">+</button></td>' +
+            '<td><button class="player-btn' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon">' + (p.addon ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-btn' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus">' + (p.bonus ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-btn active-btn' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active">' + (p.active ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-btn remove-btn" data-idx="' + i + '" title="Odebrat">&times;</button></td>' +
+            '</tr>';
     });
+    html += '</tbody></table>';
     container.innerHTML = html;
 }
 

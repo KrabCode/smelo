@@ -279,62 +279,41 @@ body {
     transition: max-height 0.35s ease, opacity 0.2s;
 }
 
-/* Player list header */
-.player-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.75em;
+/* Player table */
+.player-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.player-table th {
+    text-align: left;
     color: var(--text-muted);
+    padding: 8px 6px;
+    font-weight: 500;
+    font-size: 0.8em;
     letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-.player-header small {
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: normal;
-    color: var(--text-faint);
-}
-.ph-name { flex: 1; min-width: 0; }
-.ph-seat { flex: 0 0 auto; }
-.ph-buys { flex: 0 0 auto; text-align: center; }
-.ph-toggle { flex: 0 0 44px; text-align: center; }
-.ph-del { flex: 0 0 36px; }
-
-/* Player list */
-.player-card {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.player-card:last-child { border-bottom: none; }
-.player-name {
-    flex: 1;
-    font-size: 1.05em;
-    color: var(--text);
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    border-bottom: 1px solid var(--border);
     white-space: nowrap;
 }
+.player-table .th-hint {
+    font-weight: normal;
+    color: var(--text-faint);
+    font-size: 0.85em;
+}
+.player-table td {
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.player-name { color: var(--text); }
 .player-name.inactive {
     opacity: 0.4;
     text-decoration: line-through;
 }
-.player-controls {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-    align-items: center;
-}
 .player-btn {
     min-width: 44px;
     min-height: 44px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 8px;
@@ -345,6 +324,7 @@ body {
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
+    vertical-align: middle;
 }
 .player-btn:active { transform: scale(0.95); }
 .player-btn.on {
@@ -370,19 +350,6 @@ body {
     min-width: 36px;
 }
 .player-btn.remove-btn:active { opacity: 1; }
-.player-buys {
-    font-family: monospace;
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 1.1em;
-    min-width: 20px;
-    text-align: center;
-}
-.player-seat-label {
-    font-size: 0.8em;
-    color: var(--text-muted);
-    margin-left: 2px;
-}
 .player-summary {
     font-size: 0.85em;
     color: var(--text-muted);
