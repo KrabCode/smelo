@@ -333,6 +333,23 @@
             font-size: clamp(1.2rem, 3vw, 2rem);
         }
 
+        /* Tablet mode (?tablet) — fill 1920×1200 for viewing at distance */
+        body.tablet { font-size: 1.4em; }
+        body.tablet .tracker-header { padding: 18px 32px; gap: 16px 32px; }
+        body.tablet .tracker-subtitle { font-size: 0.85em; padding: 6px 32px; }
+        body.tablet .display { padding: 32px 20px 16px; }
+        body.tablet .timer { font-size: clamp(6rem, 18vw, 14rem); }
+        body.tablet .blinds-current { font-size: clamp(3.5rem, 10vw, 7rem); }
+        body.tablet .blinds-label { font-size: 1em; }
+        body.tablet .blinds-sub { font-size: clamp(1.6rem, 5vw, 2.8rem); }
+        body.tablet .next-level { font-size: 1.2em; }
+        body.tablet .progress-wrap { max-width: 900px; height: 8px; }
+        body.tablet .structure-wrap { max-width: 900px; }
+        body.tablet .structure-table { font-size: 1em; }
+        body.tablet .payout-section { max-width: 900px; }
+        body.tablet .payout-table { max-width: 500px; font-size: 1em; }
+        body.tablet .winner-banner { max-width: 900px; }
+
     </style>
 </head>
 <body>
@@ -340,9 +357,8 @@
     <div class="tracker-header">
         <div class="stat-item">Buy-in: <span id="hd-buyin-amount">400 Kč</span></div>
         <div class="stat-item">Žetony: <span id="hd-chips">0</span></div>
-        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> hráči</div>
+        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> výherci</div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
-        <div class="stat-item" id="hd-to-money"></div>
     </div>
     <div class="tracker-subtitle">Buy-in a re-buy neomezeně, ale jen do konce přestávky · Nepřítomným hráčům se automaticky platí blindy a foldují karty</div>
 
@@ -368,7 +384,7 @@
     <div class="structure-wrap">
         <table class="structure-table">
             <thead>
-                <tr><th>Čas</th><th>Level</th><th>SB</th><th>BB</th></tr>
+                <tr><th>Level</th><th>Čas</th><th>SB</th><th>BB</th></tr>
             </thead>
             <tbody id="structure-body"></tbody>
         </table>
@@ -502,6 +518,7 @@
     const isAdmin = location.search.includes('admin');
 
     if (isAdmin) document.getElementById('admin-panel').style.display = '';
+    if (location.search.includes('tablet')) document.body.classList.add('tablet');
 
     // ─── Server Time Sync ────────────────────────────────────────
     let serverTimeOffset = 0;
@@ -668,16 +685,6 @@
         document.getElementById('hd-pool').textContent = prizePool.toLocaleString('cs') + ' Kč';
         document.getElementById('hd-places').textContent = paidPlaces;
 
-        const toMoney = activePlayers - paidPlaces;
-        const toMoneyEl = document.getElementById('hd-to-money');
-        if (toMoney > 0 && activePlayers > 0) {
-            const hracLabel = toMoney <= 4 ? 'hráče' : 'hráčů';
-            toMoneyEl.innerHTML = 'Do výhry zbývá vyřadit <span>' + toMoney + '</span> ' + hracLabel;
-        } else if (activePlayers > 0) {
-            toMoneyEl.innerHTML = '<span>Všichni zbývající hráči dostanou zaplaceno</span>';
-        } else {
-            toMoneyEl.textContent = '';
-        }
 
         const tbody = document.getElementById('payout-body');
         tbody.innerHTML = '';
@@ -846,14 +853,14 @@
                 classes.push('break-row');
                 tr.className = classes.join(' ');
                 tr.innerHTML =
-                    '<td>' + timeStr + '</td>' +
+                    '<td></td>' +
                     '<td colspan="3">PŘESTÁVKA</td>';
             } else {
                 levelNum++;
                 tr.className = classes.join(' ');
                 tr.innerHTML =
-                    '<td>' + timeStr + '</td>' +
                     '<td>' + levelNum + '</td>' +
+                    '<td>' + timeStr + '</td>' +
                     '<td>' + s.small.toLocaleString('cs') + '</td>' +
                     '<td>' + s.big.toLocaleString('cs') + '</td>';
             }
