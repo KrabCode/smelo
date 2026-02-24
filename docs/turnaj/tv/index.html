@@ -35,6 +35,17 @@
         }
         .tracker-header .stat-item span { color: var(--accent); font-weight: bold; }
         .tracker-header .stat-item .muted { color: var(--text-secondary); font-weight: normal; }
+        .tracker-subtitle {
+            text-align: center;
+            font-size: 0.78em;
+            color: var(--text-muted);
+            padding: 4px 24px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 50px;
+            z-index: 99;
+        }
 
         /* Main display */
         .display { text-align: center; padding: 24px 20px 12px; }
@@ -328,13 +339,12 @@
     <!-- Header -->
     <div class="tracker-header">
         <div class="stat-item">Buy-in: <span id="hd-buyin-amount">400 Kč</span></div>
-        <div class="stat-item"><span class="muted">Re-buy pouze před přestávkou</span></div>
         <div class="stat-item">Žetony: <span id="hd-chips">0</span></div>
-        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span></div>
-        <div class="stat-item">Hráčů v penězích: <span id="hd-places">0</span></div>
+        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> hráči</div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
         <div class="stat-item" id="hd-to-money"></div>
     </div>
+    <div class="tracker-subtitle">Buy-in a re-buy neomezeně, ale jen do konce přestávky · Nepřítomným hráčům se automaticky platí blindy a foldují karty</div>
 
     <!-- Display -->
     <div class="display" id="display">
