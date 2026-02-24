@@ -348,8 +348,8 @@
 
     <!-- Display -->
     <div class="display" id="display">
-        <div class="status-banner" id="status-banner">ČEKÁ SE NA START</div>
-        <div class="level-label" id="level-label">LEVEL 1</div>
+        <div class="status-banner" id="status-banner" style="display:none">ČEKÁ SE NA START</div>
+        <div class="level-label" id="level-label" style="display:none">LEVEL 1</div>
         <div class="timer" id="timer">00:00</div>
         <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
         <div class="blinds-label" id="blinds-label">BLINDY</div>
@@ -896,7 +896,7 @@
             const wf = document.getElementById('winners-fields');
             const currentFields = wf.querySelectorAll('input');
             const hasFocus = Array.from(currentFields).some(el => el === document.activeElement);
-            if (!hasFocus) {
+            if (!hasFocus || currentFields.length !== paidPlaces) {
                 const html = [];
                 for (let i = 1; i <= paidPlaces; i++) {
                     html.push(
