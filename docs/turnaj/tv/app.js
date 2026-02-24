@@ -11,8 +11,15 @@ const tournamentRef = db.ref('tournament');
 const ADMIN_PASSWORD = 'nezdrzuj';
 let isAdmin = false;
 if (location.search.includes('admin')) {
-    const pwd = prompt('Heslo pro admin:');
-    isAdmin = pwd === ADMIN_PASSWORD;
+    if (localStorage.getItem('adminAuth') === ADMIN_PASSWORD) {
+        isAdmin = true;
+    } else {
+        const pwd = prompt('Heslo pro admin:');
+        if (pwd === ADMIN_PASSWORD) {
+            isAdmin = true;
+            localStorage.setItem('adminAuth', pwd);
+        }
+    }
 }
 
 function applyAdminMode() {
@@ -86,10 +93,10 @@ const DEFAULTS = {
     config: {
         startingStack: 5000,
         levelDuration: 20,
-        tournamentLength: 240,
+        maxLevels: 12,
         smallestChip: 25,
         bonusAmount: 5000,
-        rebuyCutoff: 4,
+
         levelsPerBreak: 0,
         breakDuration: 30,
         startTime: '19:00',
@@ -97,6 +104,7 @@ const DEFAULTS = {
         addonChips: 0,
         addonAmount: 0,
         addonCutoff: 0,
+        blindMultiplier: 2.0,
         date: ''
     },
     state: {
@@ -109,6 +117,7 @@ const DEFAULTS = {
         totalChips: 0
     },
     blindStructure: [],
+    blindOverrides: {},
     breakMessage: '',
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
@@ -126,42 +135,26 @@ function roundToChip(val, chip) {
     let unit;
     if (val >= 1000) unit = 100;
     else if (val >= 100) unit = 25;
-    else unit = 5;
+    else if (val >= 10) unit = 5;
+    else unit = 1;
     return Math.max(chip, Math.round(val / unit) * unit);
 }
 
 function calculateBlinds(config, totalChips, freezeUpTo) {
-    const { levelDuration, tournamentLength, smallestChip } = config;
+    const { levelDuration, smallestChip } = config;
+    const numLevels = Math.max(2, config.maxLevels || 12);
     const lpb = config.levelsPerBreak || 0;
     const breakDur = config.breakDuration || 30;
+    const multiplier = config.blindMultiplier || 2.0;
 
-    // Estimate number of breaks to subtract their time from playing time
-    let numLevelsEstimate = Math.max(2, Math.floor(tournamentLength / levelDuration));
-    let numBreaks = 0;
-    if (lpb > 0) {
-        numBreaks = Math.floor(numLevelsEstimate / lpb);
-        // Don't place a break after the very last level
-        if (numBreaks * lpb === numLevelsEstimate) numBreaks--;
-        numBreaks = Math.max(0, numBreaks);
-    }
-    const playingTime = tournamentLength - numBreaks * breakDur;
-    const numLevels = Math.max(2, Math.floor(playingTime / levelDuration));
-
-    // Recompute numBreaks with final numLevels
-    if (lpb > 0) {
-        numBreaks = Math.floor(numLevels / lpb);
-        if (numBreaks * lpb === numLevels) numBreaks--;
-        numBreaks = Math.max(0, numBreaks);
-    }
-
-    const finalBigBlind = roundToChip(totalChips / 3, smallestChip);
-    const finalSmall = finalBigBlind / 2;
-    const startSmall = smallestChip;
+    const ceilingSmall = totalChips > 0
+        ? roundToChip(totalChips / 3, smallestChip) / 2
+        : Infinity;
 
     const levels = [];
 
     if (freezeUpTo >= 0 && T.blindStructure && T.blindStructure.length > 0) {
-        // Freeze existing entries up to and including freezeUpTo (skip breaks from count)
+        // Freeze existing entries up to and including freezeUpTo
         const frozen = Math.min(freezeUpTo + 1, T.blindStructure.length);
         for (let i = 0; i < frozen; i++) {
             levels.push({ ...T.blindStructure[i] });
@@ -172,36 +165,26 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
         const remaining = numLevels - frozenBlindCount;
 
         if (remaining > 0) {
-            // Find last real blind level for progression base
             const lastBlind = [...levels].reverse().find(l => !l.isBreak);
-            const currentSmall = lastBlind ? lastBlind.small : smallestChip;
-            const newFinalSmall = Math.max(currentSmall, roundToChip(totalChips / 6, smallestChip));
-            const ratio = remaining > 1
-                ? Math.pow(newFinalSmall / currentSmall, 1 / (remaining - 1))
-                : 1;
+            let prevSmall = lastBlind ? lastBlind.small : smallestChip;
 
             for (let i = 0; i < remaining; i++) {
-                const small = i === remaining - 1
-                    ? newFinalSmall
-                    : roundToChip(currentSmall * Math.pow(ratio, i + 1), smallestChip);
-                const big = small * 2;
-                levels.push({ small, big, duration: levelDuration });
+                const small = roundToChip(prevSmall * multiplier, smallestChip);
+                if (small > ceilingSmall) break;
+                levels.push({ small, big: small * 2, duration: levelDuration });
+                prevSmall = small;
             }
         }
     } else {
-        // Fresh calculation
-        const ratio = numLevels > 1
-            ? Math.pow(finalSmall / startSmall, 1 / (numLevels - 1))
-            : 1;
+        // Fresh calculation using fixed multiplier
+        let prevSmall = smallestChip;
+        levels.push({ small: prevSmall, big: prevSmall * 2, duration: levelDuration });
 
-        for (let i = 0; i < numLevels; i++) {
-            const small = i === 0
-                ? startSmall
-                : (i === numLevels - 1
-                    ? roundToChip(finalSmall, smallestChip)
-                    : roundToChip(startSmall * Math.pow(ratio, i), smallestChip));
-            const big = small * 2;
-            levels.push({ small, big, duration: levelDuration });
+        for (let i = 1; i < numLevels; i++) {
+            const small = roundToChip(prevSmall * multiplier, smallestChip);
+            if (small > ceilingSmall) break;
+            levels.push({ small, big: small * 2, duration: levelDuration });
+            prevSmall = small;
         }
     }
 
@@ -242,6 +225,16 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
     }
 
     return levels;
+}
+
+function applyOverrides(structure, overrides) {
+    let blindNum = 0;
+    structure.forEach(entry => {
+        if (entry.isBreak) return;
+        blindNum++;
+        const ov = overrides[blindNum];
+        if (ov) { entry.small = ov.small; entry.big = ov.big; }
+    });
 }
 
 function derivePlayerStats(list) {
@@ -336,9 +329,11 @@ function recalcAndSync() {
         freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
     }
     const structure = calculateBlinds(T.config, totalChips, freezeUpTo);
-
-    tournamentRef.child('players/totalChips').set(totalChips);
-    tournamentRef.child('blindStructure').set(structure);
+    applyOverrides(structure, T.blindOverrides);
+    tournamentRef.update({
+        'players/totalChips': totalChips,
+        'blindStructure': structure
+    });
 }
 
 // ─── Rendering ──────────────────────────────────────────────
@@ -531,20 +526,27 @@ function render() {
             const endMM = String(endMin % 60).padStart(2, '0');
             classes.push('break-row');
             tr.className = classes.join(' ');
-            const breakAddon = addonChipsCfg > 0 &&
-                (addonCutoffCfg === 0 || structBlindCount < addonCutoffCfg);
             tr.innerHTML =
-                '<td colspan="4">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM +
-                (breakAddon ? ' + ADD-ON' : '') + '</td>';
+                '<td colspan="4">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM + '</td>';
         } else {
             structBlindCount++;
             levelNum++;
+            const isOverridden = !!T.blindOverrides[levelNum];
+            if (isOverridden) classes.push('overridden-level');
             tr.className = classes.join(' ');
-            tr.innerHTML =
-                '<td>' + levelNum + '</td>' +
-                '<td>' + timeStr + '</td>' +
-                '<td>' + s.small.toLocaleString('cs') + '</td>' +
-                '<td>' + s.big.toLocaleString('cs') + '</td>';
+            if (isAdmin) {
+                tr.innerHTML =
+                    '<td>' + levelNum + '</td>' +
+                    '<td>' + timeStr + '</td>' +
+                    '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="small" value="' + s.small + '"></td>' +
+                    '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="big" value="' + s.big + '"></td>';
+            } else {
+                tr.innerHTML =
+                    '<td>' + levelNum + '</td>' +
+                    '<td>' + timeStr + '</td>' +
+                    '<td>' + s.small.toLocaleString('cs') + '</td>' +
+                    '<td>' + s.big.toLocaleString('cs') + '</td>';
+            }
         }
         runningMinutes += s.duration;
         tbody.appendChild(tr);
@@ -573,21 +575,24 @@ function render() {
         const ids = {
             'cfg-stack': config.startingStack,
             'cfg-level-dur': config.levelDuration,
-            'cfg-tourney-len': config.tournamentLength,
+            'cfg-max-levels': config.maxLevels,
             'cfg-smallest': config.smallestChip,
             'cfg-bonus': config.bonusAmount,
-            'cfg-rebuy-cutoff': config.rebuyCutoff,
+
             'cfg-levels-per-break': config.levelsPerBreak,
             'cfg-break-dur': config.breakDuration,
             'cfg-buyin-amount': config.buyInAmount,
             'cfg-addon-chips': config.addonChips,
             'cfg-addon-amount': config.addonAmount,
-            'cfg-addon-cutoff': config.addonCutoff
+            'cfg-blind-mult': config.blindMultiplier
         };
         for (const [id, val] of Object.entries(ids)) {
             const el = document.getElementById(id);
             if (el && document.activeElement !== el) el.value = val;
         }
+        // Update multiplier label
+        const multLabel = document.getElementById('blind-mult-val');
+        if (multLabel) multLabel.textContent = parseFloat(config.blindMultiplier || 2.0).toFixed(1);
 
         // Generate winner input fields for each paid place
         const wf = document.getElementById('winners-fields');
@@ -640,8 +645,12 @@ function renderPlayerList() {
         container.innerHTML = '';
         return;
     }
+    const c = T.config;
+    const buyLabel = 'Buys <span class="th-hint">(' + (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs') + ')</span>';
+    const addonLabel = 'Add-on' + (c.addonChips ? ' <span class="th-hint">(' + (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') + ')</span>' : '');
+    const bonusLabel = 'Bonus' + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
     let html = '<table class="player-table"><thead><tr>' +
-        '<th>Hráč</th><th>Buys</th><th>Add-on</th><th>Bonus</th><th>Aktivní</th><th></th>' +
+        '<th>Hráč</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
         '</tr></thead><tbody>';
     list.forEach((p, i) => {
         const nameClass = 'player-name' + (p.active ? '' : ' inactive');
@@ -660,8 +669,17 @@ function renderPlayerList() {
 
 function savePlayerList() {
     const list = T.players.list || [];
-    tournamentRef.child('players/list').set(list).then(() => {
-        recalcAndSync();
+    const totalChips = recalcTotalChips();
+    let freezeUpTo = -1;
+    if (T.state.status === 'running' && T.state.startedAt) {
+        freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
+    }
+    const structure = calculateBlinds(T.config, totalChips, freezeUpTo);
+    applyOverrides(structure, T.blindOverrides);
+    tournamentRef.update({
+        'players/list': list,
+        'players/totalChips': totalChips,
+        'blindStructure': structure
     });
 }
 
@@ -765,10 +783,12 @@ tournamentRef.on('value', (snap) => {
         }
     }
     T.blindStructure = data.blindStructure || [];
+    T.blindOverrides = data.blindOverrides || {};
     T.breakMessage = data.breakMessage || '';
     T.notes = data.notes || DEFAULTS.notes;
 
     render();
+
 });
 
 // ─── Admin Actions ──────────────────────────────────────────
@@ -779,16 +799,17 @@ if (isAdmin) {
         const config = {
             startingStack: parseInt(document.getElementById('cfg-stack').value) || 5000,
             levelDuration: parseInt(document.getElementById('cfg-level-dur').value) || 20,
-            tournamentLength: parseInt(document.getElementById('cfg-tourney-len').value) || 240,
+            maxLevels: parseInt(document.getElementById('cfg-max-levels').value) || 12,
             smallestChip: parseInt(document.getElementById('cfg-smallest').value) || 25,
             bonusAmount: parseInt(document.getElementById('cfg-bonus').value) || 5000,
-            rebuyCutoff: parseInt(document.getElementById('cfg-rebuy-cutoff').value) || 4,
+
             levelsPerBreak: parseInt(document.getElementById('cfg-levels-per-break').value) || 0,
             breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
             buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400,
             addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
             addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
-            addonCutoff: parseInt(document.getElementById('cfg-addon-cutoff').value) || 0
+            addonCutoff: T.config.addonCutoff || 0,
+            blindMultiplier: parseFloat(document.getElementById('cfg-blind-mult').value) || 2.0
         };
 
         tournamentRef.child('config').set(config).then(() => {
@@ -798,6 +819,12 @@ if (isAdmin) {
             btn.textContent = 'Nastavení uloženo ✓';
             setTimeout(() => { btn.textContent = 'Uložit nastavení'; }, 2000);
         });
+    });
+
+    // Live update for blind multiplier slider
+    document.getElementById('cfg-blind-mult').addEventListener('input', (e) => {
+        const label = document.getElementById('blind-mult-val');
+        if (label) label.textContent = parseFloat(e.target.value).toFixed(1);
     });
 
     // Add player
@@ -815,6 +842,19 @@ if (isAdmin) {
 
     document.getElementById('new-player-name').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') document.getElementById('btn-add-player').click();
+    });
+
+    // Add 12 test players
+    document.getElementById('btn-add-test-players').addEventListener('click', () => {
+        const names = ['Adam', 'Bára', 'Cyril', 'Dana', 'Emil', 'Fanda',
+            'Gita', 'Honza', 'Iva', 'Jirka', 'Karel', 'Lucie'];
+        const list = T.players.list || [];
+        names.forEach(name => {
+            list.push({ name, buys: 1, addon: false, bonus: false, active: true });
+        });
+        T.players.list = list;
+        savePlayerList();
+        render();
     });
 
     // Delegate clicks on player list (buys+, toggles, remove)
@@ -873,8 +913,8 @@ if (isAdmin) {
         }
         tournamentRef.child('state/winners').set(winners).then(() => {
             const btn = document.getElementById('btn-save-winners');
-            btn.textContent = 'Výsledky uloženy ✓';
-            setTimeout(() => { btn.textContent = 'Uložit výsledky'; }, 2000);
+            btn.textContent = 'Turnaj ukončen ✓';
+            setTimeout(() => { btn.textContent = 'Ukončit turnaj'; }, 2000);
         });
     });
 
@@ -886,6 +926,7 @@ if (isAdmin) {
             status: 'running',
             startedAt: serverNow()
         });
+        playLevelSound();
     });
 
     document.getElementById('btn-set-start-time').addEventListener('click', () => {
@@ -901,6 +942,7 @@ if (isAdmin) {
         if (!confirm('Opravdu resetovat celý turnaj?')) return;
         tournamentRef.child('state').set(DEFAULTS.state);
         tournamentRef.child('players').set(DEFAULTS.players);
+        tournamentRef.child('blindOverrides').set({});
         recalcAndSync();
     });
 
@@ -941,6 +983,57 @@ if (isAdmin) {
             btn.textContent = 'Poznámky uloženy ✓';
             setTimeout(() => { btn.textContent = 'Uložit poznámky'; }, 2000);
         });
+    });
+
+    // Blind structure override editing
+    document.getElementById('structure-body').addEventListener('change', (e) => {
+        if (!e.target.classList.contains('blind-edit')) return;
+        const level = parseInt(e.target.dataset.level);
+        const field = e.target.dataset.field;
+        const val = parseInt(e.target.value);
+        if (!level || !field || isNaN(val) || val <= 0) return;
+
+        // Get current override or create from current values
+        const ov = T.blindOverrides[level] || {};
+        ov[field] = val;
+
+        // If editing SB only, fill BB from current structure (and vice versa)
+        const struct = T.blindStructure || [];
+        let blindNum = 0;
+        let calcSmall, calcBig;
+        for (const entry of struct) {
+            if (entry.isBreak) continue;
+            blindNum++;
+            if (blindNum === level) {
+                // Recalculate without override to get base values
+                const totalChips = recalcTotalChips();
+                let freezeUpTo = -1;
+                if (T.state.status === 'running' && T.state.startedAt) {
+                    freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
+                }
+                const baseStructure = calculateBlinds(T.config, totalChips, freezeUpTo);
+                let bn = 0;
+                for (const be of baseStructure) {
+                    if (be.isBreak) continue;
+                    bn++;
+                    if (bn === level) { calcSmall = be.small; calcBig = be.big; break; }
+                }
+                break;
+            }
+        }
+
+        if (!ov.small) ov.small = calcSmall || 0;
+        if (!ov.big) ov.big = calcBig || 0;
+
+        // If both match calculated values, remove the override
+        if (ov.small === calcSmall && ov.big === calcBig) {
+            delete T.blindOverrides[level];
+        } else {
+            T.blindOverrides[level] = ov;
+        }
+
+        tournamentRef.child('blindOverrides').set(T.blindOverrides);
+        recalcAndSync();
     });
 
     document.getElementById('btn-save-break-message').addEventListener('click', () => {
