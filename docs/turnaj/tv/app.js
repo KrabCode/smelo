@@ -474,8 +474,7 @@ function render() {
         blindsCurEl.textContent = 'PŘESTÁVKA';
         blindsCurEl.classList.add('on-break');
         progressBarEl.classList.add('on-break');
-        document.getElementById('blinds-sub').textContent =
-            curEntry.duration + ' min';
+        document.getElementById('blinds-sub').textContent = '';
 
         // Add-on banner during break
         const addonChips = config.addonChips || 0;
@@ -497,7 +496,10 @@ function render() {
         // Break message
         const bMsg = (T.breakMessage || '').trim();
         if (bMsg) {
-            breakMsgEl.innerHTML = bMsg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+            const escaped = bMsg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const lines = escaped.split('\n');
+            breakMsgEl.innerHTML = '<div>' + lines[0] + '</div>' +
+                (lines.length > 1 ? '<div class="break-message-rest">' + lines.slice(1).join('<br>') + '</div>' : '');
             breakMsgEl.style.display = '';
         } else {
             breakMsgEl.style.display = 'none';
@@ -525,7 +527,7 @@ function render() {
     const nextEl = document.getElementById('next-level');
     const nextReal = struct.slice(lvl + 1).find(s => !s.isBreak);
     if (nextReal) {
-        nextEl.innerHTML = 'Další blindy: <span>' +
+        nextEl.innerHTML = 'Příští blindy budou: <span>' +
             nextReal.small.toLocaleString('cs') + ' / ' + nextReal.big.toLocaleString('cs') +
             '</span>';
     } else {
@@ -902,6 +904,7 @@ if (isAdmin) {
 
     // Add 12 test players
     document.getElementById('btn-add-test-players').addEventListener('click', () => {
+        if (!confirm('Přidat 12 testovacích hráčů?')) return;
         const names = ['Adam', 'Bára', 'Cyril', 'Dana', 'Emil', 'Fanda',
             'Gita', 'Honza', 'Iva', 'Jirka', 'Karel', 'Lucie'];
         const list = T.players.list || [];

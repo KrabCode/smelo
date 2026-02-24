@@ -420,6 +420,9 @@ body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
     margin-top: 20px;
     text-align: center;
 }
+.break-message-rest {
+    font-size: 0.5em;
+}
 
 /* Payout section */
 .payout-section {
