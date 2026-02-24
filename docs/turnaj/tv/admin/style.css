@@ -257,16 +257,6 @@ body {
 .save-status.saving { color: var(--text-muted); }
 .save-status.saved { color: var(--green); }
 
-/* Frozen (when tournament running) */
-.section.frozen { opacity: 0.35; pointer-events: none; }
-.section.frozen h2::after {
-    content: ' (uzamčeno)';
-    font-weight: 400;
-    text-transform: none;
-    letter-spacing: 0;
-    font-size: 0.9em;
-}
-
 /* Guard toggle */
 .guard-toggle {
     background: none;

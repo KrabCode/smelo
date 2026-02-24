@@ -393,8 +393,13 @@ function render() {
         state.status === 'running' ? 'Běží...' : 'Start';
     document.getElementById('btn-start').disabled = state.status === 'running';
 
-    // Freeze config when not waiting
-    document.getElementById('section-config').classList.toggle('frozen', state.status !== 'waiting');
+    // Auto-lock config when tournament starts (guard-based, still unlockable)
+    if (state.status !== 'waiting' && !configAutoLocked) {
+        configAutoLocked = true;
+        setGuardLocked('section-config', true);
+    } else if (state.status === 'waiting') {
+        configAutoLocked = false;
+    }
 
     // Populate config inputs
     const ids = {
@@ -1269,6 +1274,17 @@ document.getElementById('structure-body').addEventListener('click', (e) => {
 
 // ─── Guard Toggles ──────────────────────────────────────────
 const guardState = JSON.parse(localStorage.getItem('adminGuards') || '{}');
+let configAutoLocked = false;
+
+function setGuardLocked(id, locked) {
+    const section = document.getElementById(id);
+    const btn = document.querySelector('.guard-toggle[data-target="' + id + '"]');
+    if (!section || !btn) return;
+    section.classList.toggle('guarded', locked);
+    btn.textContent = locked ? '\u{1F512}' : '\u{1F513}';
+    guardState[id] = !locked;
+    localStorage.setItem('adminGuards', JSON.stringify(guardState));
+}
 
 document.querySelectorAll('.guard-toggle').forEach(btn => {
     const id = btn.dataset.target;
