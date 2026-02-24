@@ -597,6 +597,19 @@ function formatTime(ms) {
     return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
+window.addEventListener('resize', fitBlindsText);
+
+function fitBlindsText() {
+    const el = document.getElementById('blinds-current');
+    const container = el.parentElement;
+    const maxPx = parseFloat(getComputedStyle(document.documentElement).fontSize) * 12; // 12rem
+    el.style.fontSize = maxPx + 'px';
+    const avail = container.clientWidth - parseFloat(getComputedStyle(container).paddingLeft) - parseFloat(getComputedStyle(container).paddingRight);
+    if (el.scrollWidth > avail) {
+        el.style.fontSize = (maxPx * avail / el.scrollWidth) + 'px';
+    }
+}
+
 function render() {
     const { config, state, players, blindStructure } = T;
 
@@ -743,6 +756,8 @@ function render() {
         addonBannerEl.style.display = 'none';
         breakMsgEl.style.display = 'none';
     }
+
+    fitBlindsText();
 
     // Next level preview (skip break entries to show next real level)
     const nextEl = document.getElementById('next-level');
@@ -1167,8 +1182,8 @@ if (isAdmin) {
                 const slider = document.getElementById('cfg-blind-curve');
                 slider.disabled = !locked;
             } else if (btn.id === 'guard-payout') {
-                const rows = document.getElementById('payout-config-rows');
-                rows.classList.toggle('guarded', !locked);
+                const section = document.getElementById('section-payout-config');
+                section.classList.toggle('guarded', !locked);
             }
         });
     });

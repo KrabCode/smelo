@@ -119,10 +119,10 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .blinds-current {
     font-family: 'DM Sans', sans-serif;
     font-weight: 700;
-    font-size: clamp(6rem, 12vw, 12rem);
     color: var(--accent);
     letter-spacing: 2px;
     margin: 8px 0;
+    white-space: nowrap;
 }
 .blinds-sub {
     font-family: 'Staatliches', sans-serif;
@@ -805,6 +805,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     vertical-align: middle;
 }
 .guarded { opacity: 0.4; pointer-events: none; }
+.guarded > h3 { opacity: 1; pointer-events: auto; }
 
 @media (orientation: portrait) {
     .admin-panel { max-width: 100%; padding: 0 8px 40px; font-size: 16px; }
