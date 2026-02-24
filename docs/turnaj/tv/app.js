@@ -126,8 +126,10 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
 
 
 // Header tap to toggle controls
-document.querySelector('.tracker-header').addEventListener('click', (e) => {
-    if (e.target.closest('.zoom-controls')) return;
+document.getElementById('header-controls').addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+document.querySelector('.tracker-header').addEventListener('click', () => {
     document.querySelector('.tracker-header').classList.toggle('collapsed');
 });
 
