@@ -12,6 +12,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
+    <!-- Password gate -->
+    <div id="password-gate" class="password-gate">
+        <div class="password-box">
+            <h2>Admin přístup</h2>
+            <input type="password" id="gate-password" placeholder="Heslo..." enterkeyhint="go" autocomplete="off">
+            <button class="btn accent big" id="btn-gate-submit">Vstoupit</button>
+            <div class="gate-error" id="gate-error"></div>
+        </div>
+    </div>
+
     <!-- Status bar -->
     <div class="status-bar" id="status-bar">
         <span class="status-dot" id="status-dot"></span>
@@ -67,13 +77,15 @@
 
         <!-- Blind structure preview -->
         <div class="section" id="section-blinds">
-            <h2>Struktura blindů</h2>
+            <h2><button type="button" class="guard-toggle" data-target="section-blinds">&#x1F512;</button> Struktura blindů</h2>
+            <div class="section-body">
             <table class="structure-table">
                 <thead>
                     <tr><th>#</th><th>Čas</th><th>SB</th><th>BB</th><th id="th-ante" style="display:none">Ante</th></tr>
                 </thead>
                 <tbody id="structure-body"></tbody>
             </table>
+            </div>
         </div>
 
         <!-- Config -->

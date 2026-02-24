@@ -1,3 +1,34 @@
+// ─── Password Gate ──────────────────────────────────────────
+const ADMIN_PASS = 'nezdrzuj';
+const gateEl = document.getElementById('password-gate');
+const gateInput = document.getElementById('gate-password');
+const gateError = document.getElementById('gate-error');
+
+function checkGate() {
+    if (sessionStorage.getItem('adminAuth') === '1') {
+        gateEl.classList.add('hidden');
+        document.body.classList.remove('locked');
+        return;
+    }
+    document.body.classList.add('locked');
+}
+
+function submitGate() {
+    if (gateInput.value === ADMIN_PASS) {
+        sessionStorage.setItem('adminAuth', '1');
+        gateEl.classList.add('hidden');
+        document.body.classList.remove('locked');
+    } else {
+        gateError.textContent = 'Špatné heslo';
+        gateInput.value = '';
+        gateInput.focus();
+    }
+}
+
+document.getElementById('btn-gate-submit').addEventListener('click', submitGate);
+gateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGate(); });
+checkGate();
+
 // ─── Firebase Init ──────────────────────────────────────────
 firebase.initializeApp({
     apiKey: "AIzaSyAfQqQYYn8pId99FbqIqX72LH6kOlosunQ",
@@ -492,7 +523,7 @@ function renderPlayerList() {
     const bonusLabel = 'Bonus' + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
 
     let html = '<div class="player-table-wrap"><table class="player-table"><thead><tr>' +
-        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Akt</th><th></th>' +
+        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
         '</tr></thead><tbody>';
 
     sorted.forEach(i => {
