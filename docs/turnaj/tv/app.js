@@ -1041,12 +1041,20 @@ startTimerLoop();
 const levelSound = new Audio('../assets/whistle.wav');
 levelSound.preload = 'auto';
 levelSound.load();
+let isMuted = false;
 function playLevelSound() {
+    if (isMuted) return;
     levelSound.currentTime = 0;
     levelSound.play().catch(() => {});
 }
 
 document.getElementById('btn-test-sound').addEventListener('click', playLevelSound);
+document.getElementById('btn-mute').addEventListener('click', () => {
+    isMuted = !isMuted;
+    const btn = document.getElementById('btn-mute');
+    btn.style.opacity = isMuted ? '0.4' : '';
+    btn.title = isMuted ? 'Zapnout zvuk' : 'Ztlumit';
+});
 
 // ─── Firebase Listener ──────────────────────────────────────
 tournamentRef.on('value', (snap) => {
