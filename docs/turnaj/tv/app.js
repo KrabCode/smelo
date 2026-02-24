@@ -762,16 +762,8 @@ function render() {
 
     fitBlindsText();
 
-    // Next level preview (skip break entries to show next real level)
-    const nextEl = document.getElementById('next-level');
-    const nextReal = struct.slice(lvl + 1).find(s => !s.isBreak);
-    if (nextReal) {
-        nextEl.innerHTML = 'Příští blindy budou: <span>' +
-            nextReal.small.toLocaleString('cs') + ' / ' + nextReal.big.toLocaleString('cs') +
-            '</span>';
-    } else {
-        nextEl.textContent = '';
-    }
+    // Next level preview — hidden from main display, kept in DOM for potential sidebar use
+    document.getElementById('next-level').textContent = '';
 
     // Structure table
     const tbody = document.getElementById('structure-body');
