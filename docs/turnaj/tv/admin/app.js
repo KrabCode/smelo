@@ -1,32 +1,15 @@
 // ─── Password Gate ──────────────────────────────────────────
 const ADMIN_PASS = 'nezdrzuj';
-const gateEl = document.getElementById('password-gate');
-const gateInput = document.getElementById('gate-password');
-const gateError = document.getElementById('gate-error');
 
 function checkGate() {
-    if (sessionStorage.getItem('adminAuth') === '1') {
-        gateEl.classList.add('hidden');
-        document.body.classList.remove('locked');
-        return;
-    }
-    document.body.classList.add('locked');
-}
-
-function submitGate() {
-    if (gateInput.value === ADMIN_PASS) {
+    if (sessionStorage.getItem('adminAuth') === '1') return;
+    const input = prompt('Heslo:');
+    if (input === ADMIN_PASS) {
         sessionStorage.setItem('adminAuth', '1');
-        gateEl.classList.add('hidden');
-        document.body.classList.remove('locked');
     } else {
-        gateError.textContent = 'Špatné heslo';
-        gateInput.value = '';
-        gateInput.focus();
+        document.body.innerHTML = '';
     }
 }
-
-document.getElementById('btn-gate-submit').addEventListener('click', submitGate);
-gateInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGate(); });
 checkGate();
 
 // ─── Firebase Init ──────────────────────────────────────────

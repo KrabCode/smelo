@@ -9,55 +9,6 @@ body {
     -webkit-text-size-adjust: 100%;
     overscroll-behavior: none;
 }
-body.locked { overflow: hidden; }
-
-/* Password gate */
-.password-gate {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-}
-.password-gate.hidden { display: none; }
-.password-box {
-    text-align: center;
-    padding: 32px 24px;
-    max-width: 320px;
-    width: 100%;
-}
-.password-box h2 {
-    font-size: 1.2em;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-}
-.password-box input {
-    width: 100%;
-    background: var(--bg-input);
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-    color: var(--text);
-    padding: 14px;
-    font-size: 1.1em;
-    text-align: center;
-    margin-bottom: 12px;
-}
-.password-box input:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(255,179,0,0.15);
-}
-.password-box .btn { width: 100%; }
-.gate-error {
-    color: var(--red);
-    font-size: 0.9em;
-    margin-top: 10px;
-    min-height: 1.4em;
-}
 
 /* Status bar */
 .status-bar {
