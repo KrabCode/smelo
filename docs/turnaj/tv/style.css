@@ -1,5 +1,16 @@
 body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-size: 1.3em; }
 
+/* Connection dot */
+.conn-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+    transition: background 0.3s;
+}
+.conn-dot.connected { background: var(--green); }
+
 /* Header bar */
 .tracker-header {
     display: flex;

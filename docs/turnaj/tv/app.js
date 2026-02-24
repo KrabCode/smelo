@@ -170,6 +170,12 @@ db.ref('.info/serverTimeOffset').on('value', (snap) => {
 });
 function serverNow() { return Date.now() + serverTimeOffset; }
 
+// Connection status
+db.ref('.info/connected').on('value', (snap) => {
+    const dot = document.getElementById('conn-dot');
+    if (dot) dot.classList.toggle('connected', snap.val() === true);
+});
+
 function assignSeat(player, list) {
     const occupied = new Set();
     const tableCount = {};
