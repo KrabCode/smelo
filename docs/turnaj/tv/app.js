@@ -532,7 +532,7 @@ function render() {
             structBlindCount++;
             levelNum++;
             const isOverridden = !!T.blindOverrides[levelNum];
-            if (isOverridden) classes.push('overridden-level');
+            if (isOverridden && isAdmin) classes.push('overridden-level');
             tr.className = classes.join(' ');
             if (isAdmin) {
                 tr.innerHTML =
