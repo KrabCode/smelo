@@ -63,6 +63,44 @@ tickerBtn.addEventListener('click', () => {
     render();
 });
 
+// ─── Table Definitions ──────────────────────────────────────
+const TABLES = [
+    { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 8 },
+    { id: 2, name: 'Černý', color: '#2c3e50', shape: 'rect', seats: 6 },
+    { id: 3, name: 'Zelený', color: '#27ae60', shape: 'rect', seats: 6 }
+];
+
+function getSeats(table) {
+    const tl = (T.tableLocks || {})[table.id] || {};
+    return tl.seatCount || table.seats;
+}
+
+// Table tab selector for sidebar seating visual
+let selectedTable = parseInt(localStorage.getItem('tvTable')) || 1;
+
+function selectTable(tableId) {
+    selectedTable = tableId;
+    localStorage.setItem('tvTable', tableId);
+    renderTableTabs();
+    renderSeatingView(tableId);
+}
+
+function renderTableTabs() {
+    const container = document.getElementById('table-tabs');
+    if (!container) return;
+    container.innerHTML = TABLES.map(t =>
+        '<div class="table-tab' + (t.id === selectedTable ? ' active' : '') +
+        '" data-table="' + t.id + '" style="background:' + t.color + '" title="' + t.name + '"></div>'
+    ).join('');
+}
+
+document.getElementById('table-tabs').addEventListener('click', (e) => {
+    const tab = e.target.closest('.table-tab');
+    if (tab) selectTable(parseInt(tab.dataset.table));
+});
+
+renderTableTabs();
+
 // Fullscreen toggle
 document.getElementById('btn-fullscreen').addEventListener('click', () => {
     if (document.fullscreenElement) {
@@ -107,6 +145,40 @@ db.ref('.info/serverTimeOffset').on('value', (snap) => {
 });
 function serverNow() { return Date.now() + serverTimeOffset; }
 
+function assignSeat(player, list) {
+    const occupied = new Set();
+    const tableCount = {};
+    list.forEach(p => {
+        if (p.table && p.seat) {
+            occupied.add(p.table + '-' + p.seat);
+            tableCount[p.table] = (tableCount[p.table] || 0) + 1;
+        }
+    });
+    const locks = T.tableLocks || {};
+    const freeByTable = {};
+    TABLES.forEach(t => {
+        const tl = locks[t.id] || {};
+        if (tl.locked) return;
+        const lockedSeats = tl.lockedSeats || [];
+        freeByTable[t.id] = [];
+        for (let s = 1; s <= getSeats(t); s++) {
+            if (lockedSeats.includes(s)) continue;
+            if (!occupied.has(t.id + '-' + s)) freeByTable[t.id].push(s);
+        }
+        if (freeByTable[t.id].length === 0) delete freeByTable[t.id];
+    });
+    const tableIds = Object.keys(freeByTable).map(Number);
+    if (tableIds.length === 0) return;
+    // Pick the table with fewest players (random tiebreak)
+    const minCount = Math.min(...tableIds.map(id => tableCount[id] || 0));
+    const candidates = tableIds.filter(id => (tableCount[id] || 0) === minCount);
+    const tableId = candidates[Math.floor(Math.random() * candidates.length)];
+    const seats = freeByTable[tableId];
+    const seat = seats[Math.floor(Math.random() * seats.length)];
+    player.table = tableId;
+    player.seat = seat;
+}
+
 // ─── Default data ───────────────────────────────────────────
 const DEFAULTS = {
     config: {
@@ -138,6 +210,7 @@ const DEFAULTS = {
     },
     blindStructure: [],
     blindOverrides: {},
+    tableLocks: {},
     breakMessage: '',
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
@@ -150,6 +223,7 @@ const DEFAULTS = {
 let T = JSON.parse(JSON.stringify(DEFAULTS));
 T.notes = DEFAULTS.notes.slice();
 let renderNoteInputs = null;
+let renderTableLocksAdmin = null;
 
 // ─── Blind Calculation ──────────────────────────────────────
 function roundToChip(val, chip) {
@@ -380,6 +454,90 @@ function recalcAndSync() {
     });
 }
 
+// ─── Seating View Rendering ─────────────────────────────────
+// Seat positions as % of container (left, top) for each shape
+const SEAT_POSITIONS = {
+    oval: [
+        // 8 seats clockwise: bottom-left, bottom-right, right-bottom, right-top, top-right, top-left, left-top, left-bottom
+        { left: 35, top: 95 },  // 1
+        { left: 65, top: 95 },  // 2
+        { left: 92, top: 72 },  // 3
+        { left: 92, top: 28 },  // 4
+        { left: 65, top: 5 },   // 5
+        { left: 35, top: 5 },   // 6
+        { left: 8,  top: 28 },  // 7
+        { left: 8,  top: 72 }   // 8
+    ],
+    rect: [
+        // 8 seats clockwise, 2 per side
+        { left: 35, top: 95 },  // 1  bottom-left
+        { left: 65, top: 95 },  // 2  bottom-right
+        { left: 95, top: 70 },  // 3  right-bottom
+        { left: 95, top: 30 },  // 4  right-top
+        { left: 65, top: 5 },   // 5  top-right
+        { left: 35, top: 5 },   // 6  top-left
+        { left: 5,  top: 30 },  // 7  left-top
+        { left: 5,  top: 70 }   // 8  left-bottom
+    ]
+};
+
+function buildTableVisualHTML(table, opts) {
+    opts = opts || {};
+    const list = T.players.list || [];
+    const positions = SEAT_POSITIONS[table.shape];
+    const seatMap = {};
+    list.forEach(p => {
+        if (p.table === table.id && p.seat) seatMap[p.seat] = p.name;
+    });
+    const locks = T.tableLocks || {};
+    const tl = locks[table.id] || {};
+    const lockedSeats = tl.lockedSeats || [];
+    const walls = tl.walls || [];
+    const rot = tl.rotation || 0;
+    const counterRot = rot ? 'rotate(' + (-rot) + 'deg)' : '';
+
+    let html = '<div class="seating-table-surface ' + table.shape + '" style="border-color:' + table.color + ';background:' + table.color + '22"></div>';
+
+    // Wall indicators (clickable in admin)
+    ['top', 'bottom', 'left', 'right'].forEach(side => {
+        const active = walls.includes(side);
+        if (opts.wallToggles) {
+            html += '<div class="seating-wall seating-wall-' + side + ' wall-clickable' + (active ? ' active' : '') + '" data-table="' + table.id + '" data-wall="' + side + '"></div>';
+        } else if (active) {
+            html += '<div class="seating-wall seating-wall-' + side + '"></div>';
+        }
+    });
+
+    for (let s = 1; s <= getSeats(table); s++) {
+        const pos = positions[s - 1];
+        const player = seatMap[s];
+        const seatLocked = lockedSeats.includes(s);
+        const cls = seatLocked ? 'locked' : (player ? 'occupied' : 'empty');
+        const seatStyle = 'left:' + pos.left + '%;top:' + pos.top + '%' + (counterRot ? ';transform:translate(-50%,-50%) ' + counterRot : '');
+        html += '<div class="seating-seat ' + cls + '" style="' + seatStyle + '">' +
+            '<div class="seating-seat-num">' + s + '</div>' +
+            '<div class="seating-seat-name">' + (seatLocked ? '✗' : (player || '—')) + '</div>' +
+            '</div>';
+    }
+    return html;
+}
+
+function renderSeatingView(tableId) {
+    const table = TABLES.find(t => t.id === tableId);
+    if (!table) return;
+    const visual = document.getElementById('seating-table-visual');
+    const locks = T.tableLocks || {};
+    const tl = locks[table.id] || {};
+    const rot = tl.rotation || 0;
+    visual.style.transform = rot ? 'rotate(' + rot + 'deg)' : '';
+    if (tl.locked) {
+        visual.innerHTML = '<div class="seating-table-surface ' + table.shape + '" style="border-color:' + table.color + ';background:' + table.color + '22;opacity:0.4"></div>' +
+            '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:0.8em;z-index:1">Zamčený</div>';
+        return;
+    }
+    visual.innerHTML = buildTableVisualHTML(table);
+}
+
 // ─── Rendering ──────────────────────────────────────────────
 function formatTime(ms) {
     if (ms <= 0) return '00:00';
@@ -468,6 +626,9 @@ function render() {
     } else {
         winnerBanner.style.display = 'none';
     }
+
+    // Update seating in sidebar
+    renderSeatingView(selectedTable);
 
     // Current blinds (derived from startedAt)
     const struct = blindStructure || [];
@@ -692,6 +853,9 @@ function render() {
         if (!noteHasFocus && renderNoteInputs) {
             renderNoteInputs();
         }
+
+        // Sync table locks UI
+        if (renderTableLocksAdmin) renderTableLocksAdmin();
     }
 }
 
@@ -708,13 +872,46 @@ function renderPlayerList() {
     const buyLabel = 'Buys <span class="th-hint">(' + (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs') + ')</span>';
     const addonLabel = 'Add-on' + (c.addonChips ? ' <span class="th-hint">(' + (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') + ')</span>' : '');
     const bonusLabel = 'Bonus' + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
+    const tableColor = {};
+    TABLES.forEach(t => { tableColor[t.id] = t.color; });
+    // Build occupied set (exclude current player when building their options)
+    const occupied = new Set();
+    list.forEach(p => { if (p.table && p.seat) occupied.add(p.table + '-' + p.seat); });
+    const locks = T.tableLocks || {};
+    // Sort indices by table then seat (unassigned last)
+    const sorted = list.map((p, i) => i).sort((a, b) => {
+        const pa = list[a], pb = list[b];
+        const ta = pa.table || 999, tb = pb.table || 999;
+        if (ta !== tb) return ta - tb;
+        const sa = pa.seat || 999, sb = pb.seat || 999;
+        return sa - sb;
+    });
     let html = '<table class="player-table"><thead><tr>' +
-        '<th>Hráč</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
+        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
         '</tr></thead><tbody>';
-    list.forEach((p, i) => {
+    sorted.forEach(i => {
+        const p = list[i];
         const nameClass = 'player-name' + (p.active ? '' : ' inactive');
+        const curVal = p.table && p.seat ? p.table + '-' + p.seat : '';
+        let seatSelect = '<select class="player-seat-select" data-idx="' + i + '">';
+        seatSelect += '<option value=""' + (!curVal ? ' selected' : '') + '>—</option>';
+        TABLES.forEach(t => {
+            const tl = locks[t.id] || {};
+            if (tl.locked) return;
+            const lockedSeats = tl.lockedSeats || [];
+            for (let s = 1; s <= getSeats(t); s++) {
+                if (lockedSeats.includes(s)) continue;
+                const val = t.id + '-' + s;
+                const isTaken = occupied.has(val) && val !== curVal;
+                if (isTaken) continue;
+                const sel = val === curVal ? ' selected' : '';
+                seatSelect += '<option value="' + val + '"' + sel + ' style="color:' + t.color + '">' + t.name + ' ' + s + '</option>';
+            }
+        });
+        seatSelect += '</select>';
         html += '<tr>' +
             '<td class="' + nameClass + '">' + (p.name || '?') + '</td>' +
+            '<td style="font-size:0.85em">' + seatSelect + '</td>' +
             '<td><button class="player-buys-btn" data-idx="' + i + '" data-dir="-">&minus;</button> ' + p.buys + ' <button class="player-buys-btn" data-idx="' + i + '" data-dir="+">+</button></td>' +
             '<td><button class="player-toggle' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon">' + (p.addon ? '✓' : '✗') + '</button></td>' +
             '<td><button class="player-toggle' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus">' + (p.bonus ? '✓' : '✗') + '</button></td>' +
@@ -843,6 +1040,7 @@ tournamentRef.on('value', (snap) => {
     }
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
+    T.tableLocks = data.tableLocks || {};
     T.breakMessage = data.breakMessage || '';
     T.notes = data.notes || DEFAULTS.notes;
 
@@ -907,7 +1105,9 @@ if (isAdmin) {
         const name = (input.value || '').trim();
         if (!name) { input.focus(); return; }
         const list = T.players.list || [];
-        list.push({ name: name, buys: 1, addon: false, bonus: false, active: true });
+        const player = { name: name, buys: 1, addon: false, bonus: false, active: true };
+        assignSeat(player, list);
+        list.push(player);
         T.players.list = list;
         input.value = '';
         savePlayerList();
@@ -918,16 +1118,45 @@ if (isAdmin) {
         if (e.key === 'Enter') document.getElementById('btn-add-player').click();
     });
 
-    // Add 12 test players
+    // Add 8 test players
     document.getElementById('btn-add-test-players').addEventListener('click', () => {
-        if (!confirm('Přidat 12 testovacích hráčů?')) return;
+        if (!confirm('Přidat 8 testovacích hráčů?')) return;
         const names = ['Adam', 'Bára', 'Cyril', 'Dana', 'Emil', 'Fanda',
-            'Gita', 'Honza', 'Iva', 'Jirka', 'Karel', 'Lucie'];
+            'Gita', 'Honza'];
         const list = T.players.list || [];
         names.forEach(name => {
-            list.push({ name, buys: 1, addon: false, bonus: false, active: true });
+            const player = { name, buys: 1, addon: false, bonus: false, active: true };
+            assignSeat(player, list);
+            list.push(player);
         });
         T.players.list = list;
+        savePlayerList();
+        render();
+    });
+
+    // Remove all players
+    document.getElementById('btn-remove-all-players').addEventListener('click', () => {
+        if (!confirm('Opravdu smazat všechny hráče?')) return;
+        T.players.list = [];
+        savePlayerList();
+        render();
+    });
+
+    // Manual seat assignment
+    document.getElementById('players-list').addEventListener('change', (e) => {
+        if (!e.target.classList.contains('player-seat-select')) return;
+        const idx = parseInt(e.target.dataset.idx);
+        const list = T.players.list || [];
+        if (!list[idx]) return;
+        const val = e.target.value;
+        if (val) {
+            const parts = val.split('-');
+            list[idx].table = parseInt(parts[0]);
+            list[idx].seat = parseInt(parts[1]);
+        } else {
+            delete list[idx].table;
+            delete list[idx].seat;
+        }
         savePlayerList();
         render();
     });
@@ -959,6 +1188,10 @@ if (isAdmin) {
             const field = btn.dataset.field;
             if (list[idx] && field) {
                 list[idx][field] = !list[idx][field];
+                if (field === 'active' && !list[idx].active) {
+                    delete list[idx].table;
+                    delete list[idx].seat;
+                }
                 savePlayerList();
                 render();
             }
@@ -1179,5 +1412,150 @@ if (isAdmin) {
         const val = (document.getElementById('cfg-break-message').value || '').trim();
         const p = tournamentRef.child('breakMessage').set(val);
         showSaveStatus(document.getElementById('break-save-status'), p);
+    });
+
+    // Table locks UI
+    function renderTableLocks() {
+        const container = document.getElementById('table-locks-ui');
+        if (!container) return;
+        const locks = T.tableLocks || {};
+        const list = T.players.list || [];
+        const occupied = new Set();
+        list.forEach(p => { if (p.table && p.seat) occupied.add(p.table + '-' + p.seat); });
+        let html = '';
+        TABLES.forEach(t => {
+            const tl = locks[t.id] || {};
+            const isLocked = !!tl.locked;
+            const lockedSeats = tl.lockedSeats || [];
+            let freeCount = 0;
+            if (!isLocked) {
+                for (let s = 1; s <= getSeats(t); s++) {
+                    if (!lockedSeats.includes(s) && !occupied.has(t.id + '-' + s)) freeCount++;
+                }
+            }
+            const freeLabel = isLocked ? '' : ' <span style="color:var(--text-muted);font-weight:normal;font-size:0.85em">(' + freeCount + ' volných míst)</span>';
+            html += '<div class="table-lock-row" style="display:flex;align-items:center;gap:16px">' +
+                '<div style="flex:1">' +
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+                '<span style="color:' + t.color + ';font-weight:bold">' + t.name + freeLabel + '</span>' +
+                '<button class="btn table-lock-toggle' + (isLocked ? ' danger' : '') + '" data-table="' + t.id + '" style="flex:0 0 auto;min-width:auto;padding:4px 10px;font-size:0.8em">' +
+                (isLocked ? 'Zamčený' : 'Otevřený') + '</button>' +
+                '<button class="btn table-rotate" data-table="' + t.id + '" style="flex:0 0 auto;min-width:auto;padding:4px 10px;font-size:0.8em" title="Otočit o 90°">↻</button>' +
+                '</div>';
+            const seatCount = getSeats(t);
+            html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">' +
+                '<label style="font-size:0.8em;color:var(--text-muted);white-space:nowrap">Míst: ' + seatCount + '</label>' +
+                '<input type="range" class="table-seat-count" data-table="' + t.id + '" min="2" max="' + (t.shape === 'oval' ? 10 : 8) + '" value="' + seatCount + '" style="flex:1;max-width:120px">' +
+                '</div>';
+            if (!isLocked) {
+                html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
+                for (let s = 1; s <= getSeats(t); s++) {
+                    const seatLocked = lockedSeats.includes(s);
+                    html += '<button class="btn seat-lock-toggle' + (seatLocked ? ' danger' : '') + '" data-table="' + t.id + '" data-seat="' + s + '" style="min-width:auto;padding:4px 8px;font-size:0.8em;flex:0 0 auto">' +
+                        s + (seatLocked ? ' ✗' : '') + '</button>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+            if (!isLocked) {
+                const rot = tl.rotation || 0;
+                html += '<div style="flex:0 0 auto;display:flex;align-items:center;justify-content:center">' +
+                    '<div class="seating-table-visual" style="width:200px;transform:rotate(' + rot + 'deg)">' + buildTableVisualHTML(t, { wallToggles: true }) + '</div>' +
+                    '</div>';
+            }
+            html += '</div>';
+        });
+        container.innerHTML = html;
+    }
+
+    // Initial render + expose for render()
+    renderTableLocksAdmin = renderTableLocks;
+    renderTableLocks();
+
+    document.getElementById('table-locks-ui').addEventListener('click', (e) => {
+        const btn = e.target;
+        if (btn.classList.contains('table-lock-toggle')) {
+            const tableId = parseInt(btn.dataset.table);
+            const locks = T.tableLocks || {};
+            const tl = locks[tableId] || {};
+            tl.locked = !tl.locked;
+            locks[tableId] = tl;
+            T.tableLocks = locks;
+            tournamentRef.child('tableLocks').set(locks);
+            renderTableLocks();
+            return;
+        }
+        if (btn.classList.contains('seat-lock-toggle')) {
+            const tableId = parseInt(btn.dataset.table);
+            const seat = parseInt(btn.dataset.seat);
+            const locks = T.tableLocks || {};
+            const tl = locks[tableId] || {};
+            const lockedSeats = tl.lockedSeats || [];
+            const idx = lockedSeats.indexOf(seat);
+            if (idx >= 0) lockedSeats.splice(idx, 1);
+            else lockedSeats.push(seat);
+            tl.lockedSeats = lockedSeats;
+            locks[tableId] = tl;
+            T.tableLocks = locks;
+            tournamentRef.child('tableLocks').set(locks);
+            renderTableLocks();
+            return;
+        }
+        if (btn.classList.contains('table-rotate')) {
+            const tableId = parseInt(btn.dataset.table);
+            const locks = T.tableLocks || {};
+            const tl = locks[tableId] || {};
+            tl.rotation = ((tl.rotation || 0) + 90) % 360;
+            locks[tableId] = tl;
+            T.tableLocks = locks;
+            tournamentRef.child('tableLocks').set(locks);
+            renderTableLocks();
+            render();
+            return;
+        }
+        if (btn.classList.contains('wall-clickable')) {
+            const tableId = parseInt(btn.dataset.table);
+            const side = btn.dataset.wall;
+            const locks = T.tableLocks || {};
+            const tl = locks[tableId] || {};
+            const walls = tl.walls || [];
+            const idx = walls.indexOf(side);
+            if (idx >= 0) walls.splice(idx, 1);
+            else walls.push(side);
+            tl.walls = walls;
+            locks[tableId] = tl;
+            T.tableLocks = locks;
+            tournamentRef.child('tableLocks').set(locks);
+            renderTableLocks();
+            return;
+        }
+    });
+
+    document.getElementById('table-locks-ui').addEventListener('input', (e) => {
+        if (e.target.classList.contains('table-seat-count')) {
+            const tableId = parseInt(e.target.dataset.table);
+            const val = parseInt(e.target.value);
+            const locks = T.tableLocks || {};
+            const tl = locks[tableId] || {};
+            tl.seatCount = val;
+            locks[tableId] = tl;
+            T.tableLocks = locks;
+            tournamentRef.child('tableLocks').set(locks);
+            renderTableLocks();
+            render();
+        }
+    });
+
+    // Reshuffle all seats
+    document.getElementById('btn-reshuffle-seats').addEventListener('click', () => {
+        if (!confirm('Přepočítat zasedací pořádek pro všechny hráče?')) return;
+        const list = T.players.list || [];
+        list.forEach(p => { delete p.table; delete p.seat; });
+        list.forEach(p => {
+            if (p.active) assignSeat(p, list);
+        });
+        T.players.list = list;
+        savePlayerList();
+        render();
     });
 }

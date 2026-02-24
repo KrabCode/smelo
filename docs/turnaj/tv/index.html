@@ -22,6 +22,7 @@
         <div class="stat-item">Průměrný stack: <span id="hd-avg">0</span></div>
         <div class="stat-item" id="hd-start-item" style="display:none">Start: <span id="hd-start">–</span></div>
         <div class="zoom-controls">
+            <div class="table-tabs" id="table-tabs"></div>
             <button id="btn-toggle-admin" title="Admin režim">⚙</button>
             <button id="zoom-out">−</button>
             <button id="zoom-in">+</button>
@@ -61,7 +62,7 @@
             <div id="winner-list"></div>
         </div>
 
-        <!-- Right sidebar: Payout + player count -->
+        <!-- Right sidebar: Payout + player count + seating -->
         <div class="sidebar sidebar-right">
             <div class="payout-section" id="payout-section">
                 <table class="payout-table">
@@ -73,6 +74,9 @@
                 <span class="players-remaining-label" id="remaining-verb">zbývá</span>
                 <span class="players-remaining-count" id="remaining-count">0</span>
                 <span class="players-remaining-label" id="remaining-noun">hráčů</span>
+            </div>
+            <div class="seating-section">
+                <div class="seating-table-visual" id="seating-table-visual"></div>
             </div>
         </div>
     </div><!-- .main-content -->
@@ -153,10 +157,21 @@
                 <div class="player-add-row">
                     <input type="text" id="new-player-name" placeholder="Jméno hráče...">
                     <button class="btn" id="btn-add-player">+ Hráč</button>
-                    <button class="btn" id="btn-add-test-players">+ Test (12)</button>
+                    <button class="btn" id="btn-add-test-players">+ Test (8)</button>
+                    <button class="btn danger" id="btn-remove-all-players">Smazat vše</button>
                 </div>
                 <div id="players-list"></div>
                 <div id="player-summary" class="player-summary"></div>
+            </div>
+
+            <!-- Table locks -->
+            <div class="admin-section" id="section-table-locks">
+                <h3>Zasedací pořádek</h3>
+                <div id="table-locks-ui"></div>
+                <div class="btn-row" style="margin-top:12px">
+                    <button class="btn" id="btn-reshuffle-seats">Přepočítat</button>
+                </div>
+                <p class="config-hint" style="margin-top:12px">Když jeden stůl má o 2 hráče méně než jiný, zvažme přemístit nejchudšího hráče z plnějšího stolu k prázdnějšímu — zůstane tak na všech stolech relativně stejně žetonů.</p>
             </div>
 
             <!-- Winners -->
