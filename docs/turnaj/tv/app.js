@@ -26,8 +26,14 @@ function applyAdminMode() {
     document.getElementById('admin-panel').style.display = isAdmin ? '' : 'none';
 }
 applyAdminMode();
-document.querySelector('#admin-panel details').addEventListener('toggle', (e) => {
+const adminDetails = document.querySelector('#admin-panel details');
+if (localStorage.getItem('adminOpen') === '1') {
+    adminDetails.open = true;
+    document.getElementById('tracker-footer').style.display = 'none';
+}
+adminDetails.addEventListener('toggle', (e) => {
     document.getElementById('tracker-footer').style.display = e.target.open ? 'none' : '';
+    localStorage.setItem('adminOpen', e.target.open ? '1' : '0');
 });
 
 if (location.search.includes('wide')) document.body.classList.add('wide');
