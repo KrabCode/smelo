@@ -8,7 +8,12 @@ firebase.initializeApp({
 
 const db = firebase.database();
 const tournamentRef = db.ref('tournament');
-let isAdmin = location.search.includes('admin');
+const ADMIN_PASSWORD = 'nezdrzuj';
+let isAdmin = false;
+if (location.search.includes('admin')) {
+    const pwd = prompt('Heslo pro admin:');
+    isAdmin = pwd === ADMIN_PASSWORD;
+}
 
 function applyAdminMode() {
     document.getElementById('admin-panel').style.display = isAdmin ? '' : 'none';
@@ -29,6 +34,15 @@ document.getElementById('zoom-in').addEventListener('click', () => {
 document.getElementById('zoom-out').addEventListener('click', () => {
     zoomLevel = Math.max(50, zoomLevel - 10);
     document.body.style.zoom = zoomLevel + '%';
+});
+
+// Fullscreen toggle
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+    } else {
+        document.documentElement.requestFullscreen().catch(() => {});
+    }
 });
 
 // Wide toggle
