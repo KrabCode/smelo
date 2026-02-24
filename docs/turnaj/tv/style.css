@@ -1,4 +1,4 @@
-body { min-height: 100vh; padding-bottom: 48px; }
+body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
 
 /* Header bar */
 .tracker-header {
@@ -6,8 +6,8 @@ body { min-height: 100vh; padding-bottom: 48px; }
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px 24px;
-    padding: 14px 24px;
+    gap: 16px 32px;
+    padding: 18px 32px;
     border-bottom: 1px solid var(--border);
     background: var(--bg-card);
     position: sticky;
@@ -23,7 +23,7 @@ body { min-height: 100vh; padding-bottom: 48px; }
 .tracker-header .stat-item .muted { color: var(--text-secondary); font-weight: normal; }
 .tracker-footer {
     font-family: 'Staatliches', sans-serif;
-    font-size: 0.9em;
+    font-size: 1em;
     letter-spacing: 2px;
     color: var(--accent);
     background: var(--bg-card);
@@ -73,11 +73,11 @@ body { min-height: 100vh; padding-bottom: 48px; }
 .zoom-controls button:hover { border-color: var(--accent); color: var(--text); }
 
 /* Main display */
-.display { text-align: center; padding: 24px 20px 12px; }
+.display { text-align: center; padding: 40px 32px 16px; flex: 1; }
 
 .timer {
     font-family: 'Staatliches', sans-serif;
-    font-size: clamp(4rem, 15vw, 10rem);
+    font-size: clamp(6rem, 12vw, 12rem);
     letter-spacing: 0.05em;
     color: var(--text);
     line-height: 1;
@@ -90,7 +90,7 @@ body { min-height: 100vh; padding-bottom: 48px; }
     width: 100%;
     max-width: 600px;
     margin: 0 auto 20px;
-    height: 6px;
+    height: 8px;
     background: var(--border);
     border-radius: 3px;
     overflow: hidden;
@@ -104,7 +104,7 @@ body { min-height: 100vh; padding-bottom: 48px; }
 
 /* Blinds display */
 .blinds-label {
-    font-size: 0.85em;
+    font-size: 1em;
     letter-spacing: 2px;
     color: var(--text-muted);
     margin-top: 8px;
@@ -112,35 +112,35 @@ body { min-height: 100vh; padding-bottom: 48px; }
 .blinds-current {
     font-family: 'DM Sans', sans-serif;
     font-weight: 700;
-    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-size: clamp(3rem, 7vw, 6rem);
     color: var(--accent);
     letter-spacing: 2px;
     margin: 8px 0;
 }
 .blinds-sub {
     font-family: 'Staatliches', sans-serif;
-    font-size: clamp(1.2rem, 4vw, 2rem);
+    font-size: clamp(1.4rem, 3vw, 2.4rem);
     color: var(--text-muted);
     letter-spacing: 2px;
 }
 
 .next-level {
     margin-top: 16px;
-    font-size: 1em;
+    font-size: 1.2em;
     color: var(--text-muted);
 }
 .next-level span { color: var(--text-secondary); }
 
 /* Blind structure table */
 .structure-wrap {
-    max-width: 600px;
-    margin: 24px auto;
-    padding: 0 20px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
 }
 .structure-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 .structure-table th {
     color: var(--text-muted);
@@ -396,11 +396,11 @@ body { min-height: 100vh; padding-bottom: 48px; }
 /* Add-on banner */
 .addon-banner {
     font-family: 'Staatliches', sans-serif;
-    font-size: clamp(1.4rem, 4vw, 2.4rem);
+    font-size: clamp(1.6rem, 3vw, 2.8rem);
     letter-spacing: 2px;
     color: #000;
     background: var(--green);
-    padding: 12px 32px;
+    padding: 16px 48px;
     border-radius: 10px;
     margin: 16px auto 0;
     display: inline-block;
@@ -410,34 +410,29 @@ body { min-height: 100vh; padding-bottom: 48px; }
     0%, 100% { opacity: 1; }
     50% { opacity: 0.75; }
 }
-body.wide .addon-banner {
-    font-size: clamp(1.6rem, 3vw, 2.8rem);
-    padding: 16px 48px;
-}
 
 /* Break message */
 .break-message {
     font-family: 'Staatliches', sans-serif;
-    font-size: clamp(1.6rem, 5vw, 3rem);
+    font-size: clamp(2rem, 4vw, 3.5rem);
     letter-spacing: 2px;
     color: var(--accent);
     margin-top: 20px;
     text-align: center;
 }
-body.wide .break-message {
-    font-size: clamp(2rem, 4vw, 3.5rem);
-}
 
 /* Payout section */
 .payout-section {
     min-width: 360px;
-    margin: 8px 0;
-    padding: 0 20px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
 }
 .payout-table {
     width: 100%;
+    max-width: 100%;
     border-collapse: collapse;
-    font-size: 0.9em;
+    font-size: 1em;
 }
 .payout-table th {
     color: var(--text-muted);
@@ -509,52 +504,26 @@ body.wide .break-message {
     font-size: clamp(1.2rem, 3vw, 2rem);
 }
 
-/* Non-wide: stack vertically with display first, then structure, then payout */
-.main-content { display: flex; flex-direction: column; }
-.sidebar-left { order: 2; }
-.sidebar-right { order: 3; display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
-.sidebar-right .players-remaining { order: -1; }
-.display { order: 1; }
-.winner-banner { order: 1; }
-
-/* Tablet mode (?wide) — three-column layout for 1920×1200 */
-body.wide { font-size: 1.3em; }
-body.wide .tracker-header { padding: 18px 32px; gap: 16px 32px; }
-body.wide .tracker-footer { font-size: 1em; }
-body.wide .main-content {
+/* Three-column layout */
+.main-content {
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     max-width: 1920px;
     margin: 0 auto;
 }
-body.wide .sidebar-left { order: 0; }
-body.wide .display { order: 1; }
-body.wide .winner-banner { order: 1; }
-body.wide .sidebar-right { order: 2; }
-body.wide .display {
-    flex: 1;
-    padding: 40px 32px 16px;
-}
-body.wide .sidebar-left,
-body.wide .sidebar-right {
+.sidebar-left { order: 0; }
+.sidebar-right { order: 2; }
+.display { order: 1; }
+.winner-banner { order: 1; max-width: 100%; }
+.sidebar-left,
+.sidebar-right {
     display: block;
     flex-shrink: 0;
     padding: 16px 24px;
 }
-body.wide .sidebar-left { width: 440px; }
-body.wide .sidebar-right { width: 440px; padding-right: 48px; }
-body.wide .timer { font-size: clamp(6rem, 12vw, 12rem); }
-body.wide .blinds-current { font-size: clamp(3rem, 7vw, 6rem); }
-body.wide .blinds-label { font-size: 1em; }
-body.wide .blinds-sub { font-size: clamp(1.4rem, 3vw, 2.4rem); }
-body.wide .next-level { font-size: 1.2em; }
-body.wide .progress-wrap { max-width: 600px; height: 8px; }
-body.wide .structure-wrap { max-width: 100%; margin: 0; padding: 0; }
-body.wide .structure-table { font-size: 1em; }
-body.wide .payout-section { max-width: 100%; margin: 0; padding: 0; }
-body.wide .payout-table { max-width: 100%; font-size: 1em; }
-body.wide .winner-banner { max-width: 100%; }
+.sidebar-left { width: 440px; }
+.sidebar-right { width: 440px; padding-right: 48px; }
 
 /* Player list (admin) */
 .player-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
