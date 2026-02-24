@@ -75,14 +75,6 @@
         /* Main display */
         .display { text-align: center; padding: 24px 20px 12px; }
 
-        .level-label {
-            font-family: 'Staatliches', sans-serif;
-            font-size: 1.4em;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-
         .timer {
             font-family: 'Staatliches', sans-serif;
             font-size: clamp(4rem, 15vw, 10rem);
@@ -181,17 +173,6 @@
             color: var(--green);
             background: rgba(74, 222, 128, 0.08);
         }
-
-        /* Status banner */
-        .status-banner {
-            text-align: center;
-            padding: 12px;
-            font-family: 'Staatliches', sans-serif;
-            font-size: 1.3em;
-            letter-spacing: 3px;
-            color: var(--text-muted);
-        }
-        .status-banner.running { display: none; }
 
         /* Admin panel */
         .admin-panel {
@@ -306,9 +287,6 @@
         .blinds-current.on-break { color: var(--green); }
         .progress-bar.on-break { background: var(--green); }
 
-        /* Waiting state */
-        .display.waiting .timer { color: var(--text-muted); font-size: clamp(2rem, 8vw, 4rem); }
-
         /* Payout section */
         .payout-section {
             max-width: 600px;
@@ -419,8 +397,6 @@
     <div class="main-content">
         <!-- Display -->
         <div class="display" id="display">
-            <div class="status-banner" id="status-banner" style="display:none">ČEKÁ SE NA START</div>
-            <div class="level-label" id="level-label" style="display:none">LEVEL 1</div>
             <div class="timer" id="timer">00:00</div>
             <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
             <div class="blinds-label" id="blinds-label">BLINDY</div>
@@ -736,18 +712,19 @@
     // ─── Derived State ─────────────────────────────────────────
     function getCurrentLevel(startedAt, blindStructure) {
         const struct = blindStructure || [];
-        if (!struct.length) return { levelIndex: 0, remaining: 0, finished: true };
+        if (!struct.length) return { levelIndex: 0, remaining: 0 };
 
         const elapsed = serverNow() - startedAt;
         let cumulative = 0;
         for (let i = 0; i < struct.length; i++) {
             const levelMs = struct[i].duration * 60000;
             if (elapsed < cumulative + levelMs) {
-                return { levelIndex: i, remaining: cumulative + levelMs - elapsed, finished: false };
+                return { levelIndex: i, remaining: cumulative + levelMs - elapsed };
             }
             cumulative += levelMs;
         }
-        return { levelIndex: struct.length - 1, remaining: 0, finished: true };
+        // Past all levels — stay on last level at 00:00
+        return { levelIndex: struct.length - 1, remaining: 0 };
     }
 
     // ─── Payout Calculation ──────────────────────────────────────
@@ -887,40 +864,17 @@
             winnerBanner.style.display = 'none';
         }
 
-        // Status banner
-        const banner = document.getElementById('status-banner');
-        if (state.status === 'waiting') {
-            banner.textContent = 'ČEKÁ SE NA START';
-            banner.className = 'status-banner';
-        } else if (state.status === 'finished') {
-            banner.textContent = 'TURNAJ UKONČEN';
-            banner.className = 'status-banner';
-        } else {
-            banner.className = 'status-banner running';
-        }
-
         // Current blinds (derived from startedAt)
         const struct = blindStructure || [];
         const derived = (state.status === 'running' && state.startedAt)
             ? getCurrentLevel(state.startedAt, struct)
-            : { levelIndex: 0, remaining: 0, finished: false };
+            : { levelIndex: 0, remaining: 0 };
         const lvl = derived.levelIndex;
 
         const curEntry = struct[lvl];
         const onBreak = curEntry && curEntry.isBreak;
         const blindsCurEl = document.getElementById('blinds-current');
         const progressBarEl = document.getElementById('progress-bar');
-
-        // Level label
-        if (!struct.length) {
-            document.getElementById('level-label').textContent = '';
-        } else if (onBreak) {
-            document.getElementById('level-label').textContent = 'PŘESTÁVKA';
-        } else {
-            // Display level number excluding break entries from the count
-            const displayNum = struct.slice(0, lvl + 1).filter(s => !s.isBreak).length;
-            document.getElementById('level-label').textContent = 'LEVEL ' + displayNum;
-        }
 
         // Blinds / break display
         const blindsLabelEl = document.getElementById('blinds-label');
@@ -1071,15 +1025,6 @@
         if (state.status === 'running' && state.startedAt) {
             const derived = getCurrentLevel(state.startedAt, struct);
 
-            if (derived.finished) {
-                // Past all levels — mark as finished (admin writes to Firebase)
-                if (isAdmin) tournamentRef.child('state/status').set('finished');
-                timerEl.textContent = '00:00';
-                timerEl.classList.remove('warning');
-                progressEl.style.width = '100%';
-                return;
-            }
-
             timerEl.textContent = formatTime(derived.remaining);
             timerEl.classList.toggle('warning', derived.remaining <= 30000 && derived.remaining > 0);
 
@@ -1107,23 +1052,10 @@
     startTimerLoop();
 
     // ─── Level Change Sound ─────────────────────────────────────
+    const levelSound = new Audio('../assets/whistle.wav');
     function playLevelSound() {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const notes = [660, 880, 1100];
-            notes.forEach((freq, i) => {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = freq;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + i * 0.15 + 0.3);
-                osc.start(ctx.currentTime + i * 0.15);
-                osc.stop(ctx.currentTime + i * 0.15 + 0.3);
-            });
-        } catch (e) {}
+        levelSound.currentTime = 0;
+        levelSound.play().catch(() => {});
     }
 
     document.getElementById('btn-test-sound').addEventListener('click', playLevelSound);
