@@ -931,12 +931,9 @@ function renderPlayerList() {
     const occupied = new Set();
     list.forEach(p => { if (p.table && p.seat) occupied.add(p.table + '-' + p.seat); });
     const locks = T.tableLocks || {};
-    // Sort indices: active players by table/seat, inactive stay at end in original order
+    // Sort indices by table then seat (unassigned last)
     const sorted = list.map((p, i) => i).sort((a, b) => {
         const pa = list[a], pb = list[b];
-        if (pa.active && !pb.active) return -1;
-        if (!pa.active && pb.active) return 1;
-        if (!pa.active && !pb.active) return a - b;
         const ta = pa.table || 999, tb = pb.table || 999;
         if (ta !== tb) return ta - tb;
         const sa = pa.seat || 999, sb = pb.seat || 999;
@@ -1153,6 +1150,21 @@ if (isAdmin) {
 
     document.getElementById('section-config').addEventListener('change', saveConfig);
 
+    // Guard toggles
+    document.querySelectorAll('.guard-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const locked = btn.textContent.trim() === '\u{1F512}';
+            btn.textContent = locked ? '\u{1F513}' : '\u{1F512}';
+            if (btn.id === 'guard-blind-curve') {
+                const slider = document.getElementById('cfg-blind-curve');
+                slider.disabled = !locked;
+            } else if (btn.id === 'guard-payout') {
+                const rows = document.getElementById('payout-config-rows');
+                rows.classList.toggle('guarded', !locked);
+            }
+        });
+    });
+
     // Live update for blind curve slider (also saves)
     document.getElementById('cfg-blind-curve').addEventListener('input', (e) => {
         const label = document.getElementById('blind-curve-val');
@@ -1255,10 +1267,6 @@ if (isAdmin) {
             const field = btn.dataset.field;
             if (list[idx] && field) {
                 list[idx][field] = !list[idx][field];
-                if (field === 'active' && !list[idx].active) {
-                    delete list[idx].table;
-                    delete list[idx].seat;
-                }
                 savePlayerList();
                 render();
             }

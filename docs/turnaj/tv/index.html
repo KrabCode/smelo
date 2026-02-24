@@ -116,8 +116,8 @@
                         <input type="time" id="cfg-start-time-est" value="19:00" step="60">
                     </div>
                     <div class="config-field config-full-row">
-                        <label>Křivka blindů: <span id="blind-curve-val">1.0</span></label>
-                        <input type="range" id="cfg-blind-curve" min="0.5" max="2.0" step="0.1" value="1.0">
+                        <label><button type="button" class="guard-toggle" id="guard-blind-curve">🔒</button> Křivka blindů: <span id="blind-curve-val">1.0</span></label>
+                        <input type="range" id="cfg-blind-curve" min="0.5" max="2.0" step="0.1" value="1.0" disabled>
                         <small class="config-hint">0.7 = rychlý start | 1.0 = rovnoměrný růst | 1.3 = rychlý konec</small>
                     </div>
                     <div class="config-sub">Přestávka</div>
@@ -180,7 +180,7 @@
 
             <!-- Payout config -->
             <div class="admin-section" id="section-payout-config">
-                <h3>Výplaty</h3>
+                <h3><button type="button" class="guard-toggle" id="guard-payout">🔒</button> Výplaty</h3>
                 <div id="payout-config-rows"></div>
                 <div class="btn-row" style="margin-top:8px">
                     <button class="btn" id="btn-payout-add">+ Místo</button>
