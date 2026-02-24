@@ -51,13 +51,16 @@
             white-space: nowrap;
             padding: 10px 0;
         }
-        .tracker-footer .ticker {
-            display: inline-block;
-            animation: ticker 30s linear infinite;
+        .tracker-footer .ticker-track {
+            display: inline-flex;
+            animation: ticker 40s linear infinite;
+        }
+        .tracker-footer .ticker-half {
+            flex-shrink: 0;
         }
         @keyframes ticker {
-            0% { transform: translateX(100vw); }
-            100% { transform: translateX(-100%); }
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
         .zoom-controls {
             position: absolute;
@@ -598,7 +601,7 @@
         </details>
     </div>
 
-    <div class="tracker-footer" id="tracker-footer"><span class="ticker"></span></div>
+    <div class="tracker-footer" id="tracker-footer"><span class="ticker-track"><span class="ticker-half" id="ticker-a"></span><span class="ticker-half" id="ticker-b"></span></span></div>
 
     <script>
     // ─── Firebase Init ──────────────────────────────────────────
@@ -1014,12 +1017,14 @@
             tbody.appendChild(tr);
         });
 
-        // Ticker
+        // Ticker (duplicate content for seamless loop)
         const notes = T.notes || [];
-        const tickerEl = document.querySelector('.ticker');
-        if (tickerEl) {
-            tickerEl.textContent = notes.join('  ·  ') + (notes.length ? '  ·  ' : '');
-        }
+        const sep = '\u00A0\u00A0\u00A0\u00A0\u00A0·\u00A0\u00A0\u00A0\u00A0\u00A0';
+        const tickerText = notes.length ? notes.join(sep) + sep : '';
+        const tickerA = document.getElementById('ticker-a');
+        const tickerB = document.getElementById('ticker-b');
+        if (tickerA) tickerA.textContent = tickerText;
+        if (tickerB) tickerB.textContent = tickerText;
 
         // Payout (always visible)
         renderPayout();
@@ -1231,8 +1236,6 @@
         document.getElementById('btn-rebuy').addEventListener('click', () => {
             const updates = {};
             updates['players/rebuys'] = getField('cfg-rebuys') + 1;
-            updates['players/buyIns'] = getField('cfg-buyins') + 1;
-            updates['players/activePlayers'] = getField('cfg-active') + 1;
             tournamentRef.update(updates).then(() => { recalcAndSync(); showPlayerStatus('Uloženo ✓'); });
         });
 
