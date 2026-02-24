@@ -336,14 +336,12 @@
 
         /* Payout section */
         .payout-section {
-            max-width: 600px;
-            margin: 8px auto 24px;
+            min-width: 360px;
+            margin: 8px 0;
             padding: 0 20px;
         }
         .payout-table {
             width: 100%;
-            max-width: 360px;
-            margin: 0 auto;
             border-collapse: collapse;
             font-size: 0.9em;
         }
@@ -420,7 +418,7 @@
         /* Non-wide: stack vertically with display first, then structure, then payout */
         .main-content { display: flex; flex-direction: column; }
         .sidebar-left { order: 2; }
-        .sidebar-right { order: 3; display: flex; align-items: flex-start; justify-content: center; gap: 24px; flex-wrap: wrap; }
+        .sidebar-right { order: 3; display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; }
         .sidebar-right .players-remaining { order: -1; }
         .display { order: 1; }
         .winner-banner { order: 1; }
@@ -520,8 +518,9 @@
                 </table>
             </div>
             <div class="players-remaining" id="players-remaining">
+                <span class="players-remaining-label">zbývá</span>
                 <span class="players-remaining-count" id="remaining-count">0</span>
-                <span class="players-remaining-label">hráčů ve hře</span>
+                <span class="players-remaining-label">hráčů</span>
             </div>
         </div>
     </div><!-- .main-content -->
