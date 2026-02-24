@@ -792,3 +792,8 @@ body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
     font-weight: bold;
 }
 
+@media (max-width: 600px) {
+    .admin-panel { max-width: 100%; padding: 0 8px 40px; }
+    .config-grid { grid-template-columns: 1fr; }
+}
+
