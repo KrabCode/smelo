@@ -289,6 +289,30 @@ body {
     transition: max-height 0.35s ease, opacity 0.2s;
 }
 
+/* Player list header */
+.player-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.75em;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.player-header small {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: normal;
+    color: var(--text-faint);
+}
+.ph-name { flex: 1; min-width: 0; }
+.ph-seat { flex: 0 0 auto; }
+.ph-buys { flex: 0 0 auto; text-align: center; }
+.ph-toggle { flex: 0 0 44px; text-align: center; }
+.ph-del { flex: 0 0 36px; }
+
 /* Player list */
 .player-card {
     display: flex;

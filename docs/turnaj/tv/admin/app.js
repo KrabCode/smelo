@@ -482,7 +482,20 @@ function renderPlayerList() {
         return (pa.seat || 999) - (pb.seat || 999);
     });
 
-    let html = '';
+    const buyHint = (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs');
+    const addonHint = c.addonChips ? (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') : '';
+    const bonusHint = c.bonusAmount ? c.bonusAmount.toLocaleString('cs') : '';
+
+    let html = '<div class="player-header">' +
+        '<span class="ph-name">Hráč</span>' +
+        '<span class="ph-seat">Stůl</span>' +
+        '<span class="ph-buys">Buys <small>(' + buyHint + ')</small></span>' +
+        '<span class="ph-toggle">A' + (addonHint ? ' <small>(' + addonHint + ')</small>' : '') + '</span>' +
+        '<span class="ph-toggle">B' + (bonusHint ? ' <small>(' + bonusHint + ')</small>' : '') + '</span>' +
+        '<span class="ph-toggle">Akt</span>' +
+        '<span class="ph-del"></span>' +
+        '</div>';
+
     sorted.forEach(i => {
         const p = list[i];
         const nameClass = 'player-name' + (p.active ? '' : ' inactive');
@@ -1255,18 +1268,27 @@ document.getElementById('structure-body').addEventListener('click', (e) => {
 });
 
 // ─── Guard Toggles ──────────────────────────────────────────
-// All guarded sections start locked
+const guardState = JSON.parse(localStorage.getItem('adminGuards') || '{}');
+
 document.querySelectorAll('.guard-toggle').forEach(btn => {
-    const section = document.getElementById(btn.dataset.target);
-    if (section) section.classList.add('guarded');
+    const id = btn.dataset.target;
+    const section = document.getElementById(id);
+    if (!section) return;
+    // Default to locked unless explicitly saved as unlocked
+    const locked = guardState[id] !== false;
+    section.classList.toggle('guarded', locked);
+    btn.textContent = locked ? '\u{1F512}' : '\u{1F513}';
 });
 
 document.addEventListener('click', (e) => {
     const btn = e.target.closest('.guard-toggle');
     if (!btn) return;
-    const section = document.getElementById(btn.dataset.target);
+    const id = btn.dataset.target;
+    const section = document.getElementById(id);
     if (!section) return;
     const isLocked = section.classList.contains('guarded');
     section.classList.toggle('guarded', !isLocked);
     btn.textContent = isLocked ? '\u{1F513}' : '\u{1F512}';
+    guardState[id] = !isLocked;
+    localStorage.setItem('adminGuards', JSON.stringify(guardState));
 });
