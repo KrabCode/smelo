@@ -491,8 +491,8 @@ function renderPlayerList() {
     const addonLabel = 'Add-on' + (c.addonChips ? ' <span class="th-hint">(' + (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') + ')</span>' : '');
     const bonusLabel = 'Bonus' + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
 
-    let html = '<table class="player-table"><thead><tr>' +
-        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
+    let html = '<div class="player-table-wrap"><table class="player-table"><thead><tr>' +
+        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Akt</th><th></th>' +
         '</tr></thead><tbody>';
 
     sorted.forEach(i => {
@@ -520,14 +520,16 @@ function renderPlayerList() {
         html += '<tr>' +
             '<td class="' + nameClass + '">' + (p.name || '?') + '</td>' +
             '<td>' + seatSelect + '</td>' +
-            '<td><button class="player-btn buys-btn" data-idx="' + i + '" data-dir="-">&minus;</button> ' + p.buys + ' <button class="player-btn buys-btn" data-idx="' + i + '" data-dir="+">+</button></td>' +
-            '<td><button class="player-btn' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon">' + (p.addon ? '\u2713' : '\u2717') + '</button></td>' +
-            '<td><button class="player-btn' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus">' + (p.bonus ? '\u2713' : '\u2717') + '</button></td>' +
-            '<td><button class="player-btn active-btn' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active">' + (p.active ? '\u2713' : '\u2717') + '</button></td>' +
-            '<td><button class="player-btn remove-btn" data-idx="' + i + '" title="Odebrat">&times;</button></td>' +
+            '<td><button class="player-buys-btn" data-idx="' + i + '" data-dir="-">&minus;</button>' +
+            '<span class="player-buys-count">' + p.buys + '</span>' +
+            '<button class="player-buys-btn" data-idx="' + i + '" data-dir="+">+</button></td>' +
+            '<td><button class="player-toggle' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon">' + (p.addon ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-toggle' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus">' + (p.bonus ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-toggle active-toggle' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active">' + (p.active ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-remove" data-idx="' + i + '" title="Odebrat">&times;</button></td>' +
             '</tr>';
     });
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     container.innerHTML = html;
 }
 
@@ -936,7 +938,7 @@ document.getElementById('players-list').addEventListener('click', (e) => {
     const list = T.players.list || [];
     const btn = e.target;
 
-    if (btn.classList.contains('buys-btn')) {
+    if (btn.classList.contains('player-buys-btn')) {
         const idx = parseInt(btn.dataset.idx);
         if (!list[idx]) return;
         if (btn.dataset.dir === '-') {
@@ -950,7 +952,7 @@ document.getElementById('players-list').addEventListener('click', (e) => {
         return;
     }
 
-    if (btn.dataset.field) {
+    if (btn.classList.contains('player-toggle')) {
         const idx = parseInt(btn.dataset.idx);
         const field = btn.dataset.field;
         if (list[idx] && field) {
@@ -961,7 +963,7 @@ document.getElementById('players-list').addEventListener('click', (e) => {
         return;
     }
 
-    if (btn.classList.contains('remove-btn')) {
+    if (btn.classList.contains('player-remove')) {
         const idx = parseInt(btn.dataset.idx);
         if (list[idx] && confirm('Odebrat ' + list[idx].name + '?')) {
             list.splice(idx, 1);

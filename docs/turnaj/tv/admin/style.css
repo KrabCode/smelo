@@ -280,16 +280,23 @@ body {
 }
 
 /* Player table */
+.player-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px;
+    padding: 0 16px;
+}
 .player-table {
     width: 100%;
+    min-width: 520px;
     border-collapse: collapse;
 }
 .player-table th {
     text-align: left;
     color: var(--text-muted);
-    padding: 8px 6px;
+    padding: 6px 4px;
     font-weight: 500;
-    font-size: 0.8em;
+    font-size: 0.75em;
     letter-spacing: 0.5px;
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
@@ -300,7 +307,7 @@ body {
     font-size: 0.85em;
 }
 .player-table td {
-    padding: 8px 6px;
+    padding: 5px 4px;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     vertical-align: middle;
     white-space: nowrap;
@@ -310,46 +317,70 @@ body {
     opacity: 0.4;
     text-decoration: line-through;
 }
-.player-btn {
-    min-width: 44px;
-    min-height: 44px;
+.player-toggle {
+    min-width: 40px;
+    min-height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: 6px;
     border: 1px solid var(--border-light);
     background: var(--bg-input);
     color: var(--text-muted);
-    font-size: 1em;
+    font-size: 0.9em;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     vertical-align: middle;
+    padding: 0;
 }
-.player-btn:active { transform: scale(0.95); }
-.player-btn.on {
+.player-toggle:active { transform: scale(0.95); }
+.player-toggle.on {
     background: var(--green);
     color: #000;
     border-color: var(--green);
 }
-.player-btn.active-btn.on {
+.player-toggle.active-toggle.on {
     background: var(--accent);
     border-color: var(--accent);
 }
-.player-btn.buys-btn {
-    min-width: 36px;
+.player-buys-btn {
+    min-width: 32px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    background: var(--bg-input);
+    color: var(--text-muted);
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1.1em;
+    cursor: pointer;
+    vertical-align: middle;
+    padding: 0;
 }
-.player-btn.remove-btn {
-    color: var(--red);
-    border-color: transparent;
+.player-buys-btn:active { transform: scale(0.95); }
+.player-buys-count {
+    display: inline-block;
+    min-width: 18px;
+    text-align: center;
+    font-family: monospace;
+    font-weight: 700;
+    color: var(--accent);
+    vertical-align: middle;
+}
+.player-remove {
     background: none;
-    font-size: 1.3em;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 4px 6px;
     opacity: 0.5;
-    min-width: 36px;
+    vertical-align: middle;
 }
-.player-btn.remove-btn:active { opacity: 1; }
+.player-remove:active { opacity: 1; }
 .player-summary {
     font-size: 0.85em;
     color: var(--text-muted);
@@ -357,13 +388,13 @@ body {
     text-align: center;
 }
 .player-seat-select {
-    min-height: 44px;
+    min-height: 36px;
     background: var(--bg-input);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: 6px;
     color: var(--text-muted);
-    padding: 4px 8px;
-    font-size: 0.9em;
+    padding: 2px 4px;
+    font-size: 0.85em;
     cursor: pointer;
 }
 .player-seat-select:focus { outline: none; border-color: var(--accent); }
