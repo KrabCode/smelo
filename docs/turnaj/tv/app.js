@@ -599,18 +599,13 @@ function formatTime(ms) {
 
 window.addEventListener('resize', fitBlindsText);
 
-const _fitCtx = document.createElement('canvas').getContext('2d');
+const BLINDS_BASE_CHARS = 5; // "00:00" timer length — baseline for full size
 function fitBlindsText() {
     const el = document.getElementById('blinds-current');
-    const container = el.parentElement;
     const maxPx = parseFloat(getComputedStyle(document.getElementById('timer')).fontSize);
-    const style = getComputedStyle(container);
-    const avail = container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-    const elStyle = getComputedStyle(el);
-    const font = '700 ' + maxPx + 'px ' + elStyle.fontFamily;
-    _fitCtx.font = font;
-    const textWidth = _fitCtx.measureText(el.textContent).width + el.textContent.length * parseFloat(elStyle.letterSpacing);
-    el.style.fontSize = (textWidth > avail ? maxPx * avail / textWidth : maxPx) + 'px';
+    const len = el.textContent.length;
+    const scale = len > BLINDS_BASE_CHARS ? BLINDS_BASE_CHARS / len : 1;
+    el.style.fontSize = (maxPx * scale) + 'px';
 }
 
 function render() {
