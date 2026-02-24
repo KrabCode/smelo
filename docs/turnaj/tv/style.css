@@ -3,7 +3,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 /* Header bar */
 .tracker-header {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     flex-wrap: wrap;
     gap: 16px 32px;
@@ -57,20 +57,18 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     display: flex;
     align-items: center;
     gap: 4px;
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.2s;
 }
-.tracker-header:hover .zoom-controls { opacity: 1; }
-.tracker-header.expanded { justify-content: flex-start; }
-.tracker-header.expanded .zoom-controls { opacity: 1; position: static; transform: none; pointer-events: none; }
-.tracker-header.expanded.ready .zoom-controls { pointer-events: auto; }
+.tracker-header.collapsed { justify-content: center; }
+.tracker-header.collapsed .zoom-controls { opacity: 0; pointer-events: none; }
 .zoom-controls button {
     background: var(--bg-input);
     border: 1px solid var(--border-light);
     color: var(--text-muted);
     border-radius: 4px;
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
     padding: 0;
     display: flex;

@@ -125,14 +125,10 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
 });
 
 
-// Header tap to expand controls
+// Header tap to toggle controls
 document.querySelector('.tracker-header').addEventListener('click', (e) => {
     if (e.target.closest('.zoom-controls')) return;
-    const header = document.querySelector('.tracker-header');
-    const expanding = !header.classList.contains('expanded');
-    header.classList.toggle('expanded');
-    header.classList.remove('ready');
-    if (expanding) setTimeout(() => header.classList.add('ready'), 300);
+    document.querySelector('.tracker-header').classList.toggle('collapsed');
 });
 
 // Admin toggle
