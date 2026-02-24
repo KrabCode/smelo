@@ -370,7 +370,6 @@
             text-align: center;
             margin-top: 24px;
             padding: 16px 0;
-            border-top: 1px solid var(--border);
         }
         .players-remaining-count {
             display: block;
@@ -476,6 +475,7 @@
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
         <div class="stat-item" id="hd-start-item" style="display:none">Start: <span id="hd-start">–</span></div>
         <div class="zoom-controls">
+            <button id="btn-toggle-admin" title="Admin režim">⚙</button>
             <button id="btn-toggle-wide" title="Široký režim">⇔</button>
             <button id="zoom-out">−</button>
             <button id="zoom-in">+</button>
@@ -663,14 +663,16 @@
 
     const db = firebase.database();
     const tournamentRef = db.ref('tournament');
-    const isAdmin = location.search.includes('admin');
+    let isAdmin = location.search.includes('admin');
 
-    if (isAdmin) {
-        document.getElementById('admin-panel').style.display = '';
-        document.querySelector('#admin-panel details').addEventListener('toggle', (e) => {
-            document.getElementById('tracker-footer').style.display = e.target.open ? 'none' : '';
-        });
+    function applyAdminMode() {
+        document.getElementById('admin-panel').style.display = isAdmin ? '' : 'none';
     }
+    applyAdminMode();
+    document.querySelector('#admin-panel details').addEventListener('toggle', (e) => {
+        document.getElementById('tracker-footer').style.display = e.target.open ? 'none' : '';
+    });
+
     if (location.search.includes('wide')) document.body.classList.add('wide');
 
     // Zoom controls
@@ -686,7 +688,31 @@
 
     // Wide toggle
     document.getElementById('btn-toggle-wide').addEventListener('click', () => {
-        document.body.classList.toggle('wide');
+        const params = new URLSearchParams(location.search);
+        if (params.has('wide')) {
+            params.delete('wide');
+            document.body.classList.remove('wide');
+        } else {
+            params.set('wide', '');
+            document.body.classList.add('wide');
+        }
+        const qs = params.toString().replace(/=(&|$)/g, '$1');
+        history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+    });
+
+    // Admin toggle
+    document.getElementById('btn-toggle-admin').addEventListener('click', () => {
+        const params = new URLSearchParams(location.search);
+        if (params.has('admin')) {
+            params.delete('admin');
+            isAdmin = false;
+        } else {
+            params.set('admin', '');
+            isAdmin = true;
+        }
+        applyAdminMode();
+        const qs = params.toString().replace(/=(&|$)/g, '$1');
+        history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
     });
 
     // ─── Server Time Sync ────────────────────────────────────────
