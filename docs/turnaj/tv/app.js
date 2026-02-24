@@ -603,10 +603,15 @@ function fitBlindsText() {
     const el = document.getElementById('blinds-current');
     const container = el.parentElement;
     const maxPx = parseFloat(getComputedStyle(document.documentElement).fontSize) * 12; // 12rem
+    const style = getComputedStyle(container);
+    const avail = container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     el.style.fontSize = maxPx + 'px';
-    const avail = container.clientWidth - parseFloat(getComputedStyle(container).paddingLeft) - parseFloat(getComputedStyle(container).paddingRight);
-    if (el.scrollWidth > avail) {
-        el.style.fontSize = (maxPx * avail / el.scrollWidth) + 'px';
+    // Measure actual text width
+    el.style.display = 'inline-block';
+    const textWidth = el.offsetWidth;
+    el.style.display = '';
+    if (textWidth > avail) {
+        el.style.fontSize = (maxPx * avail / textWidth) + 'px';
     }
 }
 
