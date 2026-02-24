@@ -368,7 +368,6 @@
         /* Players remaining */
         .players-remaining {
             text-align: center;
-            margin-top: 24px;
             padding: 16px 0;
         }
         .players-remaining-count {
@@ -421,7 +420,8 @@
         /* Non-wide: stack vertically with display first, then structure, then payout */
         .main-content { display: flex; flex-direction: column; }
         .sidebar-left { order: 2; }
-        .sidebar-right { order: 3; }
+        .sidebar-right { order: 3; display: flex; align-items: flex-start; justify-content: center; gap: 24px; flex-wrap: wrap; }
+        .sidebar-right .players-remaining { order: -1; }
         .display { order: 1; }
         .winner-banner { order: 1; }
 
@@ -451,7 +451,7 @@
             padding: 16px 24px;
         }
         body.wide .sidebar-left { width: 440px; }
-        body.wide .sidebar-right { width: 360px; }
+        body.wide .sidebar-right { width: 440px; padding-right: 48px; }
         body.wide .timer { font-size: clamp(6rem, 12vw, 12rem); }
         body.wide .blinds-current { font-size: clamp(3rem, 7vw, 6rem); }
         body.wide .blinds-label { font-size: 1em; }
