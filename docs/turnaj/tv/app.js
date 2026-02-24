@@ -74,6 +74,18 @@ document.getElementById('btn-toggle-admin').addEventListener('click', () => {
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
 });
 
+// ─── Wake Lock (keep screen on) ─────────────────────────────
+let wakeLock = null;
+async function requestWakeLock() {
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+    } catch (_) {}
+}
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') requestWakeLock();
+});
+requestWakeLock();
+
 // ─── Server Time Sync ────────────────────────────────────────
 let serverTimeOffset = 0;
 db.ref('.info/serverTimeOffset').on('value', (snap) => {
