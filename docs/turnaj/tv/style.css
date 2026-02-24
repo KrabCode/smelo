@@ -61,6 +61,9 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     transition: opacity 0.2s;
 }
 .tracker-header:hover .zoom-controls { opacity: 1; }
+.tracker-header.expanded { justify-content: flex-start; }
+.tracker-header.expanded .zoom-controls { opacity: 1; position: static; transform: none; pointer-events: none; }
+.tracker-header.expanded.ready .zoom-controls { pointer-events: auto; }
 .zoom-controls button {
     background: var(--bg-input);
     border: 1px solid var(--border-light);

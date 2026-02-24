@@ -125,6 +125,16 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
 });
 
 
+// Header tap to expand controls
+document.querySelector('.tracker-header').addEventListener('click', (e) => {
+    if (e.target.closest('.zoom-controls')) return;
+    const header = document.querySelector('.tracker-header');
+    const expanding = !header.classList.contains('expanded');
+    header.classList.toggle('expanded');
+    header.classList.remove('ready');
+    if (expanding) setTimeout(() => header.classList.add('ready'), 300);
+});
+
 // Admin toggle
 document.getElementById('btn-toggle-admin').addEventListener('click', () => {
     const params = new URLSearchParams(location.search);
