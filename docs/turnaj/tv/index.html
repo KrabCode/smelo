@@ -35,16 +35,11 @@
         }
         .tracker-header .stat-item span { color: var(--accent); font-weight: bold; }
         .tracker-header .stat-item .muted { color: var(--text-secondary); font-weight: normal; }
-        .tracker-subtitle {
+        .tracker-footer {
             text-align: center;
             font-size: 0.78em;
             color: var(--text-muted);
-            padding: 4px 24px;
-            background: var(--bg-card);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 50px;
-            z-index: 99;
+            padding: 12px 24px;
         }
 
         /* Main display */
@@ -337,7 +332,7 @@
         /* Tablet mode (?wide) — side-by-side layout for 1920×1200 */
         body.wide { font-size: 1.3em; }
         body.wide .tracker-header { padding: 18px 32px; gap: 16px 32px; }
-        body.wide .tracker-subtitle { font-size: 0.85em; padding: 6px 32px; }
+        body.wide .tracker-footer { font-size: 0.85em; padding: 12px 32px; }
         body.wide .main-content {
             display: flex;
             align-items: flex-start;
@@ -375,8 +370,6 @@
         <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> výherci</div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
     </div>
-    <div class="tracker-subtitle">Buy-in a re-buy neomezeně, ale jen do konce přestávky · Nepřítomným hráčům se automaticky platí blindy a foldují karty</div>
-
     <div class="main-content">
         <!-- Display -->
         <div class="display" id="display">
@@ -523,6 +516,8 @@
         </details>
     </div>
 
+    <div class="tracker-footer" id="tracker-footer">Buy-in a re-buy neomezeně, ale jen do konce přestávky · Nepřítomným hráčům se automaticky platí blindy a foldují karty</div>
+
     <script>
     // ─── Firebase Init ──────────────────────────────────────────
     firebase.initializeApp({
@@ -536,7 +531,12 @@
     const tournamentRef = db.ref('tournament');
     const isAdmin = location.search.includes('admin');
 
-    if (isAdmin) document.getElementById('admin-panel').style.display = '';
+    if (isAdmin) {
+        document.getElementById('admin-panel').style.display = '';
+        document.querySelector('#admin-panel details').addEventListener('toggle', (e) => {
+            document.getElementById('tracker-footer').style.display = e.target.open ? 'none' : '';
+        });
+    }
     if (location.search.includes('wide')) document.body.classList.add('wide');
 
     // ─── Server Time Sync ────────────────────────────────────────
