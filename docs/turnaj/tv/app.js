@@ -602,7 +602,7 @@ window.addEventListener('resize', fitBlindsText);
 function fitBlindsText() {
     const el = document.getElementById('blinds-current');
     const container = el.parentElement;
-    const maxPx = parseFloat(getComputedStyle(document.documentElement).fontSize) * 12; // 12rem
+    const maxPx = parseFloat(getComputedStyle(document.getElementById('timer')).fontSize);
     const style = getComputedStyle(container);
     const avail = container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     el.style.fontSize = maxPx + 'px';
