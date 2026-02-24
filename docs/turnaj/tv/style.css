@@ -68,9 +68,12 @@ body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
     width: 28px;
     height: 28px;
     cursor: pointer;
-    font-size: 1em;
-    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+.zoom-controls button svg { display: block; }
 .zoom-controls button:hover { border-color: var(--accent); color: var(--text); }
 
 /* Main display */
@@ -121,7 +124,7 @@ body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
 .blinds-sub {
     font-family: 'Staatliches', sans-serif;
     font-size: clamp(1.4rem, 3vw, 2.4rem);
-    color: var(--text-muted);
+    color: var(--accent);
     letter-spacing: 2px;
 }
 

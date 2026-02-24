@@ -211,6 +211,7 @@ const DEFAULTS = {
         addonCutoff: 0,
         maxBB: 10000,
         blindCurve: 1.0,
+        anteMult: 0,
         date: ''
     },
     state: {
@@ -669,6 +670,10 @@ function render() {
     const blindsCurEl = document.getElementById('blinds-current');
     const progressBarEl = document.getElementById('progress-bar');
 
+    // Ante
+    const anteMult = config.anteMult || 0;
+    const anteOn = anteMult > 0;
+
     // Blinds / break display
     const blindsLabelEl = document.getElementById('blinds-label');
     const addonBannerEl = document.getElementById('addon-banner');
@@ -714,7 +719,8 @@ function render() {
             curEntry.small.toLocaleString('cs') + ' / ' + curEntry.big.toLocaleString('cs');
         blindsCurEl.classList.remove('on-break');
         progressBarEl.classList.remove('on-break');
-        document.getElementById('blinds-sub').textContent = '';
+        document.getElementById('blinds-sub').textContent =
+            anteOn ? 'Ante ' + Math.round(curEntry.big * anteMult).toLocaleString('cs') : '';
         addonBannerEl.style.display = 'none';
         breakMsgEl.style.display = 'none';
     } else {
@@ -751,6 +757,9 @@ function render() {
         runningMinutes = parseInt(startTimeParts[0]) * 60 + parseInt(startTimeParts[1]);
     }
 
+    const thAnte = document.getElementById('th-ante');
+    if (thAnte) thAnte.style.display = anteOn ? '' : 'none';
+
     let levelNum = 0;
     let structBlindCount = 0;
     const addonChipsCfg = config.addonChips || 0;
@@ -772,25 +781,26 @@ function render() {
             classes.push('break-row');
             tr.className = classes.join(' ');
             tr.innerHTML =
-                '<td colspan="4">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM + '</td>';
+                '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM + '</td>';
         } else {
             structBlindCount++;
             levelNum++;
             const isOverridden = !!T.blindOverrides[levelNum];
             if (isOverridden && isAdmin) classes.push('overridden-level');
             tr.className = classes.join(' ');
+            const anteCell = anteOn ? '<td>' + Math.round(s.big * anteMult).toLocaleString('cs') + '</td>' : '';
             if (isAdmin) {
                 tr.innerHTML =
                     '<td>' + levelNum + (isOverridden ? ' <button class="blind-reset" data-level="' + levelNum + '" title="Obnovit výchozí">&times;</button>' : '') + '</td>' +
                     '<td>' + timeStr + '</td>' +
                     '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="small" value="' + s.small + '"></td>' +
-                    '<td>' + s.big.toLocaleString('cs') + '</td>';
+                    '<td>' + s.big.toLocaleString('cs') + '</td>' + anteCell;
             } else {
                 tr.innerHTML =
                     '<td>' + levelNum + '</td>' +
                     '<td>' + timeStr + '</td>' +
                     '<td>' + s.small.toLocaleString('cs') + '</td>' +
-                    '<td>' + s.big.toLocaleString('cs') + '</td>';
+                    '<td>' + s.big.toLocaleString('cs') + '</td>' + anteCell;
             }
         }
         runningMinutes += s.duration;
@@ -831,7 +841,8 @@ function render() {
             'cfg-addon-amount': config.addonAmount,
             'cfg-start-time-est': config.startTime,
             'cfg-max-bb': config.maxBB,
-            'cfg-blind-curve': config.blindCurve
+            'cfg-blind-curve': config.blindCurve,
+            'cfg-ante-mult': config.anteMult
         };
         for (const [id, val] of Object.entries(ids)) {
             const el = document.getElementById(id);
@@ -1114,7 +1125,8 @@ if (isAdmin) {
             addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
             addonCutoff: T.config.addonCutoff || 0,
             maxBB: parseInt(document.getElementById('cfg-max-bb').value) || 10000,
-            blindCurve: parseFloat(document.getElementById('cfg-blind-curve').value) || 1.0
+            blindCurve: parseFloat(document.getElementById('cfg-blind-curve').value) || 1.0,
+            anteMult: parseFloat(document.getElementById('cfg-ante-mult').value) || 0
         };
 
         const p = tournamentRef.child('config').set(config);
