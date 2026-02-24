@@ -92,7 +92,6 @@
             margin: 8px 0;
         }
         .timer.warning { color: var(--red); }
-        .timer.paused { opacity: 0.5; }
 
         /* Progress bar */
         .progress-wrap {
@@ -227,6 +226,17 @@
             grid-template-columns: 1fr 1fr;
             gap: 10px;
         }
+        .config-sub {
+            grid-column: 1 / -1;
+            font-size: 0.75em;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            margin-top: 4px;
+        }
+        .config-sub:first-child { border-top: none; padding-top: 0; margin-top: 0; }
         .config-field label {
             display: block;
             font-size: 0.78em;
@@ -397,11 +407,13 @@
     <div class="tracker-header">
         <div class="stat-item">Buy-in: <span id="hd-buyin-amount">400 Kč</span></div>
         <div class="stat-item">Žetony: <span id="hd-chips">0</span></div>
-        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> výherci</div>
+        <div class="stat-item">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> <span id="hd-places-label">výherců</span></div>
         <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
+        <div class="stat-item" id="hd-start-item" style="display:none">Start: <span id="hd-start">–</span></div>
         <div class="zoom-controls">
             <button id="zoom-out">−</button>
             <button id="zoom-in">+</button>
+            <button id="btn-test-sound" title="Test zvuku">♪</button>
         </div>
     </div>
     <div class="main-content">
@@ -453,10 +465,7 @@
             <div class="admin-section" id="section-config">
                 <h3>Nastavení turnaje</h3>
                 <div class="config-grid">
-                    <div class="config-field">
-                        <label>Počáteční žetony hráče</label>
-                        <input type="number" id="cfg-stack" value="5000">
-                    </div>
+                    <div class="config-sub">Struktura</div>
                     <div class="config-field">
                         <label>Délka levelu (min)</label>
                         <input type="number" id="cfg-level-dur" value="20">
@@ -464,6 +473,11 @@
                     <div class="config-field">
                         <label>Celková délka turnaje (min)</label>
                         <input type="number" id="cfg-tourney-len" value="240">
+                    </div>
+                    <div class="config-sub">Žetony</div>
+                    <div class="config-field">
+                        <label>Počáteční žetony hráče</label>
+                        <input type="number" id="cfg-stack" value="5000">
                     </div>
                     <div class="config-field">
                         <label>Nejmenší žeton</label>
@@ -473,10 +487,16 @@
                         <label>Bonus žetony za včasný příchod</label>
                         <input type="number" id="cfg-bonus" value="5000">
                     </div>
+                    <div class="config-sub">Buy-in a re-buy</div>
+                    <div class="config-field">
+                        <label>Buy-in (Kč)</label>
+                        <input type="number" id="cfg-buyin-amount" value="400">
+                    </div>
                     <div class="config-field">
                         <label>Re-buy povolený do levelu</label>
                         <input type="number" id="cfg-rebuy-cutoff" value="4">
                     </div>
+                    <div class="config-sub">Přestávka</div>
                     <div class="config-field">
                         <label>Přestávka po levelu (0 = žádná)</label>
                         <input type="number" id="cfg-break-after" value="0" min="0">
@@ -484,10 +504,6 @@
                     <div class="config-field">
                         <label>Délka přestávky (min)</label>
                         <input type="number" id="cfg-break-dur" value="30" min="1">
-                    </div>
-                    <div class="config-field">
-                        <label>Buy-in (Kč)</label>
-                        <input type="number" id="cfg-buyin-amount" value="400">
                     </div>
                 </div>
                 <div class="btn-row" style="margin-top:12px">
@@ -539,12 +555,16 @@
                 <h3>Timer</h3>
                 <div class="btn-row">
                     <button class="btn accent" id="btn-start">Start</button>
-                    <button class="btn" id="btn-pause">Pauza</button>
                     <button class="btn danger" id="btn-reset">Reset</button>
                 </div>
-                <div class="btn-row">
-                    <button class="btn" id="btn-prev-level">← Level</button>
-                    <button class="btn" id="btn-next-level">Level →</button>
+                <div id="start-time-row" style="display:none;margin-top:10px">
+                    <div class="config-field">
+                        <label>Čas startu (posun timeru)</label>
+                        <div style="display:flex;gap:6px;align-items:center">
+                            <input type="time" id="cfg-start-time" step="60">
+                            <button class="btn" id="btn-set-start-time" style="flex:0 0 auto;min-width:auto;padding:8px 12px">Nastavit</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </details>
@@ -607,10 +627,7 @@
             date: ''
         },
         state: {
-            status: 'waiting',   // waiting | running | paused | finished
-            currentLevel: 0,
-            timerEnd: 0,
-            pausedRemaining: 0,
+            status: 'waiting',   // waiting | running | finished
             startedAt: 0,
             winners: {}       // { "1": "Franta", "2": "Humr", ... }
         },
@@ -716,6 +733,23 @@
         return (p.buyIns + p.rebuys) * c.startingStack + p.bonuses * c.bonusAmount;
     }
 
+    // ─── Derived State ─────────────────────────────────────────
+    function getCurrentLevel(startedAt, blindStructure) {
+        const struct = blindStructure || [];
+        if (!struct.length) return { levelIndex: 0, remaining: 0, finished: true };
+
+        const elapsed = serverNow() - startedAt;
+        let cumulative = 0;
+        for (let i = 0; i < struct.length; i++) {
+            const levelMs = struct[i].duration * 60000;
+            if (elapsed < cumulative + levelMs) {
+                return { levelIndex: i, remaining: cumulative + levelMs - elapsed, finished: false };
+            }
+            cumulative += levelMs;
+        }
+        return { levelIndex: struct.length - 1, remaining: 0, finished: true };
+    }
+
     // ─── Payout Calculation ──────────────────────────────────────
     const PAYOUT_STRUCTURES = {
         1: [100],
@@ -748,6 +782,8 @@
 
         document.getElementById('hd-pool').textContent = prizePool.toLocaleString('cs') + ' Kč';
         document.getElementById('hd-places').textContent = paidPlaces;
+        document.getElementById('hd-places-label').textContent =
+            paidPlaces === 1 ? 'vítěz' : paidPlaces <= 4 ? 'výherci' : 'výherců';
 
 
         const tbody = document.getElementById('payout-body');
@@ -766,7 +802,10 @@
 
     function recalcAndSync() {
         const totalChips = recalcTotalChips();
-        const freezeUpTo = T.state.status === 'waiting' ? -1 : T.state.currentLevel;
+        let freezeUpTo = -1;
+        if (T.state.status === 'running' && T.state.startedAt) {
+            freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
+        }
         const structure = calculateBlinds(T.config, totalChips, freezeUpTo);
 
         tournamentRef.child('players/totalChips').set(totalChips);
@@ -791,6 +830,35 @@
         document.getElementById('hd-chips').textContent = players.totalChips.toLocaleString('cs');
         document.getElementById('hd-buyin-amount').textContent = (config.buyInAmount || 400).toLocaleString('cs') + ' Kč';
 
+        // Start time in header
+        const hdStartItem = document.getElementById('hd-start-item');
+        if (state.startedAt && state.status === 'running') {
+            const d = new Date(state.startedAt);
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            document.getElementById('hd-start').textContent = hh + ':' + mm;
+            hdStartItem.style.display = '';
+        } else {
+            hdStartItem.style.display = 'none';
+        }
+
+        // Admin start time input (show when running, keep in sync)
+        if (isAdmin) {
+            const startTimeRow = document.getElementById('start-time-row');
+            const startTimeInput = document.getElementById('cfg-start-time');
+            if (state.status === 'running' && state.startedAt) {
+                startTimeRow.style.display = '';
+                if (document.activeElement !== startTimeInput) {
+                    const d = new Date(state.startedAt);
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const mm = String(d.getMinutes()).padStart(2, '0');
+                    startTimeInput.value = hh + ':' + mm;
+                }
+            } else {
+                startTimeRow.style.display = 'none';
+            }
+        }
+
         // Admin player counts — now handled by config input sync below
 
         // Winners logic
@@ -812,7 +880,7 @@
                 '<span class="name">' + winners[k] + '</span></div>'
             ).join('');
             // Stop tournament when all winners declared
-            if (state.status === 'running' || state.status === 'paused') {
+            if (state.status === 'running') {
                 if (isAdmin) tournamentRef.child('state/status').set('finished');
             }
         } else {
@@ -824,9 +892,6 @@
         if (state.status === 'waiting') {
             banner.textContent = 'ČEKÁ SE NA START';
             banner.className = 'status-banner';
-        } else if (state.status === 'paused') {
-            banner.textContent = 'PAUZA';
-            banner.className = 'status-banner';
         } else if (state.status === 'finished') {
             banner.textContent = 'TURNAJ UKONČEN';
             banner.className = 'status-banner';
@@ -834,9 +899,12 @@
             banner.className = 'status-banner running';
         }
 
-        // Current blinds
-        const lvl = state.currentLevel;
+        // Current blinds (derived from startedAt)
         const struct = blindStructure || [];
+        const derived = (state.status === 'running' && state.startedAt)
+            ? getCurrentLevel(state.startedAt, struct)
+            : { levelIndex: 0, remaining: 0, finished: false };
+        const lvl = derived.levelIndex;
 
         const curEntry = struct[lvl];
         const onBreak = curEntry && curEntry.isBreak;
@@ -986,6 +1054,7 @@
     }
 
     // ─── Timer Loop ─────────────────────────────────────────────
+    let prevLevel = -1;
     let timerInterval = null;
 
     function startTimerLoop() {
@@ -995,60 +1064,49 @@
 
     function tickTimer() {
         const { state, blindStructure } = T;
+        const struct = blindStructure || [];
         const timerEl = document.getElementById('timer');
         const progressEl = document.getElementById('progress-bar');
 
-        if (state.status === 'running' && state.timerEnd > 0) {
-            const remaining = state.timerEnd - serverNow();
-            timerEl.textContent = formatTime(remaining);
-            timerEl.classList.remove('paused');
-            timerEl.classList.toggle('warning', remaining <= 30000 && remaining > 0);
+        if (state.status === 'running' && state.startedAt) {
+            const derived = getCurrentLevel(state.startedAt, struct);
+
+            if (derived.finished) {
+                // Past all levels — mark as finished (admin writes to Firebase)
+                if (isAdmin) tournamentRef.child('state/status').set('finished');
+                timerEl.textContent = '00:00';
+                timerEl.classList.remove('warning');
+                progressEl.style.width = '100%';
+                return;
+            }
+
+            timerEl.textContent = formatTime(derived.remaining);
+            timerEl.classList.toggle('warning', derived.remaining <= 30000 && derived.remaining > 0);
 
             // Progress bar
-            const duration = (blindStructure[state.currentLevel]?.duration || 20) * 60 * 1000;
-            const elapsed = duration - remaining;
+            const duration = (struct[derived.levelIndex]?.duration || 20) * 60000;
+            const elapsed = duration - derived.remaining;
             const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
             progressEl.style.width = pct + '%';
 
-            // Auto-advance
-            if (remaining <= 0 && isAdmin) {
-                advanceLevel();
+            // Level-change sound + re-render blinds display
+            if (prevLevel >= 0 && derived.levelIndex !== prevLevel) {
+                playLevelSound();
+                render();
             }
-        } else if (state.status === 'paused') {
-            timerEl.textContent = formatTime(state.pausedRemaining);
-            timerEl.classList.add('paused');
-            timerEl.classList.remove('warning');
-
-            const duration = (blindStructure[state.currentLevel]?.duration || 20) * 60 * 1000;
-            const elapsed = duration - state.pausedRemaining;
-            const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
-            progressEl.style.width = pct + '%';
+            prevLevel = derived.levelIndex;
         } else {
-            // Waiting
-            const duration = (blindStructure[state.currentLevel]?.duration || 20) * 60 * 1000;
+            // Waiting or finished — show first level's duration as idle timer
+            const duration = (struct[0]?.duration || 20) * 60000;
             timerEl.textContent = formatTime(duration);
-            timerEl.classList.remove('paused', 'warning');
+            timerEl.classList.remove('warning');
             progressEl.style.width = '0%';
         }
     }
 
     startTimerLoop();
 
-    function advanceLevel() {
-        const struct = T.blindStructure || [];
-        const nextLevel = T.state.currentLevel + 1;
-        if (nextLevel >= struct.length) return;
-
-        const duration = (struct[nextLevel]?.duration || 20) * 60 * 1000;
-        tournamentRef.child('state').update({
-            currentLevel: nextLevel,
-            timerEnd: serverNow() + duration,
-            pausedRemaining: 0
-        });
-    }
-
     // ─── Level Change Sound ─────────────────────────────────────
-    let prevLevel = -1;
     function playLevelSound() {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1067,6 +1125,8 @@
             });
         } catch (e) {}
     }
+
+    document.getElementById('btn-test-sound').addEventListener('click', playLevelSound);
 
     // ─── Firebase Listener ──────────────────────────────────────
     tournamentRef.on('value', (snap) => {
@@ -1091,12 +1151,6 @@
         }
         T.players = { ...DEFAULTS.players, ...rawPlayers };
         T.blindStructure = data.blindStructure || [];
-
-        // Play sound on level change
-        if (prevLevel >= 0 && T.state.currentLevel !== prevLevel && T.state.status === 'running') {
-            playLevelSound();
-        }
-        prevLevel = T.state.currentLevel;
 
         render();
     });
@@ -1206,39 +1260,21 @@
 
         // Timer controls
         document.getElementById('btn-start').addEventListener('click', () => {
-            const status = T.state.status;
-            if (status === 'running') return;
+            if (T.state.status === 'running') return;
             if (!confirm('Spustit timer?')) return;
-
-            if (status === 'paused' && T.state.pausedRemaining > 0) {
-                // Resume
-                tournamentRef.child('state').update({
-                    status: 'running',
-                    timerEnd: serverNow() + T.state.pausedRemaining,
-                    pausedRemaining: 0
-                });
-            } else {
-                // Fresh start
-                const struct = T.blindStructure || [];
-                const duration = (struct[T.state.currentLevel]?.duration || 20) * 60 * 1000;
-                tournamentRef.child('state').update({
-                    status: 'running',
-                    timerEnd: serverNow() + duration,
-                    pausedRemaining: 0,
-                    startedAt: serverNow()
-                });
-            }
+            tournamentRef.child('state').update({
+                status: 'running',
+                startedAt: serverNow()
+            });
         });
 
-        document.getElementById('btn-pause').addEventListener('click', () => {
-            if (T.state.status !== 'running') return;
-            if (!confirm('Pozastavit timer?')) return;
-            const remaining = Math.max(0, T.state.timerEnd - serverNow());
-            tournamentRef.child('state').update({
-                status: 'paused',
-                timerEnd: 0,
-                pausedRemaining: remaining
-            });
+        document.getElementById('btn-set-start-time').addEventListener('click', () => {
+            const val = document.getElementById('cfg-start-time').value;
+            if (!val) return;
+            const [hh, mm] = val.split(':').map(Number);
+            const d = new Date(T.state.startedAt);
+            d.setHours(hh, mm, 0, 0);
+            tournamentRef.child('state/startedAt').set(d.getTime());
         });
 
         document.getElementById('btn-reset').addEventListener('click', () => {
@@ -1246,31 +1282,6 @@
             tournamentRef.child('state').set(DEFAULTS.state);
             tournamentRef.child('players').set(DEFAULTS.players);
             recalcAndSync();
-        });
-
-        document.getElementById('btn-prev-level').addEventListener('click', () => {
-            if (!confirm('Vrátit se na předchozí level?')) return;
-            const newLevel = Math.max(0, T.state.currentLevel - 1);
-            const struct = T.blindStructure || [];
-            const duration = (struct[newLevel]?.duration || 20) * 60 * 1000;
-
-            if (T.state.status === 'running') {
-                tournamentRef.child('state').update({
-                    currentLevel: newLevel,
-                    timerEnd: serverNow() + duration,
-                    pausedRemaining: 0
-                });
-            } else {
-                tournamentRef.child('state').update({
-                    currentLevel: newLevel,
-                    pausedRemaining: duration
-                });
-            }
-        });
-
-        document.getElementById('btn-next-level').addEventListener('click', () => {
-            if (!confirm('Přeskočit na další level?')) return;
-            advanceLevel();
         });
     }
     </script>
