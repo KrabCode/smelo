@@ -311,6 +311,17 @@ body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
     opacity: 0.6;
 }
 .note-row .btn-remove-note:hover { opacity: 1; }
+.note-drag-handle {
+    cursor: grab;
+    color: var(--text-muted);
+    opacity: 0.4;
+    user-select: none;
+    font-size: 1em;
+    padding: 0 2px;
+}
+.note-drag-handle:hover { opacity: 0.8; }
+.note-row.note-dragging { opacity: 0.3; }
+.note-row.note-drag-over { border-top: 2px solid var(--accent); }
 
 .config-field textarea {
     width: 100%;
@@ -419,6 +430,10 @@ body { min-height: 100vh; padding-bottom: 48px; font-size: 1.3em; }
     color: var(--accent);
     margin-top: 20px;
     text-align: center;
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 20px 32px;
+    display: inline-block;
 }
 .break-message-rest {
     font-size: 0.5em;

@@ -49,6 +49,20 @@ document.getElementById('zoom-out').addEventListener('click', () => {
     document.body.style.zoom = zoomLevel + '%';
 });
 
+// Ticker toggle
+let tickerHidden = localStorage.getItem('tickerHidden') === '1';
+const tickerBtn = document.getElementById('btn-toggle-ticker');
+function updateTickerBtn() {
+    tickerBtn.style.opacity = tickerHidden ? '0.4' : '';
+}
+updateTickerBtn();
+tickerBtn.addEventListener('click', () => {
+    tickerHidden = !tickerHidden;
+    localStorage.setItem('tickerHidden', tickerHidden ? '1' : '0');
+    updateTickerBtn();
+    render();
+});
+
 // Fullscreen toggle
 document.getElementById('btn-fullscreen').addEventListener('click', () => {
     if (document.fullscreenElement) {
@@ -135,6 +149,7 @@ const DEFAULTS = {
 // Local mirror
 let T = JSON.parse(JSON.stringify(DEFAULTS));
 T.notes = DEFAULTS.notes.slice();
+let renderNoteInputs = null;
 
 // ─── Blind Calculation ──────────────────────────────────────
 function roundToChip(val, chip) {
@@ -430,6 +445,7 @@ function render() {
     document.getElementById('display').style.display = allDeclared ? 'none' : '';
     document.querySelector('.sidebar-left').style.display = allDeclared ? 'none' : '';
     document.querySelector('.sidebar-right').style.display = allDeclared ? 'none' : '';
+    document.getElementById('tracker-footer').style.display = (allDeclared || tickerHidden) ? 'none' : '';
     if (allDeclared) {
         winnerBanner.style.display = '';
         const buyInAmount = config.buyInAmount || 400;
@@ -500,7 +516,7 @@ function render() {
             const lines = escaped.split('\n');
             breakMsgEl.innerHTML = '<div>' + lines[0] + '</div>' +
                 (lines.length > 1 ? '<div class="break-message-rest">' + lines.slice(1).join('<br>') + '</div>' : '');
-            breakMsgEl.style.display = '';
+            breakMsgEl.style.display = 'inline-block';
         } else {
             breakMsgEl.style.display = 'none';
         }
@@ -673,7 +689,7 @@ function render() {
         // Sync note inputs (only if not editing)
         const noteInputs = document.querySelectorAll('#notes-list input');
         const noteHasFocus = Array.from(noteInputs).some(el => el === document.activeElement);
-        if (!noteHasFocus && typeof renderNoteInputs === 'function') {
+        if (!noteHasFocus && renderNoteInputs) {
             renderNoteInputs();
         }
     }
@@ -1007,11 +1023,12 @@ if (isAdmin) {
     });
 
     // Notes (ticker)
-    function renderNoteInputs() {
+    renderNoteInputs = function() {
         const list = document.getElementById('notes-list');
         const notes = T.notes || [];
         list.innerHTML = notes.map((note, i) =>
-            '<div class="note-row">' +
+            '<div class="note-row" data-note-idx="' + i + '">' +
+            '<span class="note-drag-handle">☰</span>' +
             '<input type="text" value="' + note.replace(/"/g, '&quot;') + '" data-note-idx="' + i + '">' +
             '<button class="btn-remove-note" data-note-idx="' + i + '">&times;</button>' +
             '</div>'
@@ -1036,6 +1053,58 @@ if (isAdmin) {
     });
 
     document.getElementById('notes-list').addEventListener('change', saveNotes);
+
+    // Drag & drop reordering
+    let dragIdx = null;
+    const notesList = document.getElementById('notes-list');
+    notesList.addEventListener('mousedown', (e) => {
+        if (e.target.classList.contains('note-drag-handle')) {
+            e.target.closest('.note-row').draggable = true;
+        }
+    });
+    notesList.addEventListener('mouseup', (e) => {
+        const row = e.target.closest('.note-row');
+        if (row) row.draggable = false;
+    });
+    notesList.addEventListener('dragstart', (e) => {
+        const row = e.target.closest('.note-row');
+        if (!row) return;
+        dragIdx = parseInt(row.dataset.noteIdx);
+        row.classList.add('note-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+    notesList.addEventListener('dragend', (e) => {
+        const row = e.target.closest('.note-row');
+        if (row) { row.classList.remove('note-dragging'); row.draggable = false; }
+        notesList.querySelectorAll('.note-row').forEach(r => r.classList.remove('note-drag-over'));
+        dragIdx = null;
+    });
+    notesList.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const row = e.target.closest('.note-row');
+        if (!row) return;
+        e.dataTransfer.dropEffect = 'move';
+        notesList.querySelectorAll('.note-row').forEach(r => r.classList.remove('note-drag-over'));
+        row.classList.add('note-drag-over');
+    });
+    notesList.addEventListener('dragleave', (e) => {
+        const row = e.target.closest('.note-row');
+        if (row) row.classList.remove('note-drag-over');
+    });
+    notesList.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const row = e.target.closest('.note-row');
+        if (!row || dragIdx === null) return;
+        const dropIdx = parseInt(row.dataset.noteIdx);
+        if (dragIdx === dropIdx) return;
+        // Commit current input values before reordering
+        const inputs = notesList.querySelectorAll('input');
+        inputs.forEach(el => { T.notes[parseInt(el.dataset.noteIdx)] = el.value; });
+        const moved = T.notes.splice(dragIdx, 1)[0];
+        T.notes.splice(dropIdx, 0, moved);
+        renderNoteInputs();
+        saveNotes();
+    });
 
     document.getElementById('btn-add-note').addEventListener('click', () => {
         T.notes = T.notes || [];
