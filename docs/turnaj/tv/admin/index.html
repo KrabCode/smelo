@@ -65,89 +65,88 @@
             </div>
         </div>
 
-        <!-- Config + Blinds side by side -->
-        <div class="config-blinds-row">
-            <div class="section" id="section-config">
-                <h2><button type="button" class="guard-toggle" data-target="section-config">&#x1F512;</button> Nastavení turnaje</h2>
-                <div class="section-body">
-                    <div class="config-grid">
-                        <div class="config-sub">Struktura</div>
-                        <div class="config-field">
-                            <label for="cfg-level-dur">Délka levelu (min)</label>
-                            <input type="number" id="cfg-level-dur" value="20" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-max-levels">Max levelů</label>
-                            <input type="number" id="cfg-max-levels" value="12" min="2" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-smallest">Min SB</label>
-                            <input type="number" id="cfg-smallest" value="25" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-max-bb">Max BB</label>
-                            <input type="number" id="cfg-max-bb" value="10000" min="100" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-ante-mult">Ante (× BB)</label>
-                            <input type="number" id="cfg-ante-mult" value="0" min="0" max="10" step="0.5" inputmode="decimal">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-start-time-est">Orientační začátek</label>
-                            <input type="time" id="cfg-start-time-est" value="19:00" step="60">
-                        </div>
-                        <div class="config-field full-row">
-                            <label>Křivka blindů: <strong id="blind-curve-val">1.0</strong></label>
-                            <input type="range" id="cfg-blind-curve" min="0.5" max="2.0" step="0.1" value="1.0">
-                            <small class="hint">0.7 = rychlý start &nbsp;|&nbsp; 1.0 = rovnoměrný &nbsp;|&nbsp; 1.3 = rychlý konec</small>
-                        </div>
+        <!-- Blind structure preview -->
+        <div class="section" id="section-blinds">
+            <h2>Struktura blindů</h2>
+            <table class="structure-table">
+                <thead>
+                    <tr><th>#</th><th>Čas</th><th>SB</th><th>BB</th><th id="th-ante" style="display:none">Ante</th></tr>
+                </thead>
+                <tbody id="structure-body"></tbody>
+            </table>
+        </div>
 
-                        <div class="config-sub">Přestávka</div>
-                        <div class="config-field">
-                            <label for="cfg-break-dur">Délka přestávky (min)</label>
-                            <input type="number" id="cfg-break-dur" value="30" min="1" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-levels-per-break">Přestávka každých N levelů</label>
-                            <input type="number" id="cfg-levels-per-break" value="0" min="0" inputmode="numeric">
-                        </div>
-
-                        <div class="config-sub">Žetony</div>
-                        <div class="config-field">
-                            <label for="cfg-buyin-amount">Buy-in (Kč)</label>
-                            <input type="number" id="cfg-buyin-amount" value="400" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-stack">Počáteční žetony</label>
-                            <input type="number" id="cfg-stack" value="5000" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-bonus">Bonus žetony</label>
-                            <input type="number" id="cfg-bonus" value="5000" inputmode="numeric">
-                        </div>
-
-                        <div class="config-sub">Add-on</div>
-                        <div class="config-field">
-                            <label for="cfg-addon-amount">Add-on cena (Kč)</label>
-                            <input type="number" id="cfg-addon-amount" value="0" min="0" inputmode="numeric">
-                        </div>
-                        <div class="config-field">
-                            <label for="cfg-addon-chips">Add-on žetony</label>
-                            <input type="number" id="cfg-addon-chips" value="0" min="0" inputmode="numeric">
-                        </div>
+        <!-- Config -->
+        <div class="section" id="section-config">
+            <h2><button type="button" class="guard-toggle" data-target="section-config">&#x1F512;</button> Nastavení turnaje</h2>
+            <div class="section-body">
+                <div class="config-grid">
+                    <div class="config-sub">Struktura</div>
+                    <div class="config-field">
+                        <label for="cfg-level-dur">Délka levelu (min)</label>
+                        <input type="number" id="cfg-level-dur" value="20" inputmode="numeric">
                     </div>
-                    <div class="save-status" id="config-save-status"></div>
-                </div>
-            </div>
+                    <div class="config-field">
+                        <label for="cfg-max-levels">Max levelů</label>
+                        <input type="number" id="cfg-max-levels" value="12" min="2" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-smallest">Min SB</label>
+                        <input type="number" id="cfg-smallest" value="25" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-max-bb">Max BB</label>
+                        <input type="number" id="cfg-max-bb" value="10000" min="100" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-ante-mult">Ante (× BB)</label>
+                        <input type="number" id="cfg-ante-mult" value="0" min="0" max="10" step="0.5" inputmode="decimal">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-start-time-est">Orientační začátek</label>
+                        <input type="time" id="cfg-start-time-est" value="19:00" step="60">
+                    </div>
+                    <div class="config-field full-row">
+                        <label>Křivka blindů: <strong id="blind-curve-val">1.0</strong></label>
+                        <input type="range" id="cfg-blind-curve" min="0.5" max="2.0" step="0.1" value="1.0">
+                        <small class="hint">0.7 = rychlý start &nbsp;|&nbsp; 1.0 = rovnoměrný &nbsp;|&nbsp; 1.3 = rychlý konec</small>
+                    </div>
 
-            <div class="section" id="section-blinds">
-                <h2>Struktura blindů</h2>
-                <table class="structure-table">
-                    <thead>
-                        <tr><th>#</th><th>Čas</th><th>SB</th><th>BB</th><th id="th-ante" style="display:none">Ante</th></tr>
-                    </thead>
-                    <tbody id="structure-body"></tbody>
-                </table>
+                    <div class="config-sub">Přestávka</div>
+                    <div class="config-field">
+                        <label for="cfg-break-dur">Délka přestávky (min)</label>
+                        <input type="number" id="cfg-break-dur" value="30" min="1" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-levels-per-break">Přestávka každých N levelů</label>
+                        <input type="number" id="cfg-levels-per-break" value="0" min="0" inputmode="numeric">
+                    </div>
+
+                    <div class="config-sub">Žetony</div>
+                    <div class="config-field">
+                        <label for="cfg-buyin-amount">Buy-in (Kč)</label>
+                        <input type="number" id="cfg-buyin-amount" value="400" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-stack">Počáteční žetony</label>
+                        <input type="number" id="cfg-stack" value="5000" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-bonus">Bonus žetony</label>
+                        <input type="number" id="cfg-bonus" value="5000" inputmode="numeric">
+                    </div>
+
+                    <div class="config-sub">Add-on</div>
+                    <div class="config-field">
+                        <label for="cfg-addon-amount">Add-on cena (Kč)</label>
+                        <input type="number" id="cfg-addon-amount" value="0" min="0" inputmode="numeric">
+                    </div>
+                    <div class="config-field">
+                        <label for="cfg-addon-chips">Add-on žetony</label>
+                        <input type="number" id="cfg-addon-chips" value="0" min="0" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="save-status" id="config-save-status"></div>
             </div>
         </div>
 

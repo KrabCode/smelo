@@ -48,20 +48,6 @@ body {
     padding: 8px 12px 80px;
 }
 
-/* Config + Blinds side by side */
-.config-blinds-row {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-@media (min-width: 700px) {
-    .config-blinds-row {
-        flex-direction: row;
-        align-items: flex-start;
-    }
-    .config-blinds-row > .section { flex: 1; min-width: 0; }
-    .config-blinds-row > #section-blinds { flex: 0 0 340px; }
-}
 
 /* Sections */
 .section {
@@ -283,18 +269,16 @@ body {
 .player-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    margin: 0 -16px;
-    padding: 0 16px;
 }
 .player-table {
     width: 100%;
-    min-width: 520px;
+    min-width: 540px;
     border-collapse: collapse;
 }
 .player-table th {
     text-align: left;
     color: var(--text-muted);
-    padding: 6px 4px;
+    padding: 6px 6px;
     font-weight: 500;
     font-size: 0.75em;
     letter-spacing: 0.5px;
@@ -307,7 +291,7 @@ body {
     font-size: 0.85em;
 }
 .player-table td {
-    padding: 5px 4px;
+    padding: 4px 6px;
     border-bottom: 1px solid rgba(255,255,255,0.06);
     vertical-align: middle;
     white-space: nowrap;
@@ -318,26 +302,26 @@ body {
     text-decoration: line-through;
 }
 .player-toggle {
-    min-width: 40px;
-    min-height: 40px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
-    border: 1px solid var(--border-light);
-    background: var(--bg-input);
-    color: var(--text-muted);
-    font-size: 0.9em;
+    border-radius: 50%;
+    border: 2px solid var(--border-light);
+    background: transparent;
+    color: transparent;
+    font-size: 0;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     vertical-align: middle;
     padding: 0;
+    transition: background 0.15s, border-color 0.15s;
 }
-.player-toggle:active { transform: scale(0.95); }
+.player-toggle:active { transform: scale(0.9); }
 .player-toggle.on {
     background: var(--green);
-    color: #000;
     border-color: var(--green);
 }
 .player-toggle.active-toggle.on {
@@ -345,12 +329,12 @@ body {
     border-color: var(--accent);
 }
 .player-buys-btn {
-    min-width: 32px;
-    min-height: 36px;
+    width: 34px;
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: 50%;
     border: 1px solid var(--border-light);
     background: var(--bg-input);
     color: var(--text-muted);
@@ -360,7 +344,7 @@ body {
     vertical-align: middle;
     padding: 0;
 }
-.player-buys-btn:active { transform: scale(0.95); }
+.player-buys-btn:active { transform: scale(0.9); }
 .player-buys-count {
     display: inline-block;
     min-width: 18px;

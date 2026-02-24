@@ -523,9 +523,9 @@ function renderPlayerList() {
             '<td><button class="player-buys-btn" data-idx="' + i + '" data-dir="-">&minus;</button>' +
             '<span class="player-buys-count">' + p.buys + '</span>' +
             '<button class="player-buys-btn" data-idx="' + i + '" data-dir="+">+</button></td>' +
-            '<td><button class="player-toggle' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon">' + (p.addon ? '\u2713' : '\u2717') + '</button></td>' +
-            '<td><button class="player-toggle' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus">' + (p.bonus ? '\u2713' : '\u2717') + '</button></td>' +
-            '<td><button class="player-toggle active-toggle' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active">' + (p.active ? '\u2713' : '\u2717') + '</button></td>' +
+            '<td><button class="player-toggle' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon"></button></td>' +
+            '<td><button class="player-toggle' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus"></button></td>' +
+            '<td><button class="player-toggle active-toggle' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active"></button></td>' +
             '<td><button class="player-remove" data-idx="' + i + '" title="Odebrat">&times;</button></td>' +
             '</tr>';
     });
