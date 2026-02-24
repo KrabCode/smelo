@@ -614,6 +614,7 @@ function render() {
             'cfg-buyin-amount': config.buyInAmount,
             'cfg-addon-chips': config.addonChips,
             'cfg-addon-amount': config.addonAmount,
+            'cfg-start-time-est': config.startTime,
             'cfg-max-bb': config.maxBB,
             'cfg-blind-curve': config.blindCurve
         };
@@ -842,6 +843,7 @@ if (isAdmin) {
             startingStack: parseInt(document.getElementById('cfg-stack').value) || 5000,
             levelDuration: parseInt(document.getElementById('cfg-level-dur').value) || 20,
             maxLevels: parseInt(document.getElementById('cfg-max-levels').value) || 12,
+            startTime: document.getElementById('cfg-start-time-est').value || '19:00',
             smallestChip: parseInt(document.getElementById('cfg-smallest').value) || 25,
             bonusAmount: parseInt(document.getElementById('cfg-bonus').value) || 5000,
 
