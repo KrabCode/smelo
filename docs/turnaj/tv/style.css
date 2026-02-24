@@ -796,7 +796,17 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 }
 
 @media (orientation: portrait) {
-    .admin-panel { max-width: 100%; padding: 0 8px 40px; }
-    .config-grid { grid-template-columns: 1fr; }
+    .admin-panel { max-width: 100%; padding: 0 8px 40px; font-size: 16px; }
+    .config-grid { grid-template-columns: 1fr; gap: 14px; }
+    .config-field input,
+    .config-field textarea,
+    .note-row input,
+    .player-add-row input { font-size: 16px; padding: 12px; }
+    .config-field label { font-size: 0.9em; margin-bottom: 4px; }
+    .btn { font-size: 1em; padding: 14px 16px; }
+    .admin-section { padding: 20px; }
+    .player-toggle,
+    .player-buys-btn { padding: 8px 12px; font-size: 1em; }
+    .player-remove { font-size: 1.4em; padding: 6px 10px; }
 }
 

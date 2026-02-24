@@ -24,6 +24,7 @@ if (location.search.includes('admin')) {
 
 function applyAdminMode() {
     document.getElementById('admin-panel').style.display = isAdmin ? '' : 'none';
+    document.getElementById('btn-toggle-admin').style.display = isAdmin ? '' : 'none';
 }
 applyAdminMode();
 const adminDetails = document.querySelector('#admin-panel details');
