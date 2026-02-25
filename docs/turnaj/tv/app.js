@@ -51,7 +51,7 @@ seatingBtn.addEventListener('click', () => {
 
 // ─── Table Definitions ──────────────────────────────────────
 const TABLES = [
-    { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 8 },
+    { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 10 },
     { id: 2, name: 'Černý', color: '#2c3e50', shape: 'rect', seats: 6 },
     { id: 3, name: 'Zelený', color: '#27ae60', shape: 'rect', seats: 6 }
 ];
