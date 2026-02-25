@@ -371,7 +371,7 @@ function render() {
     const statusLabel = { waiting: 'Čeká se', running: 'Běží', finished: 'Ukončen' };
     document.getElementById('status-players').textContent =
         stats.activePlayers + '/' + stats.buyIns + ' hráčů';
-    document.getElementById('player-count').textContent = stats.buyIns;
+    document.getElementById('player-count').textContent = stats.activePlayers + '/' + stats.buyIns;
 
     // Chips in status bar
     const totalChipsNow = recalcTotalChips();
