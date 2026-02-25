@@ -358,6 +358,29 @@ function render() {
         stats.activePlayers + '/' + stats.buyIns + ' hráčů';
     document.getElementById('player-count').textContent = stats.buyIns;
 
+    // Level info in status bar
+    const statusLevelEl = document.getElementById('status-level');
+    if (statusLevelEl) {
+        if (state.status === 'running' && state.startedAt) {
+            const d = getCurrentLevel(state.startedAt, struct);
+            const cur = struct[d.levelIndex];
+            if (cur && cur.isBreak) {
+                statusLevelEl.textContent = 'Přestávka';
+                statusLevelEl.style.color = 'var(--green)';
+            } else if (cur) {
+                let bn = 0;
+                for (let i = 0; i <= d.levelIndex; i++) { if (!struct[i].isBreak) bn++; }
+                statusLevelEl.textContent = 'L' + bn + ' ' + cur.small.toLocaleString('cs') + '/' + cur.big.toLocaleString('cs');
+                statusLevelEl.style.color = '';
+            } else {
+                statusLevelEl.textContent = '';
+            }
+        } else {
+            statusLevelEl.textContent = statusLabel[state.status] || '';
+            statusLevelEl.style.color = '';
+        }
+    }
+
     // Timer section
     const derived = (state.status === 'running' && state.startedAt)
         ? getCurrentLevel(state.startedAt, struct)
@@ -673,16 +696,16 @@ function saveNotes() {
 // ─── Seating Visuals ────────────────────────────────────────
 const SEAT_POSITIONS = {
     oval: [
-        { left: 35, top: 80 },  // 1
-        { left: 65, top: 80 },  // 2
-        { left: 82, top: 68 },  // 3
-        { left: 82, top: 50 },  // 4
-        { left: 82, top: 32 },  // 5
-        { left: 65, top: 20 },  // 6
-        { left: 35, top: 20 },  // 7
-        { left: 18, top: 32 },  // 8
-        { left: 18, top: 50 },  // 9
-        { left: 18, top: 68 }   // 10
+        { left: 35, top: 85 },  // 1  bottom-left
+        { left: 65, top: 85 },  // 2  bottom-right
+        { left: 84, top: 72 },  // 3  right-lower
+        { left: 90, top: 50 },  // 4  right-middle
+        { left: 84, top: 28 },  // 5  right-upper
+        { left: 65, top: 15 },  // 6  top-right
+        { left: 35, top: 15 },  // 7  top-left
+        { left: 16, top: 28 },  // 8  left-upper
+        { left: 10, top: 50 },  // 9  left-middle
+        { left: 16, top: 72 }   // 10 left-lower
     ],
     rect: [
         { left: 35, top: 80 },  // 1
@@ -744,6 +767,30 @@ function renderTableLocks() {
     const list = T.players.list || [];
     const occupied = new Set();
     list.forEach(p => { if (p.table && p.seat) occupied.add(p.table + '-' + p.seat); });
+
+    // Seating status bar
+    const statusEl = document.getElementById('seating-status');
+    if (statusEl) {
+        let statusHtml = '<div class="seating-status-bar">';
+        TABLES.forEach(t => {
+            const tl = locks[t.id] || {};
+            if (tl.locked) {
+                statusHtml += '<span class="seating-status-item locked" style="border-color:' + t.color + '"><span class="seating-status-name" style="color:' + t.color + '">' + t.name + '</span> zamčený</span>';
+            } else {
+                const lockedS = tl.lockedSeats || [];
+                let free = 0, total = 0;
+                for (let s = 1; s <= getSeats(t); s++) {
+                    if (lockedS.includes(s)) continue;
+                    total++;
+                    if (!occupied.has(t.id + '-' + s)) free++;
+                }
+                const cls = free === 0 ? ' full' : '';
+                statusHtml += '<span class="seating-status-item' + cls + '" style="border-color:' + t.color + '"><span class="seating-status-name" style="color:' + t.color + '">' + t.name + '</span> ' + free + '/' + total + ' volných</span>';
+            }
+        });
+        statusHtml += '</div>';
+        statusEl.innerHTML = statusHtml;
+    }
 
     let html = '';
     TABLES.forEach(t => {

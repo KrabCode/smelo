@@ -383,6 +383,36 @@ body {
 }
 .player-seat-select:focus { outline: none; border-color: var(--accent); }
 
+/* Seating status bar */
+.seating-status-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.seating-status-item {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 2px solid;
+    background: rgba(255,255,255,0.04);
+    font-size: 0.85em;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+.seating-status-item.full {
+    background: rgba(248,113,113,0.1);
+    color: var(--red);
+}
+.seating-status-item.locked {
+    opacity: 0.4;
+}
+.seating-status-name {
+    font-weight: 700;
+}
+
 /* Table locks */
 .table-lock-card {
     padding: 16px 0;

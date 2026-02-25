@@ -196,23 +196,6 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .blinds-current.on-break { color: var(--green); }
 .progress-bar.on-break { background: var(--green); }
 
-/* Add-on banner */
-.addon-banner {
-    font-family: 'Staatliches', sans-serif;
-    font-size: clamp(1.6rem, 3vw, 2.8rem);
-    letter-spacing: 2px;
-    color: #000;
-    background: var(--green);
-    padding: 16px 48px;
-    border-radius: 10px;
-    margin: 16px auto 0;
-    display: inline-block;
-    animation: addon-pulse 2s ease-in-out infinite;
-}
-@keyframes addon-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.75; }
-}
 
 /* Break message */
 .break-message {
@@ -226,6 +209,11 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     border-radius: 12px;
     padding: 20px 32px;
     display: inline-block;
+    animation: break-pulse 2s ease-in-out infinite;
+}
+@keyframes break-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(255,179,0,0.2); }
+    50% { box-shadow: 0 0 24px rgba(255,179,0,0.6), 0 0 48px rgba(255,179,0,0.3); }
 }
 .break-message-rest {
     font-size: 0.5em;
@@ -366,7 +354,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     overflow: visible;
 }
 .seating-section .seating-table-visual {
-    width: 80%;
+    width: 100%;
     margin: 100px auto 30px;
 }
 .seating-table-surface {
@@ -396,15 +384,15 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     transform: translate(-50%, -50%);
 }
 .seating-seat-num {
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: 2px solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Staatliches', sans-serif;
-    font-size: 0.8em;
+    font-size: 1em;
     color: var(--text-muted);
     background: var(--bg-card);
 }
@@ -414,10 +402,10 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     background: rgba(255,179,0,0.1);
 }
 .seating-seat-name {
-    font-size: 0.65em;
+    font-size: 0.85em;
     color: var(--text);
     white-space: nowrap;
-    max-width: 70px;
+    max-width: 90px;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;

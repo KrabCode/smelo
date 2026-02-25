@@ -456,16 +456,16 @@ function recalcAndSync() {
 // Seat positions as % of container (left, top) for each shape
 const SEAT_POSITIONS = {
     oval: [
-        { left: 35, top: 95 },  // 1
-        { left: 65, top: 95 },  // 2
-        { left: 92, top: 72 },  // 3
-        { left: 92, top: 50 },  // 4
-        { left: 92, top: 28 },  // 5
-        { left: 65, top: 5 },   // 6
-        { left: 35, top: 5 },   // 7
-        { left: 8,  top: 28 },  // 8
-        { left: 8,  top: 50 },  // 9
-        { left: 8,  top: 72 }   // 10
+        { left: 35, top: 93 },  // 1  bottom-left
+        { left: 65, top: 93 },  // 2  bottom-right
+        { left: 86, top: 76 },  // 3  right-lower
+        { left: 94, top: 50 },  // 4  right-middle
+        { left: 86, top: 24 },  // 5  right-upper
+        { left: 65, top: 7 },   // 6  top-right
+        { left: 35, top: 7 },   // 7  top-left
+        { left: 14, top: 24 },  // 8  left-upper
+        { left: 6,  top: 50 },  // 9  left-middle
+        { left: 14, top: 76 }   // 10 left-lower
     ],
     rect: [
         { left: 35, top: 95 },  // 1
@@ -639,7 +639,6 @@ function render() {
 
     // Blinds / break display
     const blindsLabelEl = document.getElementById('blinds-label');
-    const addonBannerEl = document.getElementById('addon-banner');
     const breakMsgEl = document.getElementById('break-message');
     if (onBreak) {
         blindsLabelEl.style.display = 'none';
@@ -648,23 +647,6 @@ function render() {
         progressBarEl.classList.add('on-break');
         document.getElementById('blinds-sub').textContent = '';
 
-        // Add-on banner during break
-        const addonChips = config.addonChips || 0;
-        const addonCutoff = config.addonCutoff || 0;
-        let blindsBefore = 0;
-        for (let i = 0; i < lvl; i++) {
-            if (!struct[i].isBreak) blindsBefore++;
-        }
-        const addonApplies = addonChips > 0 &&
-            (addonCutoff === 0 || blindsBefore < addonCutoff);
-        if (addonApplies) {
-            addonBannerEl.textContent = 'ADD-ON: ' +
-                addonChips.toLocaleString('cs') + ' žetonů za ' +
-                (config.addonAmount || 0).toLocaleString('cs') + ' Kč';
-            addonBannerEl.style.display = '';
-        } else {
-            addonBannerEl.style.display = 'none';
-        }
         // Break message
         const bMsg = (T.breakMessage || '').trim();
         if (bMsg) {
@@ -684,7 +666,6 @@ function render() {
         progressBarEl.classList.remove('on-break');
         document.getElementById('blinds-sub').textContent =
             anteOn ? 'Ante ' + Math.round(curEntry.big * anteMult).toLocaleString('cs') : '';
-        addonBannerEl.style.display = 'none';
         breakMsgEl.style.display = 'none';
     } else {
         blindsLabelEl.style.display = '';
@@ -692,7 +673,6 @@ function render() {
         blindsCurEl.classList.remove('on-break');
         progressBarEl.classList.remove('on-break');
         document.getElementById('blinds-sub').textContent = '';
-        addonBannerEl.style.display = 'none';
         breakMsgEl.style.display = 'none';
     }
 
