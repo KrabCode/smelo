@@ -775,17 +775,17 @@ function renderTableLocks() {
         TABLES.forEach(t => {
             const tl = locks[t.id] || {};
             if (tl.locked) {
-                statusHtml += '<span class="seating-status-item locked" style="border-color:' + t.color + '"><span class="seating-status-name" style="color:' + t.color + '">' + t.name + '</span> zamčený</span>';
+                statusHtml += '<span class="seating-status-item closed"><span class="seating-dot" style="background:' + t.color + '"></span></span>';
             } else {
                 const lockedS = tl.lockedSeats || [];
-                let free = 0, total = 0;
+                let seated = 0, total = 0;
                 for (let s = 1; s <= getSeats(t); s++) {
                     if (lockedS.includes(s)) continue;
                     total++;
-                    if (!occupied.has(t.id + '-' + s)) free++;
+                    if (occupied.has(t.id + '-' + s)) seated++;
                 }
-                const cls = free === 0 ? ' full' : '';
-                statusHtml += '<span class="seating-status-item' + cls + '" style="border-color:' + t.color + '"><span class="seating-status-name" style="color:' + t.color + '">' + t.name + '</span> ' + free + '/' + total + ' volných</span>';
+                const cls = seated === total ? ' full' : '';
+                statusHtml += '<span class="seating-status-item' + cls + '"><span class="seating-dot" style="background:' + t.color + '"></span> ' + seated + '/' + total + '</span>';
             }
         });
         statusHtml += '</div>';

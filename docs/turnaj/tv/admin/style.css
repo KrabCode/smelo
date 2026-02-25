@@ -386,31 +386,42 @@ body {
 /* Seating status bar */
 .seating-status-bar {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
     margin-bottom: 8px;
+    align-items: center;
 }
 .seating-status-item {
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 2px solid;
-    background: rgba(255,255,255,0.04);
-    font-size: 0.85em;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9em;
+    font-weight: 600;
     color: var(--text-muted);
     white-space: nowrap;
 }
 .seating-status-item.full {
-    background: rgba(248,113,113,0.1);
     color: var(--red);
 }
-.seating-status-item.locked {
-    opacity: 0.4;
+.seating-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
 }
-.seating-status-name {
-    font-weight: 700;
+.seating-status-item.closed .seating-dot {
+    position: relative;
+    opacity: 0.5;
+}
+.seating-status-item.closed .seating-dot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -2px;
+    right: -2px;
+    height: 2px;
+    background: var(--text-muted);
+    transform: rotate(-45deg);
 }
 
 /* Table locks */
