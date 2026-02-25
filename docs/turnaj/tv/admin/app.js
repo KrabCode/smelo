@@ -65,6 +65,7 @@ const DEFAULTS = {
         bonusAmount: 5000,
         levelsPerBreak: 0,
         breakDuration: 30,
+        maxBreaks: 0,
         startTime: '19:00',
         buyInAmount: 400,
         addonChips: 0,
@@ -114,6 +115,7 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
     const numLevels = Math.max(2, config.maxLevels || 12);
     const lpb = config.levelsPerBreak || 0;
     const breakDur = config.breakDuration || 30;
+    const maxBreaks = config.maxBreaks || 0;
     const curve = config.blindCurve || 1.0;
     const maxBB = config.maxBB || 10000;
 
@@ -180,10 +182,12 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
 
     if (lpb > 0) {
         let blindCount = 0;
+        let breakCount = 0;
         for (let i = 0; i < levels.length; i++) {
             if (levels[i].isBreak) continue;
             blindCount++;
             if (blindCount % lpb === 0) {
+                if (maxBreaks > 0 && breakCount >= maxBreaks) break;
                 const remainingBlinds = levels.slice(i + 1).some(l => !l.isBreak);
                 if (!remainingBlinds) break;
                 if (i + 1 < levels.length && levels[i + 1].isBreak) continue;
@@ -192,6 +196,7 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
                     duration: breakDur,
                     isBreak: true
                 });
+                breakCount++;
                 i++;
             }
         }
@@ -471,6 +476,7 @@ function render() {
         'cfg-bonus': config.bonusAmount,
         'cfg-levels-per-break': config.levelsPerBreak,
         'cfg-break-dur': config.breakDuration,
+        'cfg-max-breaks': config.maxBreaks,
         'cfg-buyin-amount': config.buyInAmount,
         'cfg-addon-chips': config.addonChips,
         'cfg-addon-amount': config.addonAmount,
@@ -996,6 +1002,7 @@ function saveConfig() {
         bonusAmount: parseInt(document.getElementById('cfg-bonus').value) || 5000,
         levelsPerBreak: parseInt(document.getElementById('cfg-levels-per-break').value) || 0,
         breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
+        maxBreaks: parseInt(document.getElementById('cfg-max-breaks').value) || 0,
         buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400,
         addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
         addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,

@@ -175,6 +175,7 @@ const DEFAULTS = {
 
         levelsPerBreak: 0,
         breakDuration: 30,
+        maxBreaks: 0,
         startTime: '19:00',
         buyInAmount: 400,
         addonChips: 0,
@@ -225,6 +226,7 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
     const numLevels = Math.max(2, config.maxLevels || 12);
     const lpb = config.levelsPerBreak || 0;
     const breakDur = config.breakDuration || 30;
+    const maxBreaks = config.maxBreaks || 0;
     const curve = config.blindCurve || 1.0;
     const maxBB = config.maxBB || 10000;
 
@@ -310,10 +312,12 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
 
         // Walk through levels, count blind levels, insert breaks at every N-th
         let blindCount = 0;
+        let breakCount = 0;
         for (let i = 0; i < levels.length; i++) {
-            if (levels[i].isBreak) continue;
+            if (levels[i].isBreak) { breakCount++; continue; }
             blindCount++;
             if (blindCount % lpb === 0) {
+                if (maxBreaks > 0 && breakCount >= maxBreaks) break;
                 // Don't insert after the very last blind level
                 const remainingBlinds = levels.slice(i + 1).some(l => !l.isBreak);
                 if (!remainingBlinds) break;
@@ -324,6 +328,7 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
                     duration: breakDur,
                     isBreak: true
                 });
+                breakCount++;
                 i++; // skip the just-inserted break
             }
         }
