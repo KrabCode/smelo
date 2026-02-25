@@ -677,11 +677,13 @@ const SEAT_POSITIONS = {
         { left: 35, top: 95 },  // 1
         { left: 65, top: 95 },  // 2
         { left: 92, top: 72 },  // 3
-        { left: 92, top: 28 },  // 4
-        { left: 65, top: 5 },   // 5
-        { left: 35, top: 5 },   // 6
-        { left: 8,  top: 28 },  // 7
-        { left: 8,  top: 72 }   // 8
+        { left: 92, top: 50 },  // 4
+        { left: 92, top: 28 },  // 5
+        { left: 65, top: 5 },   // 6
+        { left: 35, top: 5 },   // 7
+        { left: 8,  top: 28 },  // 8
+        { left: 8,  top: 50 },  // 9
+        { left: 8,  top: 72 }   // 10
     ],
     rect: [
         { left: 35, top: 95 },  // 1

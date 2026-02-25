@@ -456,26 +456,26 @@ function recalcAndSync() {
 // Seat positions as % of container (left, top) for each shape
 const SEAT_POSITIONS = {
     oval: [
-        // 8 seats clockwise: bottom-left, bottom-right, right-bottom, right-top, top-right, top-left, left-top, left-bottom
         { left: 35, top: 95 },  // 1
         { left: 65, top: 95 },  // 2
         { left: 92, top: 72 },  // 3
-        { left: 92, top: 28 },  // 4
-        { left: 65, top: 5 },   // 5
-        { left: 35, top: 5 },   // 6
-        { left: 8,  top: 28 },  // 7
-        { left: 8,  top: 72 }   // 8
+        { left: 92, top: 50 },  // 4
+        { left: 92, top: 28 },  // 5
+        { left: 65, top: 5 },   // 6
+        { left: 35, top: 5 },   // 7
+        { left: 8,  top: 28 },  // 8
+        { left: 8,  top: 50 },  // 9
+        { left: 8,  top: 72 }   // 10
     ],
     rect: [
-        // 8 seats clockwise, 2 per side
-        { left: 35, top: 95 },  // 1  bottom-left
-        { left: 65, top: 95 },  // 2  bottom-right
-        { left: 95, top: 70 },  // 3  right-bottom
-        { left: 95, top: 30 },  // 4  right-top
-        { left: 65, top: 5 },   // 5  top-right
-        { left: 35, top: 5 },   // 6  top-left
-        { left: 5,  top: 30 },  // 7  left-top
-        { left: 5,  top: 70 }   // 8  left-bottom
+        { left: 35, top: 95 },  // 1
+        { left: 65, top: 95 },  // 2
+        { left: 95, top: 70 },  // 3
+        { left: 95, top: 30 },  // 4
+        { left: 65, top: 5 },   // 5
+        { left: 35, top: 5 },   // 6
+        { left: 5,  top: 30 },  // 7
+        { left: 5,  top: 70 }   // 8
     ]
 };
 
