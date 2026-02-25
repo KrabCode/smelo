@@ -2,7 +2,31 @@
   "permissions": {
     "allow": [
       "Bash(git pull:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git -C /c/Users/Krab/Documents/GitHub/smelo ls-files:*)",
+      "Bash(python -m http.server:*)",
+      "Bash(start:*)",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(ls:*)",
+      "Bash(git status:*)",
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(for f in bet-sizing/index.html bluffing/index.html implied-odds/index.html live-tells/index.html outs-equity/index.html player-types/index.html postflop/index.html pozice/index.html priklady/index.html ranges/index.html)",
+      "Bash(do sed -i '/\\\\\\\\u2660/d' \"$f\")",
+      "Bash(done)",
+      "Bash(do sed -i 'N;s|[[:space:]]*<script>\\\\n[[:space:]]*</script>||;P;D' \"$f\")",
+      "Bash(do sed -i 's|<script src=\"\"../../reveal.js\"\"></script>|<script src=\"\"../../suits.js\"\"></script>\\\\n<script src=\"\"../../reveal.js\"\"></script>|' \"$f\")",
+      "Bash(grep:*)",
+      "Bash(for file in /c/Users/Krab/Documents/GitHub/smelo/docs/teorie/*/index.html)",
+      "Bash(do sed -i '/teorie-nav\\\\.js/d' \"$file\")",
+      "Bash(tail:*)",
+      "Bash(cmd:*)",
+      "WebSearch",
+      "WebFetch(domain:www.jsdelivr.com)",
+      "Bash(python:*)",
+      "Bash(cat:*)"
     ]
   }
 }
