@@ -262,24 +262,34 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
             const lastBlind = [...levels].reverse().find(l => !l.isBreak);
             const lastSB = lastBlind ? lastBlind.small : startSB;
 
-            // Find the t value corresponding to lastSB on the curve
-            // sb = startSB * (targetSB/startSB)^(t^curve)  →  t = (log(sb/startSB) / log(targetSB/startSB))^(1/curve)
             const ratio = targetSB > startSB ? Math.log(lastSB / startSB) / Math.log(targetSB / startSB) : 1;
             const tStart = Math.pow(Math.min(1, Math.max(0, ratio)), 1 / curve);
 
-            // Generate remaining levels from tStart to 1
+            const newSBs = [];
             for (let i = 1; i <= remaining; i++) {
                 const t = tStart + (1 - tStart) * (i / remaining);
                 const sb = Math.min(roundToChip(startSB * Math.pow(targetSB / startSB, Math.pow(t, curve)), smallestChip), ceilingSmall);
-                levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+                if (newSBs.length === 0 || sb !== newSBs[newSBs.length - 1]) newSBs.push(sb);
+            }
+            // Link last frozen level's BB to first new SB
+            if (lastBlind && newSBs.length > 0) lastBlind.big = newSBs[0];
+            for (let i = 0; i < newSBs.length; i++) {
+                const nextSB = i + 1 < newSBs.length ? newSBs[i + 1] : newSBs[i] * 2;
+                levels.push({ small: newSBs[i], big: nextSB, duration: levelDuration });
             }
         }
     } else {
-        // Fresh calculation using curve
         const sbValues = generateCurve(numLevels, startSB, targetSB);
-        for (const sb of sbValues) {
-            const capped = Math.min(sb, ceilingSmall);
-            levels.push({ small: capped, big: capped * 2, duration: levelDuration });
+        // Deduplicate consecutive equal SB values
+        const uniqueSB = [sbValues[0]];
+        for (let i = 1; i < sbValues.length; i++) {
+            if (sbValues[i] !== uniqueSB[uniqueSB.length - 1]) uniqueSB.push(sbValues[i]);
+        }
+        // BB of each level = SB of the next level; last level uses SB*2
+        for (let i = 0; i < uniqueSB.length; i++) {
+            const sb = Math.min(uniqueSB[i], ceilingSmall);
+            const nextSB = i + 1 < uniqueSB.length ? Math.min(uniqueSB[i + 1], ceilingSmall) : sb * 2;
+            levels.push({ small: sb, big: nextSB, duration: levelDuration });
         }
     }
 
