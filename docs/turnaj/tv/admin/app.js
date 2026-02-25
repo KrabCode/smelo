@@ -35,9 +35,10 @@ db.ref('.info/connected').on('value', (snap) => {
     const dot = document.getElementById('status-dot');
     const txt = document.getElementById('status-text');
     if (snap.val() === true) {
-        dot.classList.add('connected');
-        txt.textContent = 'Online';
+        dot.style.display = 'none';
+        txt.textContent = '';
     } else {
+        dot.style.display = '';
         dot.classList.remove('connected');
         txt.textContent = 'Offline';
     }
@@ -371,6 +372,16 @@ function render() {
     document.getElementById('status-players').textContent =
         stats.activePlayers + '/' + stats.buyIns + ' hráčů';
     document.getElementById('player-count').textContent = stats.buyIns;
+
+    // Chips in status bar
+    const totalChipsNow = recalcTotalChips();
+    const avgChips = stats.activePlayers > 0 ? Math.round(totalChipsNow / stats.activePlayers) : 0;
+    const chipsEl = document.getElementById('status-chips');
+    if (chipsEl) {
+        chipsEl.textContent = totalChipsNow > 0
+            ? totalChipsNow.toLocaleString('cs') + ' / ' + avgChips.toLocaleString('cs') + ' avg'
+            : '';
+    }
 
     // Level info in status bar
     const statusLevelEl = document.getElementById('status-level');
