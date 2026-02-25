@@ -737,8 +737,6 @@ function render() {
             tr.innerHTML =
                 '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM + '</td>';
         } else {
-            structBlindCount++;
-            levelNum++;
             levelNum++;
             tr.className = classes.join(' ');
             const anteCell = anteOn ? '<td>' + Math.round(s.big * anteMult).toLocaleString('cs') + '</td>' : '';
