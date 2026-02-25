@@ -537,10 +537,10 @@ body {
 .note-row {
     display: flex;
     gap: 6px;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 8px;
 }
-.note-row input {
+.note-row textarea {
     flex: 1;
     background: var(--bg-input);
     border: 1px solid var(--border-light);
@@ -548,8 +548,12 @@ body {
     color: var(--text);
     padding: 14px;
     font-size: 1em;
+    font-family: inherit;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.4;
 }
-.note-row input:focus {
+.note-row textarea:focus {
     outline: none;
     border-color: var(--accent);
     box-shadow: 0 0 0 3px rgba(255,179,0,0.15);
@@ -649,6 +653,110 @@ body {
     opacity: 0.6;
 }
 .blind-reset:active { opacity: 1; }
+
+/* Seating table visual */
+.seating-table-visual {
+    position: relative;
+    aspect-ratio: 1.5;
+    overflow: visible;
+    margin: 60px auto 20px;
+}
+.seating-table-surface {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+.seating-table-surface.oval {
+    width: 72%;
+    height: 45%;
+    border-radius: 999px;
+    border: 2px solid;
+}
+.seating-table-surface.rect {
+    width: 58%;
+    height: 48%;
+    border-radius: 8px;
+    border: 2px solid;
+}
+.seating-seat {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    transform: translate(-50%, -50%);
+}
+.seating-seat-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Staatliches', sans-serif;
+    font-size: 0.8em;
+    color: var(--text-muted);
+    background: var(--bg-card);
+}
+.seating-seat.occupied .seating-seat-num {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(255,179,0,0.1);
+}
+.seating-seat-name {
+    font-size: 0.6em;
+    color: var(--text);
+    white-space: nowrap;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+.seating-seat.empty .seating-seat-name {
+    color: var(--text-muted);
+    opacity: 0.4;
+}
+.seating-seat.locked .seating-seat-num {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(248,113,113,0.08);
+    opacity: 0.4;
+}
+.seating-seat.locked .seating-seat-name {
+    color: var(--red);
+    opacity: 0.3;
+}
+
+/* Wall indicators */
+.seating-wall {
+    position: absolute;
+    z-index: 0;
+    background: repeating-linear-gradient(
+        45deg,
+        var(--text-muted),
+        var(--text-muted) 2px,
+        transparent 2px,
+        transparent 5px
+    );
+    opacity: 0.5;
+}
+.seating-wall-top    { top: -32px; left: 10%; right: 10%; height: 6px; }
+.seating-wall-bottom { bottom: -32px; left: 10%; right: 10%; height: 6px; }
+.seating-wall-left   { left: -32px; top: 10%; bottom: 10%; width: 6px; }
+.seating-wall-right  { right: -32px; top: 10%; bottom: 10%; width: 6px; }
+
+/* Clickable walls (admin) */
+.wall-clickable {
+    cursor: pointer;
+    opacity: 0.25;
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    transition: opacity 0.15s;
+}
+.wall-clickable:active { opacity: 0.6; }
+.wall-clickable.active { opacity: 0.7; }
 
 /* Landscape: two columns for config */
 @media (min-width: 500px) {

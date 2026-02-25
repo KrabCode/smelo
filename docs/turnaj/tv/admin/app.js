@@ -472,7 +472,7 @@ function render() {
     renderWinners();
 
     // Notes
-    const noteInputs = document.querySelectorAll('#notes-list input');
+    const noteInputs = document.querySelectorAll('#notes-list textarea');
     const noteHasFocus = Array.from(noteInputs).some(el => el === document.activeElement);
     if (!noteHasFocus) renderNoteInputs();
 
@@ -658,17 +658,81 @@ function renderNoteInputs() {
     list.innerHTML = notes.map((note, i) =>
         '<div class="note-row" data-note-idx="' + i + '">' +
         '<span class="note-drag-handle">\u2630</span>' +
-        '<input type="text" value="' + note.replace(/"/g, '&quot;') + '" data-note-idx="' + i + '">' +
+        '<textarea rows="2" data-note-idx="' + i + '">' + note.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
         '<button class="note-remove" data-note-idx="' + i + '">&times;</button>' +
         '</div>'
     ).join('');
 }
 
 function saveNotes() {
-    const inputs = document.querySelectorAll('#notes-list input');
-    const notes = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
+    const inputs = document.querySelectorAll('#notes-list textarea');
+    const notes = Array.from(inputs).map(el => el.value.replace(/\n/g, ' ').trim()).filter(Boolean);
     const p = tournamentRef.child('notes').set(notes);
     showSaveStatus(document.getElementById('notes-save-status'), p);
+}
+
+// ─── Seating Visuals ────────────────────────────────────────
+const SEAT_POSITIONS = {
+    oval: [
+        { left: 35, top: 95 },  // 1
+        { left: 65, top: 95 },  // 2
+        { left: 92, top: 72 },  // 3
+        { left: 92, top: 28 },  // 4
+        { left: 65, top: 5 },   // 5
+        { left: 35, top: 5 },   // 6
+        { left: 8,  top: 28 },  // 7
+        { left: 8,  top: 72 }   // 8
+    ],
+    rect: [
+        { left: 35, top: 95 },  // 1
+        { left: 65, top: 95 },  // 2
+        { left: 95, top: 70 },  // 3
+        { left: 95, top: 30 },  // 4
+        { left: 65, top: 5 },   // 5
+        { left: 35, top: 5 },   // 6
+        { left: 5,  top: 30 },  // 7
+        { left: 5,  top: 70 }   // 8
+    ]
+};
+
+function buildTableVisualHTML(table, opts) {
+    opts = opts || {};
+    const list = T.players.list || [];
+    const positions = SEAT_POSITIONS[table.shape];
+    const seatMap = {};
+    list.forEach(p => {
+        if (p.table === table.id && p.seat) seatMap[p.seat] = p.name;
+    });
+    const locks = T.tableLocks || {};
+    const tl = locks[table.id] || {};
+    const lockedSeats = tl.lockedSeats || [];
+    const walls = tl.walls || [];
+    const rot = tl.rotation || 0;
+    const counterRot = rot ? 'rotate(' + (-rot) + 'deg)' : '';
+
+    let html = '<div class="seating-table-surface ' + table.shape + '" style="border-color:' + table.color + ';background:' + table.color + '22"></div>';
+
+    ['top', 'bottom', 'left', 'right'].forEach(side => {
+        const active = walls.includes(side);
+        if (opts.wallToggles) {
+            html += '<div class="seating-wall seating-wall-' + side + ' wall-clickable' + (active ? ' active' : '') + '" data-table="' + table.id + '" data-wall="' + side + '"></div>';
+        } else if (active) {
+            html += '<div class="seating-wall seating-wall-' + side + '"></div>';
+        }
+    });
+
+    for (let s = 1; s <= getSeats(table); s++) {
+        const pos = positions[s - 1];
+        const player = seatMap[s];
+        const seatLocked = lockedSeats.includes(s);
+        const cls = seatLocked ? 'locked' : (player ? 'occupied' : 'empty');
+        const seatStyle = 'left:' + pos.left + '%;top:' + pos.top + '%' + (counterRot ? ';transform:translate(-50%,-50%) ' + counterRot : '');
+        html += '<div class="seating-seat ' + cls + '" style="' + seatStyle + '">' +
+            '<div class="seating-seat-num">' + s + '</div>' +
+            '<div class="seating-seat-name">' + (seatLocked ? '\u2717' : (player || '\u2014')) + '</div>' +
+            '</div>';
+    }
+    return html;
 }
 
 // ─── Table Locks ────────────────────────────────────────────
@@ -699,6 +763,7 @@ function renderTableLocks() {
             '<button class="btn table-lock-toggle' + (isLocked ? ' danger' : '') +
             '" data-table="' + t.id + '" style="margin-left:auto;min-width:auto;padding:8px 16px">' +
             (isLocked ? 'Zamčený' : 'Otevřený') + '</button>' +
+            '<button class="btn table-rotate" data-table="' + t.id + '" style="min-width:auto;padding:8px 16px" title="Otočit o 90°">\u21BB</button>' +
             '</div>';
 
         if (!isLocked) {
@@ -715,6 +780,9 @@ function renderTableLocks() {
                     s + (seatLocked ? ' \u2717' : '') + '</button>';
             }
             html += '</div>';
+            const rot = tl.rotation || 0;
+            html += '<div class="seating-table-visual" style="width:100%;transform:rotate(' + rot + 'deg)">' +
+                buildTableVisualHTML(t, { wallToggles: true }) + '</div>';
         }
         html += '</div>';
     });
@@ -1096,13 +1164,20 @@ document.getElementById('notes-list').addEventListener('click', (e) => {
     saveNotes();
 });
 
+document.getElementById('notes-list').addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA' && e.target.value.includes('\n')) {
+        const pos = e.target.selectionStart;
+        e.target.value = e.target.value.replace(/\n/g, ' ');
+        e.target.selectionStart = e.target.selectionEnd = pos;
+    }
+});
 document.getElementById('notes-list').addEventListener('change', saveNotes);
 
 document.getElementById('btn-add-note').addEventListener('click', () => {
     T.notes = T.notes || [];
     T.notes.push('');
     renderNoteInputs();
-    const inputs = document.querySelectorAll('#notes-list input');
+    const inputs = document.querySelectorAll('#notes-list textarea');
     if (inputs.length) inputs[inputs.length - 1].focus();
 });
 
@@ -1148,8 +1223,8 @@ notesList.addEventListener('drop', (e) => {
     if (!row || dragIdx === null) return;
     const dropIdx = parseInt(row.dataset.noteIdx);
     if (dragIdx === dropIdx) return;
-    const inputs = notesList.querySelectorAll('input');
-    inputs.forEach(el => { T.notes[parseInt(el.dataset.noteIdx)] = el.value; });
+    const inputs = notesList.querySelectorAll('textarea');
+    inputs.forEach(el => { T.notes[parseInt(el.dataset.noteIdx)] = el.value.replace(/\n/g, ' '); });
     const moved = T.notes.splice(dragIdx, 1)[0];
     T.notes.splice(dropIdx, 0, moved);
     renderNoteInputs();
@@ -1187,6 +1262,33 @@ document.getElementById('table-locks-ui').addEventListener('click', (e) => {
         if (idx >= 0) lockedSeats.splice(idx, 1);
         else lockedSeats.push(seat);
         tl.lockedSeats = lockedSeats;
+        locks[tableId] = tl;
+        T.tableLocks = locks;
+        tournamentRef.child('tableLocks').set(locks);
+        render();
+        return;
+    }
+    if (btn.classList.contains('table-rotate')) {
+        const tableId = parseInt(btn.dataset.table);
+        const locks = T.tableLocks || {};
+        const tl = locks[tableId] || {};
+        tl.rotation = ((tl.rotation || 0) + 90) % 360;
+        locks[tableId] = tl;
+        T.tableLocks = locks;
+        tournamentRef.child('tableLocks').set(locks);
+        render();
+        return;
+    }
+    if (btn.classList.contains('wall-clickable')) {
+        const tableId = parseInt(btn.dataset.table);
+        const side = btn.dataset.wall;
+        const locks = T.tableLocks || {};
+        const tl = locks[tableId] || {};
+        const walls = tl.walls || [];
+        const idx = walls.indexOf(side);
+        if (idx >= 0) walls.splice(idx, 1);
+        else walls.push(side);
+        tl.walls = walls;
         locks[tableId] = tl;
         T.tableLocks = locks;
         tournamentRef.child('tableLocks').set(locks);
