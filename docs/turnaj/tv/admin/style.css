@@ -285,6 +285,13 @@ body {
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
 }
+.player-table th:first-child,
+.player-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--bg-card);
+}
 .player-table .th-hint {
     font-weight: normal;
     color: var(--text-faint);
