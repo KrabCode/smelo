@@ -659,7 +659,7 @@ body {
     position: relative;
     aspect-ratio: 1.5;
     overflow: visible;
-    margin: 160px auto 120px;
+    margin: 20px auto 10px;
 }
 .seating-table-surface {
     position: absolute;
@@ -688,15 +688,15 @@ body {
     transform: translate(-50%, -50%);
 }
 .seating-seat-num {
-    width: 28px;
-    height: 28px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    border: 2px solid var(--border-light);
+    border: 3px solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: 'Staatliches', sans-serif;
-    font-size: 0.8em;
+    font-size: 1.6em;
     color: var(--text-muted);
     background: var(--bg-card);
 }
@@ -706,10 +706,10 @@ body {
     background: rgba(255,179,0,0.1);
 }
 .seating-seat-name {
-    font-size: 0.6em;
+    font-size: 1.2em;
     color: var(--text);
     white-space: nowrap;
-    max-width: 60px;
+    max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     text-align: center;

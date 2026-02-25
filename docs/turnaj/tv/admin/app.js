@@ -51,8 +51,7 @@ const TABLES = [
 ];
 
 function getSeats(table) {
-    const tl = (T.tableLocks || {})[table.id] || {};
-    return tl.seatCount || table.seats;
+    return table.seats;
 }
 
 // ─── Default data ───────────────────────────────────────────
@@ -674,26 +673,26 @@ function saveNotes() {
 // ─── Seating Visuals ────────────────────────────────────────
 const SEAT_POSITIONS = {
     oval: [
-        { left: 35, top: 95 },  // 1
-        { left: 65, top: 95 },  // 2
-        { left: 92, top: 72 },  // 3
-        { left: 92, top: 50 },  // 4
-        { left: 92, top: 28 },  // 5
-        { left: 65, top: 5 },   // 6
-        { left: 35, top: 5 },   // 7
-        { left: 8,  top: 28 },  // 8
-        { left: 8,  top: 50 },  // 9
-        { left: 8,  top: 72 }   // 10
+        { left: 35, top: 80 },  // 1
+        { left: 65, top: 80 },  // 2
+        { left: 82, top: 68 },  // 3
+        { left: 82, top: 50 },  // 4
+        { left: 82, top: 32 },  // 5
+        { left: 65, top: 20 },  // 6
+        { left: 35, top: 20 },  // 7
+        { left: 18, top: 32 },  // 8
+        { left: 18, top: 50 },  // 9
+        { left: 18, top: 68 }   // 10
     ],
     rect: [
-        { left: 35, top: 95 },  // 1
-        { left: 65, top: 95 },  // 2
-        { left: 95, top: 70 },  // 3
-        { left: 95, top: 30 },  // 4
-        { left: 65, top: 5 },   // 5
-        { left: 35, top: 5 },   // 6
-        { left: 5,  top: 30 },  // 7
-        { left: 5,  top: 70 }   // 8
+        { left: 35, top: 80 },  // 1
+        { left: 65, top: 80 },  // 2
+        { left: 82, top: 65 },  // 3
+        { left: 82, top: 35 },  // 4
+        { left: 65, top: 20 },  // 5
+        { left: 35, top: 20 },  // 6
+        { left: 18, top: 35 },  // 7
+        { left: 18, top: 65 }   // 8
     ]
 };
 
@@ -769,11 +768,6 @@ function renderTableLocks() {
             '</div>';
 
         if (!isLocked) {
-            html += '<div class="seat-count-row">' +
-                '<label>Míst: ' + getSeats(t) + '</label>' +
-                '<input type="range" class="table-seat-count" data-table="' + t.id +
-                '" min="2" max="' + (t.shape === 'oval' ? 10 : 8) + '" value="' + getSeats(t) + '">' +
-                '</div>';
             html += '<div class="seat-grid">';
             for (let s = 1; s <= getSeats(t); s++) {
                 const seatLocked = lockedSeats.includes(s);
@@ -783,7 +777,7 @@ function renderTableLocks() {
             }
             html += '</div>';
             const rot = tl.rotation || 0;
-            html += '<div class="seating-table-visual" style="width:100%;transform:rotate(' + rot + 'deg)">' +
+            html += '<div class="seating-table-visual" style="width:100%;transform:rotate(' + rot + 'deg) scale(0.5)">' +
                 buildTableVisualHTML(t, { wallToggles: true }) + '</div>';
         }
         html += '</div>';
@@ -1299,47 +1293,6 @@ document.getElementById('table-locks-ui').addEventListener('click', (e) => {
     }
 });
 
-document.getElementById('table-locks-ui').addEventListener('input', (e) => {
-    if (!e.target.classList.contains('table-seat-count')) return;
-    const tableId = parseInt(e.target.dataset.table);
-    const val = parseInt(e.target.value);
-    const locks = T.tableLocks || {};
-    const tl = locks[tableId] || {};
-    tl.seatCount = val;
-    if (tl.lockedSeats) tl.lockedSeats = tl.lockedSeats.filter(s => s <= val);
-    locks[tableId] = tl;
-    T.tableLocks = locks;
-
-    const list = T.players.list || [];
-    const lockedSeats = tl.lockedSeats || [];
-    const displaced = [];
-    const occupied = new Set();
-    list.forEach(p => {
-        if (p.table === tableId && p.seat) {
-            if (p.seat > val || lockedSeats.includes(p.seat)) {
-                displaced.push(p);
-                delete p.table;
-                delete p.seat;
-            } else {
-                occupied.add(p.seat);
-            }
-        }
-    });
-    displaced.forEach(p => {
-        for (let s = 1; s <= val; s++) {
-            if (!occupied.has(s) && !lockedSeats.includes(s)) {
-                p.table = tableId;
-                p.seat = s;
-                occupied.add(s);
-                break;
-            }
-        }
-    });
-
-    tournamentRef.child('tableLocks').set(locks);
-    savePlayerList();
-    render();
-});
 
 // Reshuffle
 document.getElementById('btn-reshuffle-seats').addEventListener('click', () => {
