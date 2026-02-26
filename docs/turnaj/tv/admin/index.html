@@ -38,6 +38,93 @@
             </div>
         </div>
 
+        <!-- Players -->
+        <div class="section" id="section-players">
+            <h2><button type="button" class="guard-toggle" data-target="section-players">&#x1F512;</button> Hráči <span class="badge" id="player-count">0</span></h2>
+            <div class="section-body">
+            <div class="inline-row">
+                <input type="text" id="new-player-name" placeholder="Jméno hráče..." enterkeyhint="done">
+                <button class="btn accent" id="btn-add-player">+ Hráč</button>
+            </div>
+            <div id="players-list"></div>
+            <div class="player-summary" id="player-summary"></div>
+            <div class="btn-row" style="margin-top:12px">
+                <button class="btn" id="btn-add-test-players">+ Test (8)</button>
+                <button class="btn danger" id="btn-remove-all-players">Smazat vše</button>
+            </div>
+            </div>
+        </div>
+
+        <!-- Winners -->
+        <div class="section" id="section-winners">
+            <h2><button type="button" class="guard-toggle" data-target="section-winners">&#x1F512;</button> Výsledky</h2>
+            <div class="section-body">
+                <div id="winners-fields"></div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn accent big" id="btn-save-winners">Vyhlásit vítěze</button>
+                    <button class="btn danger" id="btn-clear-winners">Smazat výsledky</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payouts -->
+        <div class="section" id="section-payout">
+            <h2><button type="button" class="guard-toggle" data-target="section-payout">&#x1F512;</button> Výplaty</h2>
+            <div class="section-body">
+                <div class="pool-display" id="pool-display"></div>
+                <div id="payout-config-rows"></div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn" id="btn-payout-add">+ Místo</button>
+                    <button class="btn" id="btn-payout-remove">− Místo</button>
+                    <button class="btn" id="btn-payout-auto">Auto</button>
+                </div>
+                <div class="payout-config-total" id="payout-config-total"></div>
+            </div>
+        </div>
+
+        <!-- Seating -->
+        <div class="section" id="section-seating">
+            <h2><button type="button" class="guard-toggle" data-target="section-seating">&#x1F512;</button> Zasedací pořádek</h2>
+            <div id="seating-status"></div>
+            <div class="section-body">
+                <div id="table-locks-ui"></div>
+                <div class="btn-row" style="margin-top:12px">
+                    <button class="btn big" id="btn-reshuffle-seats">Přepočítat místa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="section" id="section-notes">
+            <h2><button type="button" class="guard-toggle" data-target="section-notes">&#x1F512;</button> Poznámky (ticker)</h2>
+            <div class="section-body">
+                <div id="notes-list"></div>
+                <div class="btn-row" style="margin-top:8px">
+                    <button class="btn" id="btn-add-note">+ Poznámka</button>
+                    <span class="save-status" id="notes-save-status"></span>
+                </div>
+                <div style="margin-top:12px">
+                    <label for="cfg-ticker-speed" style="font-size:0.85em;color:var(--text-secondary)">Rychlost tickeru: <span id="ticker-speed-label">40s</span></label>
+                    <input type="range" id="cfg-ticker-speed" min="10" max="120" step="5" value="40" style="width:100%">
+                </div>
+                <div id="break-messages-section" style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px">
+                    <label style="margin-bottom:4px;display:block">Texty při přestávkách</label>
+                    <small class="hint" style="display:block;margin-bottom:8px">První řádek se zobrazí větším písmem</small>
+                    <div id="break-messages-list"></div>
+                    <span class="save-status" id="break-save-status"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rules -->
+        <div class="section" id="section-rules">
+            <h2><button type="button" class="guard-toggle" data-target="section-rules">&#x1F512;</button> Pravidla (TV)</h2>
+            <div class="section-body">
+                <div id="rules-sections-list"></div>
+                <span class="save-status" id="rules-save-status"></span>
+            </div>
+        </div>
+
         <!-- Blind structure preview -->
         <div class="section" id="section-blinds">
             <h2><button type="button" class="guard-toggle" data-target="section-blinds">&#x1F512;</button> Struktura blindů</h2>
@@ -199,35 +286,6 @@
             </div>
         </div>
 
-        <!-- Players -->
-        <div class="section" id="section-players">
-            <h2><button type="button" class="guard-toggle" data-target="section-players">&#x1F512;</button> Hráči <span class="badge" id="player-count">0</span></h2>
-            <div class="section-body">
-            <div class="inline-row">
-                <input type="text" id="new-player-name" placeholder="Jméno hráče..." enterkeyhint="done">
-                <button class="btn accent" id="btn-add-player">+ Hráč</button>
-            </div>
-            <div id="players-list"></div>
-            <div class="player-summary" id="player-summary"></div>
-            <div class="btn-row" style="margin-top:12px">
-                <button class="btn" id="btn-add-test-players">+ Test (8)</button>
-                <button class="btn danger" id="btn-remove-all-players">Smazat vše</button>
-            </div>
-            </div>
-        </div>
-
-        <!-- Winners -->
-        <div class="section" id="section-winners">
-            <h2><button type="button" class="guard-toggle" data-target="section-winners">&#x1F512;</button> Výsledky</h2>
-            <div class="section-body">
-                <div id="winners-fields"></div>
-                <div class="btn-row" style="margin-top:8px">
-                    <button class="btn accent big" id="btn-save-winners">Vyhlásit vítěze</button>
-                    <button class="btn danger" id="btn-clear-winners">Smazat výsledky</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Event Log -->
         <div class="section" id="section-event-log">
             <h2><button type="button" class="guard-toggle" data-target="section-event-log">&#x1F512;</button> Průběh</h2>
@@ -236,64 +294,6 @@
                 <div class="btn-row" style="margin-top:8px">
                     <button class="btn danger" id="btn-clear-event-log">Smazat log</button>
                 </div>
-            </div>
-        </div>
-
-        <!-- Seating -->
-        <div class="section" id="section-seating">
-            <h2><button type="button" class="guard-toggle" data-target="section-seating">&#x1F512;</button> Zasedací pořádek</h2>
-            <div id="seating-status"></div>
-            <div class="section-body">
-                <div id="table-locks-ui"></div>
-                <div class="btn-row" style="margin-top:12px">
-                    <button class="btn big" id="btn-reshuffle-seats">Přepočítat místa</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Payouts -->
-        <div class="section" id="section-payout">
-            <h2><button type="button" class="guard-toggle" data-target="section-payout">&#x1F512;</button> Výplaty</h2>
-            <div class="section-body">
-                <div class="pool-display" id="pool-display"></div>
-                <div id="payout-config-rows"></div>
-                <div class="btn-row" style="margin-top:8px">
-                    <button class="btn" id="btn-payout-add">+ Místo</button>
-                    <button class="btn" id="btn-payout-remove">− Místo</button>
-                    <button class="btn" id="btn-payout-auto">Auto</button>
-                </div>
-                <div class="payout-config-total" id="payout-config-total"></div>
-            </div>
-        </div>
-
-        <!-- Notes -->
-        <div class="section" id="section-notes">
-            <h2><button type="button" class="guard-toggle" data-target="section-notes">&#x1F512;</button> Poznámky (ticker)</h2>
-            <div class="section-body">
-                <div id="notes-list"></div>
-                <div class="btn-row" style="margin-top:8px">
-                    <button class="btn" id="btn-add-note">+ Poznámka</button>
-                    <span class="save-status" id="notes-save-status"></span>
-                </div>
-                <div style="margin-top:12px">
-                    <label for="cfg-ticker-speed" style="font-size:0.85em;color:var(--text-secondary)">Rychlost tickeru: <span id="ticker-speed-label">40s</span></label>
-                    <input type="range" id="cfg-ticker-speed" min="10" max="120" step="5" value="40" style="width:100%">
-                </div>
-                <div id="break-messages-section" style="margin-top:16px;border-top:1px solid rgba(255,255,255,0.08);padding-top:16px">
-                    <label style="margin-bottom:4px;display:block">Texty při přestávkách</label>
-                    <small class="hint" style="display:block;margin-bottom:8px">První řádek se zobrazí větším písmem</small>
-                    <div id="break-messages-list"></div>
-                    <span class="save-status" id="break-save-status"></span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rules -->
-        <div class="section" id="section-rules">
-            <h2><button type="button" class="guard-toggle" data-target="section-rules">&#x1F512;</button> Pravidla (TV)</h2>
-            <div class="section-body">
-                <div id="rules-sections-list"></div>
-                <span class="save-status" id="rules-save-status"></span>
             </div>
         </div>
 
