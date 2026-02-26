@@ -297,6 +297,7 @@ const DEFAULTS = {
     state: {
         status: 'waiting',   // waiting | running | finished
         startedAt: 0,
+        pausedAt: 0,
         winners: {}       // { "1": "Franta", "2": "Humr", ... }
     },
     players: {
@@ -413,11 +414,11 @@ function recalcTotalChips() {
 }
 
 // ─── Derived State ─────────────────────────────────────────
-function getCurrentLevel(startedAt, blindStructure) {
+function getCurrentLevel(startedAt, blindStructure, now) {
     const struct = blindStructure || [];
     if (!struct.length) return { levelIndex: 0, remaining: 0 };
 
-    const elapsed = serverNow() - startedAt;
+    const elapsed = (now || serverNow()) - startedAt;
     let cumulative = 0;
     for (let i = 0; i < struct.length; i++) {
         const levelMs = struct[i].duration * 60000;
@@ -679,7 +680,9 @@ function render() {
         listEl.innerHTML = winnerEntries.map(k => {
             const idx = parseInt(k) - 1;
             const amount = winAmounts[idx] || 0;
-            return '<div class="winner-entry"><span class="place">' + k + '. místo: </span>' +
+            const medals = {1: '\u{1F947}', 2: '\u{1F948}', 3: '\u{1F949}'};
+            const placeLabel = medals[k] || (k + '.');
+            return '<div class="winner-entry"><span class="place">' + placeLabel + ' </span>' +
                 '<span class="name">' + winners[k] + '</span>' +
                 '<span class="payout"> — ' + amount.toLocaleString('cs') + ' Kč</span></div>';
         }).join('');
@@ -697,8 +700,10 @@ function render() {
 
     // Current blinds (derived from startedAt)
     const struct = blindStructure || [];
+    const isPaused = state.status === 'running' && state.pausedAt > 0;
+    const timerNow = isPaused ? state.pausedAt : undefined;
     const derived = (state.status === 'running' && state.startedAt)
-        ? getCurrentLevel(state.startedAt, struct)
+        ? getCurrentLevel(state.startedAt, struct, timerNow)
         : { levelIndex: 0, remaining: 0 };
     const lvl = derived.levelIndex;
 
@@ -711,13 +716,22 @@ function render() {
     const anteMult = config.anteMult || 0;
     const anteOn = anteMult > 0;
 
-    // Blinds / break display
+    // Blinds / break / pause display
     const blindsLabelEl = document.getElementById('blinds-label');
     const breakMsgEl = document.getElementById('break-message');
-    if (onBreak) {
+    if (isPaused) {
+        blindsLabelEl.style.display = 'none';
+        blindsCurEl.textContent = 'PAUZA';
+        blindsCurEl.classList.remove('on-break');
+        blindsCurEl.classList.add('on-pause');
+        progressBarEl.classList.remove('on-break');
+        document.getElementById('blinds-sub').textContent = '';
+        breakMsgEl.style.display = 'none';
+    } else if (onBreak) {
         blindsLabelEl.style.display = 'none';
         blindsCurEl.textContent = 'PŘESTÁVKA';
         blindsCurEl.classList.add('on-break');
+        blindsCurEl.classList.remove('on-pause');
         progressBarEl.classList.add('on-break');
         document.getElementById('blinds-sub').textContent = '';
 
@@ -737,6 +751,7 @@ function render() {
         blindsCurEl.textContent =
             curEntry.small.toLocaleString('cs') + ' / ' + curEntry.big.toLocaleString('cs');
         blindsCurEl.classList.remove('on-break');
+        blindsCurEl.classList.remove('on-pause');
         progressBarEl.classList.remove('on-break');
         document.getElementById('blinds-sub').textContent =
             anteOn ? 'Ante ' + Math.round(curEntry.big * anteMult).toLocaleString('cs') : '';
@@ -745,6 +760,7 @@ function render() {
         blindsLabelEl.style.display = '';
         blindsCurEl.textContent = '– / –';
         blindsCurEl.classList.remove('on-break');
+        blindsCurEl.classList.remove('on-pause');
         progressBarEl.classList.remove('on-break');
         document.getElementById('blinds-sub').textContent = '';
         breakMsgEl.style.display = 'none';
@@ -836,36 +852,58 @@ function tickTimer() {
     const progressEl = document.getElementById('progress-bar');
 
     if (state.status === 'running' && state.startedAt) {
-        const derived = getCurrentLevel(state.startedAt, struct);
+        const isPaused = state.pausedAt > 0;
+        const timerNow = isPaused ? state.pausedAt : undefined;
+        const derived = getCurrentLevel(state.startedAt, struct, timerNow);
 
-        timerEl.textContent = formatTime(derived.remaining);
-        timerEl.classList.toggle('warning', derived.remaining <= 30000 && derived.remaining > 0);
+        if (isPaused) {
+            // Show pause duration counting up
+            const pauseDur = serverNow() - state.pausedAt;
+            const pauseMin = Math.floor(pauseDur / 60000);
+            const pauseSec = Math.floor((pauseDur % 60000) / 1000);
+            timerEl.textContent = pauseMin + ':' + String(pauseSec).padStart(2, '0');
+            timerEl.classList.remove('warning');
+            timerEl.classList.add('paused');
 
-        // Progress bar
-        const duration = (struct[derived.levelIndex]?.duration || 20) * 60000;
-        const elapsed = duration - derived.remaining;
-        const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
-        progressEl.style.width = pct + '%';
+            // Progress bar frozen
+            const duration = (struct[derived.levelIndex]?.duration || 20) * 60000;
+            const elapsed = duration - derived.remaining;
+            const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
+            progressEl.style.width = pct + '%';
 
-        // Level countdown overlay
-        const countdownEl = document.getElementById('level-countdown');
-        const countdownNum = document.getElementById('countdown-number');
-        const curEntry = struct[derived.levelIndex];
-        const isBreak = curEntry && curEntry.isBreak;
-        if (derived.remaining <= 10000 && derived.remaining > 0 && !isBreak &&
-            T.state.status === 'running' && prevLevel >= 0) {
-            const sec = Math.ceil(derived.remaining / 1000);
-            countdownEl.style.display = '';
-            if (sec !== lastCountdownSec) {
-                countdownNum.textContent = sec;
-                countdownNum.classList.remove('pop');
-                void countdownNum.offsetWidth;
-                countdownNum.classList.add('pop');
-                lastCountdownSec = sec;
-            }
-        } else {
-            countdownEl.style.display = 'none';
+            document.getElementById('level-countdown').style.display = 'none';
             lastCountdownSec = -1;
+        } else {
+            timerEl.textContent = formatTime(derived.remaining);
+            timerEl.classList.toggle('warning', derived.remaining <= 30000 && derived.remaining > 0);
+            timerEl.classList.remove('paused');
+
+            // Progress bar
+            const duration = (struct[derived.levelIndex]?.duration || 20) * 60000;
+            const elapsed = duration - derived.remaining;
+            const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
+            progressEl.style.width = pct + '%';
+
+            // Level countdown overlay
+            const countdownEl = document.getElementById('level-countdown');
+            const countdownNum = document.getElementById('countdown-number');
+            const curEntry = struct[derived.levelIndex];
+            const isBreak = curEntry && curEntry.isBreak;
+            if (derived.remaining <= 10000 && derived.remaining > 0 && !isBreak &&
+                T.state.status === 'running' && prevLevel >= 0) {
+                const sec = Math.ceil(derived.remaining / 1000);
+                countdownEl.style.display = '';
+                if (sec !== lastCountdownSec) {
+                    countdownNum.textContent = sec;
+                    countdownNum.classList.remove('pop');
+                    void countdownNum.offsetWidth;
+                    countdownNum.classList.add('pop');
+                    lastCountdownSec = sec;
+                }
+            } else {
+                countdownEl.style.display = 'none';
+                lastCountdownSec = -1;
+            }
         }
 
         // Level-change sound + re-render blinds display

@@ -231,6 +231,10 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .blinds-current.on-break { color: var(--green); }
 .progress-bar.on-break { background: var(--green); }
 
+/* Pause state */
+.blinds-current.on-pause { color: var(--accent); }
+.timer.paused { color: var(--accent); }
+
 
 /* Break message */
 .break-message {

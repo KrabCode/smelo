@@ -71,6 +71,7 @@ const DEFAULTS = {
     state: {
         status: 'waiting',
         startedAt: 0,
+        pausedAt: 0,
         winners: {}
     },
     players: {
@@ -187,10 +188,10 @@ function recalcTotalChips() {
     return stats.totalBuys * c.startingStack + stats.bonuses * c.bonusAmount + stats.addons * (c.addonChips || 0);
 }
 
-function getCurrentLevel(startedAt, blindStructure) {
+function getCurrentLevel(startedAt, blindStructure, now) {
     const struct = blindStructure || [];
     if (!struct.length) return { levelIndex: 0, remaining: 0 };
-    const elapsed = serverNow() - startedAt;
+    const elapsed = (now || serverNow()) - startedAt;
     let cumulative = 0;
     for (let i = 0; i < struct.length; i++) {
         const levelMs = struct[i].duration * 60000;
@@ -383,15 +384,23 @@ function render() {
         (unseated > 0 ? ' \u00B7 ' + unseated + ' bez m\u00EDsta' : '');
 
     // Timer section
+    const isPaused = state.status === 'running' && state.pausedAt > 0;
+    const timerNow = isPaused ? state.pausedAt : undefined;
     const derived = (state.status === 'running' && state.startedAt)
-        ? getCurrentLevel(state.startedAt, struct)
+        ? getCurrentLevel(state.startedAt, struct, timerNow)
         : { levelIndex: 0, remaining: 0 };
     const lvl = derived.levelIndex;
     const curEntry = struct[lvl];
     const onBreak = curEntry && curEntry.isBreak;
 
     const timerLevelEl = document.getElementById('timer-level');
-    if (state.status === 'running' && curEntry) {
+    if (isPaused) {
+        const pauseDur = serverNow() - state.pausedAt;
+        const pauseMin = Math.floor(pauseDur / 60000);
+        const pauseSec = Math.floor((pauseDur % 60000) / 1000);
+        timerLevelEl.textContent = 'PAUZA — ' + pauseMin + ':' + String(pauseSec).padStart(2, '0');
+        timerLevelEl.style.color = 'var(--accent)';
+    } else if (state.status === 'running' && curEntry) {
         if (onBreak) {
             timerLevelEl.textContent = 'PŘESTÁVKA';
             timerLevelEl.style.color = 'var(--green)';
@@ -426,10 +435,18 @@ function render() {
         startTimeRow.style.display = 'none';
     }
 
-    // Start/Reset button labels
+    // Start/Pause/Reset button labels
     document.getElementById('btn-start').textContent =
         state.status === 'running' ? 'Běží...' : 'Start';
     document.getElementById('btn-start').disabled = state.status === 'running';
+    const btnPause = document.getElementById('btn-pause');
+    if (state.status === 'running') {
+        btnPause.style.display = '';
+        btnPause.textContent = isPaused ? 'Pokračovat' : 'Pauza';
+        btnPause.className = isPaused ? 'btn accent big' : 'btn big';
+    } else {
+        btnPause.style.display = 'none';
+    }
 
     // Auto-lock config when tournament starts (guard-based, still unlockable)
     if (state.status !== 'waiting' && !configAutoLocked) {
@@ -650,14 +667,33 @@ function renderWinners() {
     const paidPlaces = getPaidPlaces();
     const currentFields = wf.querySelectorAll('input');
     const hasFocus = Array.from(currentFields).some(el => el === document.activeElement);
+
+    // Build knockout lookup: place → knockout entry
+    const log = T.eventLog || [];
+    const knockouts = log.filter(e => e.type === 'knockout').reverse();
+    const koByPlace = {};
+    knockouts.slice(0, paidPlaces).forEach((e, i) => { koByPlace[i + 1] = e; });
+
     if (!hasFocus || currentFields.length !== paidPlaces) {
         let html = '';
         for (let i = 1; i <= paidPlaces; i++) {
             const val = winners[i] || '';
+            const ko = koByPlace[i];
+            let koHtml = '';
+            if (ko) {
+                const d = new Date(ko.time);
+                const ts = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+                const name = ko.name || '';
+                koHtml = '<button class="knockout-mini-fill" data-place="' + i + '" data-name="' + name.replace(/"/g, '&quot;') + '">' +
+                    name + ' <span class="knockout-mini-time">' + ts + '</span></button>';
+            }
             html += '<div class="winner-field">' +
                 '<label>' + i + '. místo</label>' +
+                '<div class="winner-row">' +
                 '<input type="text" id="cfg-winner-' + i + '" placeholder="Jméno hráče..." value="' +
                 val.replace(/"/g, '&quot;') + '">' +
+                koHtml +
+                '</div>' +
                 '</div>';
         }
         wf.innerHTML = html;
@@ -949,14 +985,26 @@ setInterval(() => {
     const timerEl = document.getElementById('timer-display');
 
     if (state.status === 'running' && state.startedAt) {
-        const derived = getCurrentLevel(state.startedAt, struct);
+        const isPaused = state.pausedAt > 0;
+        const timerNow = isPaused ? state.pausedAt : undefined;
+        const derived = getCurrentLevel(state.startedAt, struct, timerNow);
         timerEl.textContent = formatTime(derived.remaining);
-        timerEl.classList.toggle('warning', derived.remaining <= 30000 && derived.remaining > 0);
+        timerEl.classList.toggle('warning', !isPaused && derived.remaining <= 30000 && derived.remaining > 0);
 
         if (prevLevel >= 0 && derived.levelIndex !== prevLevel) {
             render();
         }
         prevLevel = derived.levelIndex;
+
+        // Update pause duration in timer-level text
+        if (isPaused) {
+            const pauseDur = serverNow() - state.pausedAt;
+            const pauseMin = Math.floor(pauseDur / 60000);
+            const pauseSec = Math.floor((pauseDur % 60000) / 1000);
+            const timerLevelEl = document.getElementById('timer-level');
+            timerLevelEl.textContent = 'PAUZA — ' + pauseMin + ':' + String(pauseSec).padStart(2, '0');
+            timerLevelEl.style.color = 'var(--accent)';
+        }
     } else {
         const duration = (struct[0]?.duration || 20) * 60000;
         timerEl.textContent = formatTime(duration);
@@ -1199,6 +1247,21 @@ document.getElementById('btn-start').addEventListener('click', () => {
     });
 });
 
+document.getElementById('btn-pause').addEventListener('click', () => {
+    if (T.state.status !== 'running') return;
+    if (T.state.pausedAt > 0) {
+        // Resume: shift startedAt forward by pause duration
+        const pauseDuration = serverNow() - T.state.pausedAt;
+        tournamentRef.child('state').update({
+            startedAt: T.state.startedAt + pauseDuration,
+            pausedAt: 0
+        });
+    } else {
+        // Pause
+        tournamentRef.child('state/pausedAt').set(serverNow());
+    }
+});
+
 document.getElementById('btn-set-start-time').addEventListener('click', () => {
     const val = document.getElementById('cfg-start-time').value;
     if (!val) return;
@@ -1251,6 +1314,15 @@ document.getElementById('btn-clear-winners').addEventListener('click', () => {
     T.state.winners = {};
     tournamentRef.child('state/winners').set({});
     renderWinners();
+});
+
+document.getElementById('winners-fields').addEventListener('click', (e) => {
+    const btn = e.target.closest('.knockout-mini-fill');
+    if (!btn) return;
+    const place = btn.dataset.place;
+    const name = btn.dataset.name;
+    const input = document.getElementById('cfg-winner-' + place);
+    if (input) input.value = name;
 });
 
 // Payouts

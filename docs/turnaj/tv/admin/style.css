@@ -538,7 +538,6 @@ body {
     margin-bottom: 6px;
 }
 .winner-field input {
-    width: 100%;
     background: var(--bg-input);
     border: 1px solid var(--border-light);
     border-radius: 8px;
@@ -773,6 +772,35 @@ body {
     }
     .config-sub { grid-column: 1 / -1; }
     .full-row { grid-column: 1 / -1; }
+}
+
+/* Winner row with inline knockout fill button */
+.winner-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.winner-row input { flex: 1; }
+.knockout-mini-fill {
+    flex: 0 0 auto;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 14px 14px;
+    cursor: pointer;
+    font-size: 1em;
+    white-space: nowrap;
+}
+.knockout-mini-fill:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+.knockout-mini-fill .knockout-mini-time {
+    font-family: monospace;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    margin-left: 6px;
 }
 
 /* Event log */
