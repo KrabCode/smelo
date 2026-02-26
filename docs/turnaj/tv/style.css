@@ -589,7 +589,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 /* Knockout feed */
 .knockout-feed {
     position: fixed;
-    bottom: 52px;
+    bottom: 80px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 80;
