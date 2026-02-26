@@ -684,72 +684,6 @@ function saveNotes() {
     showSaveStatus(document.getElementById('notes-save-status'), p);
 }
 
-// ─── Seating Visuals ────────────────────────────────────────
-const SEAT_POSITIONS = {
-    oval: [
-        { left: 35, top: 85 },  // 1  bottom-left
-        { left: 65, top: 85 },  // 2  bottom-right
-        { left: 84, top: 72 },  // 3  right-lower
-        { left: 90, top: 50 },  // 4  right-middle
-        { left: 84, top: 28 },  // 5  right-upper
-        { left: 65, top: 15 },  // 6  top-right
-        { left: 35, top: 15 },  // 7  top-left
-        { left: 16, top: 28 },  // 8  left-upper
-        { left: 10, top: 50 },  // 9  left-middle
-        { left: 16, top: 72 }   // 10 left-lower
-    ],
-    rect: [
-        { left: 35, top: 80 },  // 1  bottom-left
-        { left: 65, top: 80 },  // 2  bottom-right
-        { left: 82, top: 50 },  // 3  right
-        { left: 65, top: 20 },  // 4  top-right
-        { left: 35, top: 20 },  // 5  top-left
-        { left: 18, top: 50 },  // 6  left
-        { left: 18, top: 35 },  // 7  left-upper (extra)
-        { left: 18, top: 65 }   // 8  left-lower (extra)
-    ]
-};
-
-function buildTableVisualHTML(table, opts) {
-    opts = opts || {};
-    const list = T.players.list || [];
-    const positions = SEAT_POSITIONS[table.shape];
-    const seatMap = {};
-    list.forEach(p => {
-        if (p.table === table.id && p.seat) seatMap[p.seat] = p.name;
-    });
-    const locks = T.tableLocks || {};
-    const tl = locks[table.id] || {};
-    const lockedSeats = tl.lockedSeats || [];
-    const walls = tl.walls || [];
-    const rot = tl.rotation || 0;
-    const counterRot = rot ? 'rotate(' + (-rot) + 'deg)' : '';
-
-    let html = '<div class="seating-table-surface ' + table.shape + '" style="border-color:' + table.color + ';background:' + table.color + '22"></div>';
-
-    ['top', 'bottom', 'left', 'right'].forEach(side => {
-        const active = walls.includes(side);
-        if (opts.wallToggles) {
-            html += '<div class="seating-wall seating-wall-' + side + ' wall-clickable' + (active ? ' active' : '') + '" data-table="' + table.id + '" data-wall="' + side + '"></div>';
-        } else if (active) {
-            html += '<div class="seating-wall seating-wall-' + side + '"></div>';
-        }
-    });
-
-    for (let s = 1; s <= getSeats(table); s++) {
-        const pos = positions[s - 1];
-        const player = seatMap[s];
-        const seatLocked = lockedSeats.includes(s);
-        const cls = seatLocked ? 'locked' : (player ? 'occupied' : 'empty');
-        const seatStyle = 'left:' + pos.left + '%;top:' + pos.top + '%' + (counterRot ? ';transform:translate(-50%,-50%) ' + counterRot : '');
-        html += '<div class="seating-seat ' + cls + '" style="' + seatStyle + '">' +
-            '<div class="seating-seat-num">' + s + '</div>' +
-            '<div class="seating-seat-name">' + (seatLocked ? '\u2717' : (player || '\u2014')) + '</div>' +
-            '</div>';
-    }
-    return html;
-}
-
 // ─── Table Locks ────────────────────────────────────────────
 function renderTableLocks() {
     const container = document.getElementById('table-locks-ui');
@@ -814,9 +748,14 @@ function renderTableLocks() {
                     s + (seatLocked ? ' \u2717' : '') + '</button>';
             }
             html += '</div>';
-            const rot = tl.rotation || 0;
-            html += '<div class="seating-table-visual" style="width:100%;transform:rotate(' + rot + 'deg) scale(0.5)">' +
-                buildTableVisualHTML(t, { wallToggles: true }) + '</div>';
+            const walls = tl.walls || [];
+            html += '<div class="wall-toggle-row">' +
+                '<span class="wall-toggle-label">Zdi:</span>';
+            [{side:'top',icon:'\u25B2'},{side:'bottom',icon:'\u25BC'},{side:'left',icon:'\u25C4'},{side:'right',icon:'\u25BA'}].forEach(w => {
+                html += '<button class="wall-toggle-btn' + (walls.includes(w.side) ? ' active' : '') +
+                    '" data-table="' + t.id + '" data-wall="' + w.side + '">' + w.icon + '</button>';
+            });
+            html += '</div>';
         }
         html += '</div>';
     });
@@ -1062,7 +1001,7 @@ document.getElementById('btn-add-player').addEventListener('click', () => {
     const name = (input.value || '').trim();
     if (!name) { input.focus(); return; }
     const list = T.players.list || [];
-    const player = { name, buys: 1, addon: false, bonus: false, active: true };
+    const player = { name, buys: 0, addon: false, bonus: false, active: true };
     assignSeat(player, list);
     list.push(player);
     T.players.list = list;
@@ -1081,7 +1020,7 @@ document.getElementById('btn-add-test-players').addEventListener('click', () => 
     const names = ['Adam', 'Bára', 'Cyril', 'Dana', 'Emil', 'Fanda', 'Gita', 'Honza'];
     const list = T.players.list || [];
     names.forEach(name => {
-        const player = { name, buys: 1, addon: false, bonus: false, active: true };
+        const player = { name, buys: 0, addon: false, bonus: false, active: true };
         assignSeat(player, list);
         list.push(player);
     });
@@ -1129,7 +1068,7 @@ document.getElementById('players-list').addEventListener('click', (e) => {
         const idx = parseInt(btn.dataset.idx);
         if (!list[idx]) return;
         if (btn.dataset.dir === '-') {
-            if (list[idx].buys > 1) list[idx].buys--;
+            if (list[idx].buys > 0) list[idx].buys--;
         } else {
             list[idx].buys++;
             list[idx].active = true;
@@ -1386,7 +1325,7 @@ document.getElementById('table-locks-ui').addEventListener('click', (e) => {
         render();
         return;
     }
-    if (btn.classList.contains('wall-clickable')) {
+    if (btn.classList.contains('wall-toggle-btn')) {
         const tableId = parseInt(btn.dataset.table);
         const side = btn.dataset.wall;
         const locks = T.tableLocks || {};

@@ -450,16 +450,16 @@ function recalcAndSync() {
 // Seat positions as % of container (left, top) for each shape
 const SEAT_POSITIONS = {
     oval: [
-        { left: 35, top: 93 },  // 1  bottom-left
-        { left: 65, top: 93 },  // 2  bottom-right
-        { left: 86, top: 76 },  // 3  right-lower
-        { left: 94, top: 50 },  // 4  right-middle
-        { left: 86, top: 24 },  // 5  right-upper
-        { left: 65, top: 7 },   // 6  top-right
-        { left: 35, top: 7 },   // 7  top-left
-        { left: 14, top: 24 },  // 8  left-upper
-        { left: 6,  top: 50 },  // 9  left-middle
-        { left: 14, top: 76 }   // 10 left-lower
+        { left: 36, top: 88 },  // 1  bottom-left
+        { left: 64, top: 88 },  // 2  bottom-right
+        { left: 90, top: 76 },  // 3  right-lower
+        { left: 96, top: 50 },  // 4  right-middle
+        { left: 90, top: 24 },  // 5  right-upper
+        { left: 64, top: 12 },  // 6  top-right
+        { left: 36, top: 12 },  // 7  top-left
+        { left: 10, top: 24 },  // 8  left-upper
+        { left: 4,  top: 50 },  // 9  left-middle
+        { left: 10, top: 76 }   // 10 left-lower
     ],
     rect: [
         { left: 35, top: 95 },  // 1  bottom-left
