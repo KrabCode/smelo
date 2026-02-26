@@ -88,6 +88,13 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 }
 .header-controls button svg { display: block; }
 .header-controls button:hover { border-color: var(--accent); color: var(--text); }
+.hdr-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--border-light);
+    margin: 0 4px;
+    flex-shrink: 0;
+}
 
 /* Main display */
 .display { text-align: center; padding: 40px 32px 16px; flex: 1; }
@@ -186,10 +193,38 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 }
 .structure-table tr.break-row td {
     color: var(--green);
+    background: rgba(74, 222, 128, 0.04);
 }
 .structure-table tr.break-row.current-level td {
     color: var(--green);
     background: rgba(74, 222, 128, 0.08);
+}
+.break-label {
+    font-size: 0.8em;
+    opacity: 0.7;
+    font-weight: normal;
+}
+
+/* Fish */
+.fish-container {
+    width: 420px;
+    height: 260px;
+    margin: 10px auto 0;
+}
+.fish-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+#fish-container-winners {
+    width: 420px;
+    height: 260px;
+    margin: 20px auto 0;
+}
+#fish-container-winners canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
 }
 
 /* Break state */
@@ -276,12 +311,18 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .winner-banner {
     text-align: center;
     padding: 32px 20px;
-    margin: 0 auto 8px;
+    margin: auto;
     max-width: 600px;
+    width: 100%;
+    min-height: calc(100vh - 40px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 .winner-banner .winner-label {
     font-family: 'Staatliches', sans-serif;
-    font-size: 1.6em;
+    font-size: 2.1em;
     letter-spacing: 4px;
     color: var(--text-muted);
 }
@@ -295,13 +336,13 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .winner-entry .name { color: var(--accent); }
 .winner-entry .payout { color: var(--text-muted); }
 .winner-entry:first-child {
-    font-size: clamp(2.5rem, 8vw, 5rem);
+    font-size: clamp(3.2rem, 10vw, 6.5rem);
 }
 .winner-entry:nth-child(2) {
-    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-size: clamp(2.3rem, 6.5vw, 4rem);
 }
 .winner-entry:nth-child(n+3) {
-    font-size: clamp(1.2rem, 3vw, 2rem);
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
 }
 
 /* Three-column layout */
@@ -332,8 +373,8 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     margin-right: 6px;
 }
 .table-tab {
-    width: 20px;
-    height: 20px;
+    width: 32px;
+    height: 32px;
     border-radius: 4px;
     border: 2px solid transparent;
     cursor: pointer;

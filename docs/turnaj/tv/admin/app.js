@@ -87,6 +87,7 @@ const DEFAULTS = {
     tableLocks: {},
     payoutConfig: null,
     breakMessages: {},
+    breakLabels: {},
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
         'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
@@ -334,9 +335,34 @@ function render() {
     const avgChips = stats.activePlayers > 0 ? Math.round(totalChipsNow / stats.activePlayers) : 0;
     const chipsEl = document.getElementById('status-chips');
     if (chipsEl) {
+        const bonusChips = stats.bonuses * (config.bonusAmount || 0);
+        const bonusPart = bonusChips > 0 ? ' (bonus ' + bonusChips.toLocaleString('cs') + ')' : '';
         chipsEl.textContent = totalChipsNow > 0
-            ? totalChipsNow.toLocaleString('cs') + ' / ' + avgChips.toLocaleString('cs') + ' avg'
+            ? totalChipsNow.toLocaleString('cs') + 'ž' + bonusPart + ' / ' + avgChips.toLocaleString('cs') + ' avg'
             : '';
+    }
+
+    // Total money in status bar
+    const moneyEl = document.getElementById('status-money');
+    if (moneyEl) {
+        const buyInAmount = config.buyInAmount || 0;
+        const addonPrice = config.addonAmount || 0;
+        const totalMoney = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+        moneyEl.textContent = totalMoney > 0 ? totalMoney.toLocaleString('cs') + ' Kč' : '';
+    }
+
+    // Prices in status bar
+    const pricesEl = document.getElementById('status-prices');
+    if (pricesEl) {
+        const parts = [];
+        parts.push('rebuy ' + (config.buyInAmount || 0).toLocaleString('cs') + ' Kč: ' + (config.startingStack || 0).toLocaleString('cs') + 'ž');
+        if (config.bonusAmount > 0) {
+            parts.push('bonus: ' + config.bonusAmount.toLocaleString('cs') + 'ž');
+        }
+        if (config.addonAmount > 0) {
+            parts.push('add-on ' + config.addonAmount.toLocaleString('cs') + ' Kč: ' + (config.addonChips || 0).toLocaleString('cs') + 'ž');
+        }
+        pricesEl.textContent = parts.join(' | ');
     }
 
     // Level info in status bar
@@ -673,14 +699,14 @@ const SEAT_POSITIONS = {
         { left: 16, top: 72 }   // 10 left-lower
     ],
     rect: [
-        { left: 35, top: 80 },  // 1
-        { left: 65, top: 80 },  // 2
-        { left: 82, top: 65 },  // 3
-        { left: 82, top: 35 },  // 4
-        { left: 65, top: 20 },  // 5
-        { left: 35, top: 20 },  // 6
-        { left: 18, top: 35 },  // 7
-        { left: 18, top: 65 }   // 8
+        { left: 35, top: 80 },  // 1  bottom-left
+        { left: 65, top: 80 },  // 2  bottom-right
+        { left: 82, top: 50 },  // 3  right
+        { left: 65, top: 20 },  // 4  top-right
+        { left: 35, top: 20 },  // 5  top-left
+        { left: 18, top: 50 },  // 6  left
+        { left: 18, top: 35 },  // 7  left-upper (extra)
+        { left: 18, top: 65 }   // 8  left-lower (extra)
     ]
 };
 
@@ -837,9 +863,11 @@ function renderBlindStructure() {
             const endMin = runningMinutes + s.duration;
             const endHH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
             const endMM = String(endMin % 60).padStart(2, '0');
+            const breakLabel = T.breakLabels[i] || '';
             classes.push('break-row');
             tr.className = classes.join(' ');
-            tr.innerHTML = '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' \u2013 ' + endHH + ':' + endMM + '</td>';
+            tr.innerHTML = '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' \u2013 ' + endHH + ':' + endMM +
+                (breakLabel ? '<div class="break-label">' + breakLabel.replace(/</g, '&lt;') + '</div>' : '') + '</td>';
         } else {
             levelNum++;
             const isOverridden = !!T.blindOverrides[levelNum];
@@ -902,7 +930,7 @@ function renderBreakMessages() {
     }
 
     // Only re-render if break count changed or no textareas focused
-    const hasFocus = Array.from(container.querySelectorAll('textarea')).some(el => el === document.activeElement);
+    const hasFocus = Array.from(container.querySelectorAll('textarea, input')).some(el => el === document.activeElement);
     if (hasFocus) return;
 
     container.innerHTML = breaks.map((b, idx) => {
@@ -910,9 +938,11 @@ function renderBreakMessages() {
             ? 'Level ' + (b.levelNum + 1) + ': ' + b.nextLevel.small.toLocaleString('cs') + '/' + b.nextLevel.big.toLocaleString('cs')
             : '';
         const val = T.breakMessages[b.index] || '';
+        const labelVal = T.breakLabels[b.index] || '';
         return '<div class="break-msg-field" style="margin-bottom:10px">' +
             '<label style="font-size:0.85em;opacity:0.6">' + b.startStr + ' \u2013 ' + b.endStr +
             (nextInfo ? ' \u2192 ' + nextInfo : '') + '</label>' +
+            '<input type="text" class="break-label-input" data-break-index="' + b.index + '" value="' + labelVal.replace(/"/g, '&quot;') + '" placeholder="Popisek ve struktu\u0159e (nap\u0159. Konec re-buy\u016F)">' +
             '<textarea class="break-msg-input" data-break-index="' + b.index + '" rows="2" placeholder="Banner pro tuto p\u0159est\u00e1vku...">' + val.replace(/</g, '&lt;') + '</textarea>' +
             '</div>';
     }).join('');
@@ -990,6 +1020,7 @@ tournamentRef.on('value', (snap) => {
     if (!data.breakMessages && data.breakMessage) {
         T.breakMessages = { 0: data.breakMessage };
     }
+    T.breakLabels = data.breakLabels || {};
     T.notes = data.notes || DEFAULTS.notes;
 
     render();
@@ -1296,18 +1327,22 @@ notesList.addEventListener('drop', (e) => {
     saveNotes();
 });
 
-// Break messages
+// Break messages and labels
 document.getElementById('break-messages-list').addEventListener('change', (e) => {
-    if (!e.target.classList.contains('break-msg-input')) return;
-    const idx = e.target.dataset.breakIndex;
-    const val = (e.target.value || '').trim();
-    if (val) {
-        T.breakMessages[idx] = val;
-    } else {
-        delete T.breakMessages[idx];
+    if (e.target.classList.contains('break-msg-input')) {
+        const idx = e.target.dataset.breakIndex;
+        const val = (e.target.value || '').trim();
+        if (val) { T.breakMessages[idx] = val; } else { delete T.breakMessages[idx]; }
+        const p = tournamentRef.child('breakMessages').set(T.breakMessages);
+        showSaveStatus(document.getElementById('break-save-status'), p);
     }
-    const p = tournamentRef.child('breakMessages').set(T.breakMessages);
-    showSaveStatus(document.getElementById('break-save-status'), p);
+    if (e.target.classList.contains('break-label-input')) {
+        const idx = e.target.dataset.breakIndex;
+        const val = (e.target.value || '').trim();
+        if (val) { T.breakLabels[idx] = val; } else { delete T.breakLabels[idx]; }
+        tournamentRef.child('breakLabels').set(T.breakLabels);
+        recalcAndSync();
+    }
 });
 
 // Table locks

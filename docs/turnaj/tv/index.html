@@ -11,25 +11,30 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+    <!-- Three.js for fish -->
+    <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.162.0/examples/jsm/"}}</script>
 </head>
 <body>
     <!-- Header -->
     <div class="tracker-header">
         <span class="conn-dot" id="conn-dot"></span>
-        <div class="stat-item">Buy-in: <span id="hd-buyin-amount">400 Kč</span></div>
-        <div class="stat-item">Žetony: <span id="hd-chips">0</span></div>
+        <div class="stat-item">Rebuy <span id="hd-buyin-amount">400</span> Kč: <span id="hd-buyin-chips">0</span>ž</div>
+        <div class="stat-item" id="hd-addon-item" style="display:none">Add-on <span id="hd-addon-amount">0</span> Kč: <span id="hd-addon-chips">0</span>ž</div>
+        <div class="stat-item">Žetony ve hře: <span id="hd-chips">0</span></div>
         <div class="stat-item" style="display:none">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> <span id="hd-places-label">výherců</span></div>
-        <div class="stat-item">Hráči: <span id="hd-active">0</span> / <span id="hd-buyin">0</span></div>
         <div class="stat-item">Průměrný stack: <span id="hd-avg">0</span></div>
         <div class="header-controls" id="header-controls">
             <div class="table-tabs" id="table-tabs"></div>
             <button id="btn-toggle-seating" title="Zobrazit/skrýt stůl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            <button id="btn-toggle-fish" title="Zobrazit/skrýt ryby"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12z"/><path d="M22 12c-2-2-4-3-4-3"/><circle cx="7" cy="12" r="1" fill="currentColor"/></svg></button>
+            <button id="btn-toggle-ticker" title="Zobrazit/skrýt ticker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="15" y2="16"/></svg></button>
+            <span class="hdr-sep"></span>
             <button id="zoom-out"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
             <button id="zoom-in"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
             <button id="btn-fullscreen" title="Celá obrazovka"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+            <span class="hdr-sep"></span>
             <button id="btn-test-sound" title="Test zvuku"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
             <button id="btn-mute" title="Ztlumit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>
-            <button id="btn-toggle-ticker" title="Zobrazit/skrýt ticker"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="16" x2="15" y2="16"/></svg></button>
         </div>
     </div>
     <div class="main-content">
@@ -54,6 +59,7 @@
             <div class="blinds-sub" id="blinds-sub"></div>
 
             <div class="break-message" id="break-message" style="display:none"></div>
+            <div class="fish-container" id="fish-container"></div>
             <div class="next-level" id="next-level"></div>
         </div>
 
@@ -61,6 +67,7 @@
         <div class="winner-banner" id="winner-banner" style="display:none">
             <div class="winner-label">VÝSLEDKY TURNAJE</div>
             <div id="winner-list"></div>
+            <div class="fish-container" id="fish-container-winners"></div>
         </div>
 
         <!-- Right sidebar: Payout + player count + seating -->
@@ -85,5 +92,100 @@
     <div class="tracker-footer" id="tracker-footer"><span class="ticker-track"><span class="ticker-half" id="ticker-a"></span><span class="ticker-half" id="ticker-b"></span></span></div>
 
     <script src="app.js"></script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+
+        const container = document.getElementById('fish-container');
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.4;
+        container.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+        camera.position.set(0, 1.5, 5);
+        camera.lookAt(0, 0, 0);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+        const keyLight = new THREE.DirectionalLight(0xffeedd, 2.5);
+        keyLight.position.set(3, 4, 5);
+        scene.add(keyLight);
+        const fillLight = new THREE.DirectionalLight(0xddeeff, 1.2);
+        fillLight.position.set(-3, 2, -2);
+        scene.add(fillLight);
+        const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        rimLight.position.set(0, -1, -3);
+        scene.add(rimLight);
+
+        const fishMixers = [];
+        const fishModels = [];
+        const fishPaths = [
+            { scale: 2.8, yOffset: 0, phase: 0 },
+            { scale: 2.0, yOffset: 0.3, phase: -0.6 },
+            { scale: 1.4, yOffset: -0.25, phase: -1.1 }
+        ];
+
+        const loader = new GLTFLoader();
+        loader.load('../assets/clown_fish_low_poly_animated.glb', (gltf) => {
+            const swimClip = gltf.animations.find(c => c.name === 'swim');
+            if (swimClip) {
+                swimClip.resetDuration();
+                const minTime = swimClip.tracks.reduce((m, t) => Math.min(m, t.times[0]), Infinity);
+                if (minTime > 0) {
+                    swimClip.tracks.forEach(t => { for (let i = 0; i < t.times.length; i++) t.times[i] -= minTime; });
+                    swimClip.resetDuration();
+                }
+            }
+            fishPaths.forEach((fp, idx) => {
+                const model = idx === 0 ? gltf.scene : SkeletonUtils.clone(gltf.scene);
+                model.scale.setScalar(fp.scale);
+                scene.add(model);
+                fishModels.push(model);
+                if (swimClip) {
+                    const mixer = new THREE.AnimationMixer(model);
+                    const action = mixer.clipAction(swimClip.clone());
+                    action.setLoop(THREE.LoopRepeat, Infinity);
+                    action.timeScale = 0.5 + idx * 0.1;
+                    action.play();
+                    fishMixers.push(mixer);
+                }
+            });
+        });
+
+        function resize() {
+            const active = renderer.domElement.parentElement;
+            if (!active) return;
+            const w = active.clientWidth;
+            const h = active.clientHeight;
+            if (w === 0 || h === 0) return;
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        window.addEventListener('resize', resize);
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const active = renderer.domElement.parentElement;
+            if (!active || active.style.display === 'none') return;
+            const delta = clock.getDelta();
+            const elapsed = clock.elapsedTime;
+            fishMixers.forEach(m => m.update(delta));
+            fishModels.forEach((model, i) => {
+                const fp = fishPaths[i];
+                const t = elapsed * 0.25 + fp.phase;
+                model.position.set(Math.cos(t) * 1.6, fp.yOffset, Math.sin(t) * 0.8);
+                model.rotation.y = Math.atan2(-Math.sin(t) * 1.6, Math.cos(t) * 0.8);
+                model.rotation.z = Math.sin(t) * 0.04;
+            });
+            resize();
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
 </body>
 </html>

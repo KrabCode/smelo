@@ -10,15 +10,20 @@ const db = firebase.database();
 const tournamentRef = db.ref('tournament');
 document.body.classList.add('wide');
 
-// Zoom controls
+// Zoom controls — only scale content, not the header
 let zoomLevel = 100;
+function applyZoom() {
+    const z = zoomLevel + '%';
+    document.querySelector('.main-content').style.zoom = z;
+    document.getElementById('tracker-footer').style.zoom = z;
+}
 document.getElementById('zoom-in').addEventListener('click', () => {
     zoomLevel = Math.min(200, zoomLevel + 10);
-    document.body.style.zoom = zoomLevel + '%';
+    applyZoom();
 });
 document.getElementById('zoom-out').addEventListener('click', () => {
     zoomLevel = Math.max(50, zoomLevel - 10);
-    document.body.style.zoom = zoomLevel + '%';
+    applyZoom();
 });
 
 // Ticker toggle
@@ -49,6 +54,45 @@ seatingBtn.addEventListener('click', () => {
     updateSeatingBtn();
 });
 
+// Fish toggle
+let fishHidden = localStorage.getItem('fishHidden') === '1';
+const fishBtn = document.getElementById('btn-toggle-fish');
+function updateFishBtn() {
+    fishBtn.style.opacity = fishHidden ? '0.4' : '';
+    updateFishVisibility();
+}
+function updateFishVisibility() {
+    const mainFish = document.getElementById('fish-container');
+    const winnerFish = document.getElementById('fish-container-winners');
+    const breakMsg = document.getElementById('break-message');
+    const breakVisible = breakMsg && breakMsg.style.display !== 'none';
+    const winnerBanner = document.getElementById('winner-banner');
+    const winnersVisible = winnerBanner && winnerBanner.style.display !== 'none';
+
+    if (fishHidden) {
+        mainFish.style.display = 'none';
+        winnerFish.style.display = 'none';
+    } else if (winnersVisible) {
+        mainFish.style.display = 'none';
+        winnerFish.style.display = '';
+        // Move canvas to winner container if needed
+        const canvas = mainFish.querySelector('canvas');
+        if (canvas) winnerFish.appendChild(canvas);
+    } else {
+        winnerFish.style.display = 'none';
+        mainFish.style.display = breakVisible ? 'none' : '';
+        // Move canvas back to main container if needed
+        const canvas = winnerFish.querySelector('canvas');
+        if (canvas) mainFish.appendChild(canvas);
+    }
+}
+updateFishBtn();
+fishBtn.addEventListener('click', () => {
+    fishHidden = !fishHidden;
+    localStorage.setItem('fishHidden', fishHidden ? '1' : '0');
+    updateFishBtn();
+});
+
 // ─── Table Definitions ──────────────────────────────────────
 const TABLES = [
     { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 10 },
@@ -57,8 +101,7 @@ const TABLES = [
 ];
 
 function getSeats(table) {
-    const tl = (T.tableLocks || {})[table.id] || {};
-    return tl.seatCount || table.seats;
+    return table.seats;
 }
 
 // Table tab selector for sidebar seating visual
@@ -197,6 +240,7 @@ const DEFAULTS = {
     tableLocks: {},
     payoutConfig: null,
     breakMessages: {},
+    breakLabels: {},
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
         'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
@@ -418,14 +462,14 @@ const SEAT_POSITIONS = {
         { left: 14, top: 76 }   // 10 left-lower
     ],
     rect: [
-        { left: 35, top: 95 },  // 1
-        { left: 65, top: 95 },  // 2
-        { left: 95, top: 70 },  // 3
-        { left: 95, top: 30 },  // 4
-        { left: 65, top: 5 },   // 5
-        { left: 35, top: 5 },   // 6
-        { left: 5,  top: 30 },  // 7
-        { left: 5,  top: 70 }   // 8
+        { left: 35, top: 95 },  // 1  bottom-left
+        { left: 65, top: 95 },  // 2  bottom-right
+        { left: 95, top: 50 },  // 3  right
+        { left: 65, top: 5 },   // 4  top-right
+        { left: 35, top: 5 },   // 5  top-left
+        { left: 5,  top: 50 },  // 6  left
+        { left: 5,  top: 30 },  // 7  left-upper (extra)
+        { left: 5,  top: 70 }   // 8  left-lower (extra)
     ]
 };
 
@@ -522,15 +566,24 @@ function render() {
     // Header stats (derived from player list)
     const list = players.list || [];
     const stats = derivePlayerStats(list);
-    document.getElementById('hd-active').textContent = stats.activePlayers;
     document.getElementById('remaining-count').textContent = stats.activePlayers;
     document.getElementById('remaining-verb').textContent = stats.activePlayers >= 5 ? 'zbývá' : 'zbývají';
     document.getElementById('remaining-noun').textContent = stats.activePlayers >= 5 ? 'hráčů' : 'hráči';
-    document.getElementById('hd-buyin').textContent = stats.buyIns;
     document.getElementById('hd-chips').textContent = (players.totalChips || 0).toLocaleString('cs');
     const avgStack = stats.activePlayers > 0 ? Math.round((players.totalChips || 0) / stats.activePlayers) : 0;
     document.getElementById('hd-avg').textContent = avgStack.toLocaleString('cs');
-    document.getElementById('hd-buyin-amount').textContent = (config.buyInAmount || 400).toLocaleString('cs') + ' Kč';
+    document.getElementById('hd-buyin-amount').textContent = (config.buyInAmount || 400).toLocaleString('cs');
+    document.getElementById('hd-buyin-chips').textContent = (config.startingStack || 0).toLocaleString('cs');
+    const addonItem = document.getElementById('hd-addon-item');
+    if (addonItem) {
+        if (config.addonAmount > 0) {
+            addonItem.style.display = '';
+            document.getElementById('hd-addon-amount').textContent = (config.addonAmount || 0).toLocaleString('cs');
+            document.getElementById('hd-addon-chips').textContent = (config.addonChips || 0).toLocaleString('cs');
+        } else {
+            addonItem.style.display = 'none';
+        }
+    }
 
 
     // Winners logic
@@ -546,7 +599,7 @@ function render() {
     document.querySelector('.sidebar-right').style.display = allDeclared ? 'none' : '';
     document.getElementById('tracker-footer').style.display = (allDeclared || tickerHidden) ? 'none' : '';
     if (allDeclared) {
-        winnerBanner.style.display = '';
+        winnerBanner.style.display = 'flex';
         const buyInAmount = config.buyInAmount || 400;
         const addonPrice = config.addonAmount || 0;
         const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
@@ -626,6 +679,7 @@ function render() {
         breakMsgEl.style.display = 'none';
     }
 
+    updateFishVisibility();
     fitBlindsText();
 
     // Next level preview — hidden from main display, kept in DOM for potential sidebar use
@@ -662,10 +716,12 @@ function render() {
             const endMin = runningMinutes + s.duration;
             const endHH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
             const endMM = String(endMin % 60).padStart(2, '0');
+            const breakLabel = T.breakLabels[i] || '';
             classes.push('break-row');
             tr.className = classes.join(' ');
             tr.innerHTML =
-                '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM + '</td>';
+                '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM +
+                (breakLabel ? '<div class="break-label">' + breakLabel.replace(/</g, '&lt;') + '</div>' : '') + '</td>';
         } else {
             levelNum++;
             tr.className = classes.join(' ');
@@ -803,6 +859,7 @@ tournamentRef.on('value', (snap) => {
     if (!data.breakMessages && data.breakMessage) {
         T.breakMessages = { 0: data.breakMessage };
     }
+    T.breakLabels = data.breakLabels || {};
     T.notes = data.notes || DEFAULTS.notes;
 
     render();
