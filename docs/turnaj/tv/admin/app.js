@@ -336,7 +336,9 @@ function render() {
     const statusLabel = { waiting: 'Čeká se', running: 'Běží', finished: 'Ukončen' };
     document.getElementById('status-players').textContent =
         stats.activePlayers + '/' + stats.buyIns + ' hráčů';
-    document.getElementById('player-count').textContent = stats.activePlayers + '/' + stats.buyIns;
+    const unseated = list.filter(p => p.active && !p.table).length;
+    document.getElementById('player-count').textContent = stats.activePlayers + '/' + stats.buyIns +
+        (unseated > 0 ? ' \u00B7 ' + unseated + ' bez m\u00EDsta' : '');
 
     // Chips in status bar
     const totalChipsNow = recalcTotalChips();
@@ -474,11 +476,7 @@ function render() {
     // Player list
     renderPlayerList();
     const sumEl = document.getElementById('player-summary');
-    if (sumEl) {
-        sumEl.textContent = 'Buy-in\u016F: ' + stats.totalBuys + ' | Re-buy: ' + stats.rebuys +
-            ' | Add-on: ' + stats.addons + ' | Bonus: ' + stats.bonuses +
-            ' | Aktivních: ' + stats.activePlayers;
-    }
+    if (sumEl) sumEl.textContent = '';
 
     // Payout
     const buyInAmount = config.buyInAmount || 400;

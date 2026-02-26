@@ -932,6 +932,12 @@ tournamentRef.on('value', (snap) => {
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
 
+    // Auto-close rules when tournament starts
+    if (rulesVisible && T.state.status === 'running') {
+        rulesVisible = false;
+        updateRulesView();
+    }
+
     if (rulesVisible) renderRules();
     render();
 
