@@ -16,6 +16,7 @@ function applyZoom() {
     const z = zoomLevel + '%';
     document.querySelector('.main-content').style.zoom = z;
     document.getElementById('tracker-footer').style.zoom = z;
+    document.getElementById('rules-overlay').style.zoom = z;
 }
 document.getElementById('zoom-in').addEventListener('click', () => {
     zoomLevel = Math.min(200, zoomLevel + 10);
