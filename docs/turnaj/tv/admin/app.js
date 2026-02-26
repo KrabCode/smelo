@@ -31,18 +31,7 @@ db.ref('.info/serverTimeOffset').on('value', (snap) => {
 function serverNow() { return Date.now() + serverTimeOffset; }
 
 // Connection status
-db.ref('.info/connected').on('value', (snap) => {
-    const dot = document.getElementById('status-dot');
-    const txt = document.getElementById('status-text');
-    if (snap.val() === true) {
-        dot.style.display = 'none';
-        txt.textContent = '';
-    } else {
-        dot.style.display = '';
-        dot.classList.remove('connected');
-        txt.textContent = 'Offline';
-    }
-});
+db.ref('.info/connected').on('value', () => {});
 
 // ─── Table Definitions ──────────────────────────────────────
 const TABLES = [
@@ -332,71 +321,9 @@ function render() {
     const struct = blindStructure || [];
     const paidPlaces = getPaidPlaces();
 
-    // Status bar
-    const statusLabel = { waiting: 'Čeká se', running: 'Běží', finished: 'Ukončen' };
-    document.getElementById('status-players').textContent =
-        stats.activePlayers + '/' + stats.buyIns + ' hráčů';
     const unseated = list.filter(p => p.active && !p.table).length;
     document.getElementById('player-count').textContent = stats.activePlayers + '/' + stats.buyIns +
         (unseated > 0 ? ' \u00B7 ' + unseated + ' bez m\u00EDsta' : '');
-
-    // Chips in status bar
-    const totalChipsNow = recalcTotalChips();
-    const avgChips = stats.activePlayers > 0 ? Math.round(totalChipsNow / stats.activePlayers) : 0;
-    const chipsEl = document.getElementById('status-chips');
-    if (chipsEl) {
-        const bonusChips = stats.bonuses * (config.bonusAmount || 0);
-        const bonusPart = bonusChips > 0 ? ' (bonus ' + bonusChips.toLocaleString('cs') + ')' : '';
-        chipsEl.textContent = totalChipsNow > 0
-            ? totalChipsNow.toLocaleString('cs') + 'ž' + bonusPart + ' / ' + avgChips.toLocaleString('cs') + ' avg'
-            : '';
-    }
-
-    // Total money in status bar
-    const moneyEl = document.getElementById('status-money');
-    if (moneyEl) {
-        const buyInAmount = config.buyInAmount || 0;
-        const addonPrice = config.addonAmount || 0;
-        const totalMoney = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
-        moneyEl.textContent = totalMoney > 0 ? totalMoney.toLocaleString('cs') + ' Kč' : '';
-    }
-
-    // Prices in status bar
-    const pricesEl = document.getElementById('status-prices');
-    if (pricesEl) {
-        const parts = [];
-        parts.push('rebuy ' + (config.buyInAmount || 0).toLocaleString('cs') + ' Kč: ' + (config.startingStack || 0).toLocaleString('cs') + 'ž');
-        if (config.bonusAmount > 0) {
-            parts.push('bonus: ' + config.bonusAmount.toLocaleString('cs') + 'ž');
-        }
-        if (config.addonAmount > 0) {
-            parts.push('add-on ' + config.addonAmount.toLocaleString('cs') + ' Kč: ' + (config.addonChips || 0).toLocaleString('cs') + 'ž');
-        }
-        pricesEl.textContent = parts.join(' | ');
-    }
-
-    // Level info in status bar
-    const statusLevelEl = document.getElementById('status-level');
-    if (statusLevelEl) {
-        if (state.status === 'running' && state.startedAt) {
-            const d = getCurrentLevel(state.startedAt, struct);
-            const cur = struct[d.levelIndex];
-            if (cur && cur.isBreak) {
-                statusLevelEl.textContent = 'Přestávka';
-                statusLevelEl.style.color = 'var(--green)';
-            } else if (cur) {
-                let bn = 0;
-                for (let i = 0; i <= d.levelIndex; i++) { if (!struct[i].isBreak) bn++; }
-                statusLevelEl.textContent = 'L' + bn + ' ' + cur.small.toLocaleString('cs') + '/' + cur.big.toLocaleString('cs');
-                statusLevelEl.style.color = '';
-            } else {
-                statusLevelEl.textContent = '';
-            }
-        } else {
-            statusLevelEl.textContent = statusLabel[state.status] || '';
-            statusLevelEl.style.color = '';
-        }
-    }
 
     // Timer section
     const derived = (state.status === 'running' && state.startedAt)
@@ -963,7 +890,6 @@ setInterval(() => {
         const derived = getCurrentLevel(state.startedAt, struct);
         timerEl.textContent = formatTime(derived.remaining);
         timerEl.classList.toggle('warning', derived.remaining <= 30000 && derived.remaining > 0);
-        document.getElementById('status-timer').textContent = formatTime(derived.remaining);
 
         if (prevLevel >= 0 && derived.levelIndex !== prevLevel) {
             render();
@@ -973,7 +899,6 @@ setInterval(() => {
         const duration = (struct[0]?.duration || 20) * 60000;
         timerEl.textContent = formatTime(duration);
         timerEl.classList.remove('warning');
-        document.getElementById('status-timer').textContent = '';
     }
 }, 100);
 

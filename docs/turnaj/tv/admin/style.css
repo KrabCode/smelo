@@ -11,35 +11,6 @@ body {
 }
 
 /* Status bar */
-.status-bar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
-    font-size: 0.85em;
-    color: var(--text-muted);
-}
-.status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--red);
-    flex-shrink: 0;
-    transition: background 0.3s;
-}
-.status-dot.connected { background: var(--green); }
-.status-right {
-    margin-left: auto;
-    display: flex;
-    gap: 12px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
 
 /* Main wrapper */
 .admin-wrap {
