@@ -1230,8 +1230,8 @@ document.getElementById('btn-save-winners').addEventListener('click', () => {
     }
     tournamentRef.child('state/winners').set(winners).then(() => {
         const btn = document.getElementById('btn-save-winners');
-        btn.textContent = 'Turnaj ukončen \u2713';
-        setTimeout(() => { btn.textContent = 'Ukončit turnaj'; }, 2000);
+        btn.textContent = 'Vítězové vyhlášeni \u2713';
+        setTimeout(() => { btn.textContent = 'Vyhlásit vítěze'; }, 2000);
     });
 });
 
