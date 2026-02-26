@@ -666,7 +666,7 @@ function render() {
     document.getElementById('display').style.display = allDeclared ? 'none' : '';
     document.querySelector('.sidebar-left').style.display = allDeclared ? 'none' : '';
     document.querySelector('.sidebar-right').style.display = allDeclared ? 'none' : '';
-    document.getElementById('tracker-footer').style.display = (allDeclared || tickerHidden || rulesVisible) ? 'none' : '';
+    document.getElementById('tracker-footer').style.display = (tickerHidden || rulesVisible) ? 'none' : '';
     if (allDeclared) {
         const wasShowing = winnerBanner.style.display === 'flex';
         winnerBanner.style.display = 'flex';
@@ -1171,6 +1171,11 @@ tournamentRef.on('value', (snap) => {
     T.breakLabels = data.breakLabels || {};
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
+
+    // Ticker speed
+    const tickerSpeed = data.tickerSpeed || 40;
+    const track = document.querySelector('.tracker-footer .ticker-track');
+    if (track) track.style.animationDuration = tickerSpeed + 's';
 
     // Sounds from Firebase
     const newSoundFile = data.levelSound || '';

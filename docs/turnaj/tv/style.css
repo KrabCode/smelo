@@ -50,7 +50,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 }
 .tracker-footer .ticker-track {
     display: inline-flex;
-    animation: ticker 40s linear infinite;
+    animation: ticker var(--ticker-speed, 40s) linear infinite;
 }
 .tracker-footer .ticker-half {
     flex-shrink: 0;
