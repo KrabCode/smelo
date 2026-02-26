@@ -476,6 +476,81 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     100% { background: rgba(255,179,0,0.1); box-shadow: none; }
 }
 
+/* Rules overlay */
+.rules-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+    background: var(--bg);
+    overflow-y: auto;
+    padding: 100px 48px 48px;
+}
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 32px;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+.rules-section-title {
+    font-family: 'Staatliches', sans-serif;
+    font-size: 1.4em;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+}
+.rule-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: 'Staatliches', sans-serif;
+    font-size: 1.1em;
+    letter-spacing: 2px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s, border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.rule-card:hover {
+    color: #888;
+    border-color: #555;
+}
+.rule-card.active {
+    color: var(--accent);
+    background: linear-gradient(135deg, #1e1a10, #222);
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(255,179,0,0.25), 0 0 40px rgba(255,179,0,0.08);
+    text-shadow: 0 0 12px rgba(255,179,0,0.3);
+    animation: rule-glow-pulse 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+}
+.rule-card.active::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,179,0,0.08), transparent);
+    animation: rule-shimmer 5s ease-in-out infinite;
+}
+.rule-card.active:hover {
+    box-shadow: 0 0 28px rgba(255,179,0,0.45), 0 0 60px rgba(255,179,0,0.18);
+}
+@keyframes rule-glow-pulse {
+    0%, 100% { box-shadow: 0 0 16px rgba(255,179,0,0.25), 0 0 40px rgba(255,179,0,0.08); }
+    50% { box-shadow: 0 0 24px rgba(255,179,0,0.4), 0 0 60px rgba(255,179,0,0.15); }
+}
+@keyframes rule-shimmer {
+    0% { left: -100%; }
+    100% { left: 200%; }
+}
+
 /* Wall indicators (hatched) */
 .seating-wall {
     position: absolute;

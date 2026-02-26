@@ -88,12 +88,20 @@ const DEFAULTS = {
     payoutConfig: null,
     breakMessages: {},
     breakLabels: {},
+    rules: null,
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
         'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
         'Kouřit choďte po jednom, ať zbytek stolu může hrát'
     ]
 };
+
+const DEFAULT_RULES = [
+    { title: 'Chování u stolu', items: ['Nezdržuj.', 'Nekřič, nenadávej.', 'Sleduj hru.', 'Hraj jen když jsi na řadě.', 'Neříkej cos měl, dokud se hraje.'] },
+    { title: 'Sázky', items: ['Řekni nahlas co děláš za akci.', 'Řekni číslo — žádný string betting.', 'Nesplashuj pot.', 'Měj jasně oddělené sázky v tomto kole.', 'Poprosím blindy.'] },
+    { title: 'Karty a žetony', items: ['Neházej karty do vzduchu.', 'Žádný slow roll — ukaž karty.', 'Chceš pot? Ukaž obě karty.', 'Ukázals jednomu — ukaž všem.', 'Žetony na stole, viditelně, ve sloupcích.', 'Nešahej na cizí žetony.'] },
+    { title: 'Turnaj', items: ['Re-buy neomezeně do konce přestávky.', 'Nelze se vykešovat částečně.', 'Nepřítomným se platí blindy a foldují karty.', 'Kouřit choďte po jednom.'] }
+];
 
 let T = JSON.parse(JSON.stringify(DEFAULTS));
 T.notes = DEFAULTS.notes.slice();
@@ -495,6 +503,11 @@ function render() {
     // Break messages
     renderBreakMessages();
 
+    // Rules
+    const rulesInputs = document.querySelectorAll('#rules-sections-list textarea');
+    const rulesHasFocus = Array.from(rulesInputs).some(el => el === document.activeElement);
+    if (!rulesHasFocus) renderRulesInputs();
+
     // Table locks
     renderTableLocks();
 
@@ -682,6 +695,58 @@ function saveNotes() {
     const notes = Array.from(inputs).map(el => el.value.replace(/\n/g, ' ').trim()).filter(Boolean);
     const p = tournamentRef.child('notes').set(notes);
     showSaveStatus(document.getElementById('notes-save-status'), p);
+}
+
+// ─── Rules ──────────────────────────────────────────────────
+function getRules() {
+    const r = T.rules;
+    if (Array.isArray(r) && r.length) return JSON.parse(JSON.stringify(r));
+    return JSON.parse(JSON.stringify(DEFAULT_RULES));
+}
+
+function renderRulesInputs() {
+    const container = document.getElementById('rules-sections-list');
+    if (!container) return;
+    const sections = getRules();
+    container.innerHTML = sections.map((sec, si) => {
+        const items = sec.items || [];
+        return '<div class="rules-admin-section" data-section-idx="' + si + '">' +
+            '<div class="rules-admin-header">' +
+            '<input type="text" class="rules-title-input" data-section-idx="' + si + '" value="' + (sec.title || '').replace(/"/g, '&quot;') + '" placeholder="Název sekce...">' +
+            '<button class="note-remove section-remove" data-section-idx="' + si + '" title="Smazat sekci">&times;</button>' +
+            '</div>' +
+            '<div class="rules-admin-items" data-section-idx="' + si + '">' +
+            items.map((r, i) =>
+                '<div class="note-row" data-rule-idx="' + i + '">' +
+                '<span class="note-drag-handle">\u2630</span>' +
+                '<textarea rows="1" data-rule-idx="' + i + '">' + r.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
+                '<button class="note-remove rule-remove" data-rule-idx="' + i + '">&times;</button>' +
+                '</div>'
+            ).join('') +
+            '</div>' +
+            '<button class="btn rule-add" data-section-idx="' + si + '" style="margin-top:4px">+ Pravidlo</button>' +
+            '</div>';
+    }).join('') +
+    '<button class="btn" id="btn-add-rule-section" style="margin-top:8px">+ Sekce</button>';
+}
+
+function collectRules() {
+    const sections = [];
+    document.querySelectorAll('.rules-admin-section').forEach(el => {
+        const titleInput = el.querySelector('.rules-title-input');
+        const title = titleInput ? titleInput.value.trim() : '';
+        const items = Array.from(el.querySelectorAll('.rules-admin-items textarea'))
+            .map(ta => ta.value.replace(/\n/g, ' ').trim()).filter(Boolean);
+        sections.push({ title: title, items: items });
+    });
+    return sections;
+}
+
+function saveRules() {
+    const rules = collectRules();
+    T.rules = rules;
+    const p = tournamentRef.child('rules').set(rules);
+    showSaveStatus(document.getElementById('rules-save-status'), p);
 }
 
 // ─── Table Locks ────────────────────────────────────────────
@@ -960,6 +1025,7 @@ tournamentRef.on('value', (snap) => {
         T.breakMessages = { 0: data.breakMessage };
     }
     T.breakLabels = data.breakLabels || {};
+    T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
 
     render();
@@ -1282,6 +1348,102 @@ document.getElementById('break-messages-list').addEventListener('change', (e) =>
         tournamentRef.child('breakLabels').set(T.breakLabels);
         recalcAndSync();
     }
+});
+
+// Rules
+document.getElementById('rules-sections-list').addEventListener('click', (e) => {
+    if (e.target.classList.contains('rule-remove')) {
+        const si = parseInt(e.target.closest('.rules-admin-items').dataset.sectionIdx);
+        const idx = parseInt(e.target.dataset.ruleIdx);
+        const rules = collectRules();
+        rules[si].items.splice(idx, 1);
+        T.rules = rules;
+        renderRulesInputs();
+        saveRules();
+    }
+    if (e.target.classList.contains('section-remove')) {
+        const si = parseInt(e.target.dataset.sectionIdx);
+        const rules = collectRules();
+        rules.splice(si, 1);
+        T.rules = rules;
+        renderRulesInputs();
+        saveRules();
+    }
+    if (e.target.classList.contains('rule-add')) {
+        const si = parseInt(e.target.dataset.sectionIdx);
+        const rules = collectRules();
+        rules[si].items.push('');
+        T.rules = rules;
+        renderRulesInputs();
+        const inputs = document.querySelectorAll('.rules-admin-items[data-section-idx="' + si + '"] textarea');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+    if (e.target.id === 'btn-add-rule-section') {
+        const rules = collectRules();
+        rules.push({ title: '', items: [''] });
+        T.rules = rules;
+        renderRulesInputs();
+        const titleInputs = document.querySelectorAll('.rules-title-input');
+        if (titleInputs.length) titleInputs[titleInputs.length - 1].focus();
+    }
+});
+document.getElementById('rules-sections-list').addEventListener('change', saveRules);
+
+// Rule drag & drop (within each section)
+let ruleDragIdx = null;
+let ruleDragSectionIdx = null;
+const rulesList = document.getElementById('rules-sections-list');
+rulesList.addEventListener('mousedown', (e) => {
+    if (e.target.classList.contains('note-drag-handle')) {
+        e.target.closest('.note-row').draggable = true;
+    }
+});
+rulesList.addEventListener('mouseup', (e) => {
+    const row = e.target.closest('.note-row');
+    if (row) row.draggable = false;
+});
+rulesList.addEventListener('dragstart', (e) => {
+    const row = e.target.closest('.note-row');
+    if (!row) return;
+    const items = row.closest('.rules-admin-items');
+    if (!items) return;
+    ruleDragSectionIdx = items.dataset.sectionIdx;
+    ruleDragIdx = parseInt(row.dataset.ruleIdx);
+    row.style.opacity = '0.3';
+    e.dataTransfer.effectAllowed = 'move';
+});
+rulesList.addEventListener('dragend', (e) => {
+    const row = e.target.closest('.note-row');
+    if (row) { row.style.opacity = ''; row.draggable = false; }
+    rulesList.querySelectorAll('.note-row').forEach(r => r.style.borderTop = '');
+    ruleDragIdx = null;
+    ruleDragSectionIdx = null;
+});
+rulesList.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const row = e.target.closest('.note-row');
+    if (!row) return;
+    const items = row.closest('.rules-admin-items');
+    if (!items || items.dataset.sectionIdx !== ruleDragSectionIdx) return;
+    e.dataTransfer.dropEffect = 'move';
+    items.querySelectorAll('.note-row').forEach(r => r.style.borderTop = '');
+    row.style.borderTop = '2px solid var(--accent)';
+});
+rulesList.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const row = e.target.closest('.note-row');
+    if (!row || ruleDragIdx === null) return;
+    const items = row.closest('.rules-admin-items');
+    if (!items || items.dataset.sectionIdx !== ruleDragSectionIdx) return;
+    const dropIdx = parseInt(row.dataset.ruleIdx);
+    if (ruleDragIdx === dropIdx) return;
+    const rules = collectRules();
+    const sec = rules[parseInt(ruleDragSectionIdx)].items;
+    const moved = sec.splice(ruleDragIdx, 1)[0];
+    sec.splice(dropIdx, 0, moved);
+    T.rules = rules;
+    renderRulesInputs();
+    saveRules();
 });
 
 // Table locks

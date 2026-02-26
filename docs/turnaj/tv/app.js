@@ -93,6 +93,56 @@ fishBtn.addEventListener('click', () => {
     updateFishBtn();
 });
 
+// ─── Rules Overlay ──────────────────────────────────────────
+const DEFAULT_RULES = [
+    { title: 'Chování u stolu', items: ['Nezdržuj.', 'Nekřič, nenadávej.', 'Sleduj hru.', 'Hraj jen když jsi na řadě.', 'Neříkej cos měl, dokud se hraje.'] },
+    { title: 'Sázky', items: ['Řekni nahlas co děláš za akci.', 'Řekni číslo — žádný string betting.', 'Nesplashuj pot.', 'Měj jasně oddělené sázky v tomto kole.', 'Poprosím blindy.'] },
+    { title: 'Karty a žetony', items: ['Neházej karty do vzduchu.', 'Žádný slow roll — ukaž karty.', 'Chceš pot? Ukaž obě karty.', 'Ukázals jednomu — ukaž všem.', 'Žetony na stole, viditelně, ve sloupcích.', 'Nešahej na cizí žetony.'] },
+    { title: 'Turnaj', items: ['Re-buy neomezeně do konce přestávky.', 'Nelze se vykešovat částečně.', 'Nepřítomným se platí blindy a foldují karty.', 'Kouřit choďte po jednom.'] }
+];
+
+let rulesVisible = false;
+const rulesBtn = document.getElementById('btn-toggle-rules');
+const rulesOverlay = document.getElementById('rules-overlay');
+
+function getRulesSections() {
+    const r = T.rules;
+    if (Array.isArray(r) && r.length) return r;
+    return DEFAULT_RULES;
+}
+
+function renderRules() {
+    const sections = getRulesSections();
+    const grid = document.getElementById('rules-grid');
+    grid.innerHTML = sections.map(sec => {
+        const items = sec.items || [];
+        if (!items.length) return '';
+        return '<div class="rules-section">' +
+            '<div class="rules-section-title">' + (sec.title || '').replace(/</g, '&lt;') + '</div>' +
+            items.map(r => '<div class="rule-card">' + r.replace(/</g, '&lt;') + '</div>').join('') +
+            '</div>';
+    }).join('');
+}
+
+function updateRulesView() {
+    rulesOverlay.style.display = rulesVisible ? '' : 'none';
+    document.querySelector('.main-content').style.display = rulesVisible ? 'none' : '';
+    document.getElementById('tracker-footer').style.display = rulesVisible ? 'none' : '';
+    rulesBtn.style.opacity = rulesVisible ? '1' : '';
+    rulesBtn.style.borderColor = rulesVisible ? 'var(--accent)' : '';
+    rulesBtn.style.color = rulesVisible ? 'var(--accent)' : '';
+}
+rulesBtn.addEventListener('click', () => {
+    rulesVisible = !rulesVisible;
+    updateRulesView();
+    if (rulesVisible) renderRules();
+    else render();
+});
+document.getElementById('rules-grid').addEventListener('click', (e) => {
+    const card = e.target.closest('.rule-card');
+    if (card) card.classList.toggle('active');
+});
+
 // ─── Table Definitions ──────────────────────────────────────
 const TABLES = [
     { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 10 },
@@ -241,6 +291,7 @@ const DEFAULTS = {
     payoutConfig: null,
     breakMessages: {},
     breakLabels: {},
+    rules: null,
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
         'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
@@ -597,7 +648,7 @@ function render() {
     document.getElementById('display').style.display = allDeclared ? 'none' : '';
     document.querySelector('.sidebar-left').style.display = allDeclared ? 'none' : '';
     document.querySelector('.sidebar-right').style.display = allDeclared ? 'none' : '';
-    document.getElementById('tracker-footer').style.display = (allDeclared || tickerHidden) ? 'none' : '';
+    document.getElementById('tracker-footer').style.display = (allDeclared || tickerHidden || rulesVisible) ? 'none' : '';
     if (allDeclared) {
         winnerBanner.style.display = 'flex';
         const buyInAmount = config.buyInAmount || 400;
@@ -860,8 +911,10 @@ tournamentRef.on('value', (snap) => {
         T.breakMessages = { 0: data.breakMessage };
     }
     T.breakLabels = data.breakLabels || {};
+    T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
 
+    if (rulesVisible) renderRules();
     render();
 
 });

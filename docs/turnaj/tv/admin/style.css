@@ -632,6 +632,36 @@ body {
     text-align: center;
 }
 
+/* Rules admin */
+.rules-admin-section {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.rules-admin-section:last-child { border-bottom: none; }
+.rules-admin-header {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.rules-title-input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: var(--accent);
+    font-family: 'Staatliches', sans-serif;
+    letter-spacing: 2px;
+    font-size: 1.05em;
+    padding: 8px 12px;
+}
+.rules-title-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,179,0,0.15);
+}
+
 /* Blind structure table */
 .structure-table {
     width: 100%;
