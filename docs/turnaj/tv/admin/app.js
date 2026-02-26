@@ -954,6 +954,13 @@ tournamentRef.on('value', (snap) => {
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
 
+    // Sound selection
+    const soundSelect = document.getElementById('cfg-level-sound');
+    if (soundSelect) {
+        const currentSound = data.levelSound || 'whistle.wav';
+        soundSelect.value = currentSound;
+    }
+
     render();
 });
 
@@ -1075,6 +1082,13 @@ document.getElementById('players-list').addEventListener('click', (e) => {
         const field = btn.dataset.field;
         if (list[idx] && field) {
             list[idx][field] = !list[idx][field];
+            if (field === 'active') {
+                if (!list[idx].active) {
+                    list[idx].eliminatedAt = serverNow();
+                } else {
+                    delete list[idx].eliminatedAt;
+                }
+            }
             savePlayerList();
             render();
         }
@@ -1522,4 +1536,18 @@ document.addEventListener('click', (e) => {
     btn.textContent = isLocked ? '\u{1F513}' : '\u{1F512}';
     guardState[id] = !isLocked;
     localStorage.setItem('adminGuards', JSON.stringify(guardState));
+});
+
+// ─── Sound Selection ────────────────────────────────────────
+// Add new .wav files to assets/sfx/level_up/ and to this array
+const LEVEL_SOUNDS = ['whistle.wav', 'superholy.wav'];
+
+document.getElementById('cfg-level-sound').addEventListener('change', (e) => {
+    tournamentRef.child('levelSound').set(e.target.value);
+});
+
+document.getElementById('btn-test-sound').addEventListener('click', () => {
+    const file = document.getElementById('cfg-level-sound').value;
+    const audio = new Audio('../../assets/sfx/level_up/' + file);
+    audio.play().catch(() => {});
 });

@@ -112,6 +112,18 @@
                         <label for="cfg-addon-chips">Add-on žetony</label>
                         <input type="number" id="cfg-addon-chips" value="0" min="0" inputmode="numeric">
                     </div>
+
+                    <div class="config-sub">Zvuk</div>
+                    <div class="config-field">
+                        <label for="cfg-level-sound">Zvuk při změně levelu</label>
+                        <div class="inline-row" style="margin-bottom:0">
+                            <select id="cfg-level-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px">
+                                <option value="whistle.wav">whistle.wav</option>
+                                <option value="superholy.wav">superholy.wav</option>
+                            </select>
+                            <button class="btn" id="btn-test-sound" type="button">Test</button>
+                        </div>
+                    </div>
                 </div>
                 <div class="save-status" id="config-save-status"></div>
             </div>

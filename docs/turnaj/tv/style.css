@@ -586,4 +586,97 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .seating-wall-left   { left: -42px; top: 10%; bottom: 10%; width: 8px; }
 .seating-wall-right  { right: -42px; top: 10%; bottom: 10%; width: 8px; }
 
+/* Knockout feed */
+.knockout-feed {
+    position: fixed;
+    bottom: 60px;
+    right: 24px;
+    z-index: 80;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    pointer-events: none;
+}
+.knockout-toast {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: 'Staatliches', sans-serif;
+    font-size: 1.3em;
+    letter-spacing: 2px;
+    color: var(--text);
+    white-space: nowrap;
+    animation: knockout-in 0.4s ease-out;
+}
+.knockout-toast .knockout-payout {
+    color: var(--accent);
+}
+.knockout-toast.removing {
+    animation: knockout-out 0.4s ease-in forwards;
+}
+@keyframes knockout-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+@keyframes knockout-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(50%); }
+}
 
+/* Level countdown overlay */
+.level-countdown {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+#countdown-number {
+    font-family: 'Staatliches', sans-serif;
+    font-size: clamp(8rem, 14vw, 16rem);
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(255, 179, 0, 0.6), 0 0 80px rgba(255, 179, 0, 0.3);
+    line-height: 1;
+}
+#countdown-number.pop {
+    animation: countdown-pop 0.4s ease-out;
+}
+@keyframes countdown-pop {
+    from { transform: scale(1.3); opacity: 0.7; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* Elimination timeline */
+.elimination-timeline {
+    padding: 8px 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.elimination-timeline::-webkit-scrollbar { width: 4px; }
+.elimination-timeline::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 2px; }
+.elim-heading {
+    font-size: 0.75em;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.elim-entry {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    padding: 2px 0 2px 10px;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+}
+.elim-entry:first-of-type {
+    border-left-color: var(--accent);
+    color: var(--text-secondary);
+}

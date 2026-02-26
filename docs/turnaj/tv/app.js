@@ -814,6 +814,24 @@ function render() {
     if (tickerA) tickerA.textContent = tickerText;
     if (tickerB) tickerB.textContent = tickerText;
 
+    // Elimination timeline
+    const elimTimeline = document.getElementById('elimination-timeline');
+    const eliminated = list.filter(p => !p.active && p.eliminatedAt);
+    if (eliminated.length > 0) {
+        eliminated.sort((a, b) => a.eliminatedAt - b.eliminatedAt);
+        const totalPlayers = list.length;
+        let html = '<div class="elim-heading">Vyřazení</div>';
+        // Most recent first in display
+        for (let i = eliminated.length - 1; i >= 0; i--) {
+            const place = totalPlayers - i;
+            html += '<div class="elim-entry">' + place + '. ' + eliminated[i].name + '</div>';
+        }
+        elimTimeline.innerHTML = html;
+        elimTimeline.style.display = '';
+    } else {
+        elimTimeline.style.display = 'none';
+    }
+
     // Payout (always visible)
     renderPayout();
 }
@@ -845,6 +863,27 @@ function tickTimer() {
         const pct = Math.min(100, Math.max(0, (elapsed / duration) * 100));
         progressEl.style.width = pct + '%';
 
+        // Level countdown overlay
+        const countdownEl = document.getElementById('level-countdown');
+        const countdownNum = document.getElementById('countdown-number');
+        const curEntry = struct[derived.levelIndex];
+        const isBreak = curEntry && curEntry.isBreak;
+        if (derived.remaining <= 10000 && derived.remaining > 0 && !isBreak &&
+            T.state.status === 'running' && prevLevel >= 0) {
+            const sec = Math.ceil(derived.remaining / 1000);
+            countdownEl.style.display = '';
+            if (sec !== lastCountdownSec) {
+                countdownNum.textContent = sec;
+                countdownNum.classList.remove('pop');
+                void countdownNum.offsetWidth;
+                countdownNum.classList.add('pop');
+                lastCountdownSec = sec;
+            }
+        } else {
+            countdownEl.style.display = 'none';
+            lastCountdownSec = -1;
+        }
+
         // Level-change sound + re-render blinds display
         if (prevLevel >= 0 && derived.levelIndex !== prevLevel) {
             playLevelSound();
@@ -857,15 +896,23 @@ function tickTimer() {
         timerEl.textContent = formatTime(duration);
         timerEl.classList.remove('warning');
         progressEl.style.width = '0%';
+        document.getElementById('level-countdown').style.display = 'none';
+        lastCountdownSec = -1;
     }
 }
 
 startTimerLoop();
 
 // ─── Level Change Sound ─────────────────────────────────────
-const levelSound = new Audio('../assets/whistle.wav');
+const levelSound = new Audio();
 levelSound.preload = 'auto';
-levelSound.load();
+let levelSoundFile = 'whistle.wav';
+function loadLevelSound(filename) {
+    levelSoundFile = filename || 'whistle.wav';
+    levelSound.src = '../assets/sfx/level_up/' + levelSoundFile;
+    levelSound.load();
+}
+loadLevelSound('whistle.wav');
 let isMuted = false;
 function playLevelSound() {
     if (isMuted) return;
@@ -880,6 +927,28 @@ document.getElementById('btn-mute').addEventListener('click', () => {
     btn.style.opacity = isMuted ? '0.4' : '';
     btn.title = isMuted ? 'Zapnout zvuk' : 'Ztlumit';
 });
+
+// ─── Knockout Feed ──────────────────────────────────────────
+let prevPlayerList = null;
+
+function showKnockoutToast(name, place, payout) {
+    const feed = document.getElementById('knockout-feed');
+    const toast = document.createElement('div');
+    toast.className = 'knockout-toast';
+    let text = place + '. místo — ' + name;
+    if (payout > 0) {
+        text += ' <span class="knockout-payout">— ' + payout.toLocaleString('cs') + ' Kč</span>';
+    }
+    toast.innerHTML = text;
+    feed.appendChild(toast);
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 400);
+    }, 6000);
+}
+
+// ─── Level Countdown ────────────────────────────────────────
+let lastCountdownSec = -1;
 
 // ─── Firebase Listener ──────────────────────────────────────
 tournamentRef.on('value', (snap) => {
@@ -919,6 +988,31 @@ tournamentRef.on('value', (snap) => {
         }
         T.players = { list: migrated, totalChips: rawPlayers.totalChips || 0 };
     }
+    // Detect knockouts (only after first load)
+    const newList = T.players.list || [];
+    if (prevPlayerList !== null) {
+        const paidPlaces = getPaidPlaces();
+        const dist = getPayoutDistribution(paidPlaces);
+        const buyInAmount = T.config.buyInAmount || 400;
+        const addonPrice = T.config.addonAmount || 0;
+        const stats = derivePlayerStats(newList);
+        const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+        const amounts = roundPayouts(dist, prizePool);
+        const activePlayers = newList.filter(p => p.active).length;
+        let batchElimCount = 0;
+
+        newList.forEach((p, i) => {
+            const prev = prevPlayerList[i];
+            if (prev && prev.active && !p.active) {
+                batchElimCount++;
+                const place = activePlayers + batchElimCount;
+                const payout = place <= paidPlaces ? (amounts[place - 1] || 0) : 0;
+                showKnockoutToast(p.name, place, payout);
+            }
+        });
+    }
+    prevPlayerList = newList.map(p => ({ name: p.name, active: p.active }));
+
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
     T.tableLocks = data.tableLocks || {};
@@ -931,6 +1025,12 @@ tournamentRef.on('value', (snap) => {
     T.breakLabels = data.breakLabels || {};
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
+
+    // Level sound from Firebase
+    const newSoundFile = data.levelSound || 'whistle.wav';
+    if (newSoundFile !== levelSoundFile) {
+        loadLevelSound(newSoundFile);
+    }
 
     // Auto-close rules when tournament starts
     if (rulesVisible && T.state.status === 'running') {
