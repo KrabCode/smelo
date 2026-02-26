@@ -128,7 +128,14 @@ function renderRules() {
         items.forEach(r => {
             const card = document.createElement('div');
             card.className = 'rule-card';
-            card.textContent = r;
+            const parts = r.split('|');
+            card.textContent = parts[0].trim();
+            if (parts.length > 1) {
+                const pill = document.createElement('span');
+                pill.className = 'rule-pill';
+                pill.textContent = parts.slice(1).join('|').trim();
+                card.appendChild(pill);
+            }
             sectionEl.appendChild(card);
         });
         grid.appendChild(sectionEl);

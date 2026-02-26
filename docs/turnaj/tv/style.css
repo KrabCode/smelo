@@ -516,8 +516,22 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     margin-bottom: 6px;
     cursor: pointer;
     user-select: none;
-    white-space: pre-line;
     transition: color 0.3s, border-color 0.3s, background 0.3s, box-shadow 0.3s;
+}
+.rule-pill {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.75em;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    padding: 4px 14px;
+    width: fit-content;
+}
+.rule-card.active .rule-pill {
+    color: var(--accent);
+    background: rgba(255,179,0,0.1);
 }
 .rule-card:hover {
     color: #888;
