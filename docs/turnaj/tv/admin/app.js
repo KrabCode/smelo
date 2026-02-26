@@ -313,6 +313,57 @@ function showSaveStatus(el, promise) {
     });
 }
 
+// ─── Event Log ──────────────────────────────────────────────
+function logEvent(type, name, detail) {
+    const entry = { type: type, name: name, time: serverNow() };
+    if (detail) entry.detail = detail;
+    const log = T.eventLog || [];
+    log.push(entry);
+    T.eventLog = log;
+    tournamentRef.child('eventLog').set(log);
+    renderEventLog();
+}
+
+function renderEventLog() {
+    const container = document.getElementById('event-log-list');
+    if (!container) return;
+    const log = T.eventLog || [];
+    if (!log.length) {
+        container.innerHTML = '<div style="opacity:0.4;text-align:center">Žádné události</div>';
+        return;
+    }
+    const labels = {
+        buyin: 'Buy-in',
+        rebuy: 'Re-buy',
+        addon: 'Add-on',
+        knockout: 'Vyřazen',
+        reentry: 'Návrat'
+    };
+    const colors = {
+        buyin: 'var(--green)',
+        rebuy: 'var(--accent)',
+        addon: 'var(--accent)',
+        knockout: 'var(--red)',
+        reentry: 'var(--green)'
+    };
+    // Newest first
+    let html = '';
+    for (let i = log.length - 1; i >= 0; i--) {
+        const e = log[i];
+        const d = new Date(e.time);
+        const ts = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        const label = labels[e.type] || e.type;
+        const color = colors[e.type] || 'var(--text-muted)';
+        html += '<div class="event-log-entry">' +
+            '<span class="event-log-time">' + ts + '</span>' +
+            '<span class="event-log-type" style="color:' + color + '">' + label + '</span>' +
+            '<span class="event-log-name">' + (e.name || '') + '</span>' +
+            (e.detail ? '<span class="event-log-detail">' + e.detail + '</span>' : '') +
+            '</div>';
+    }
+    container.innerHTML = html;
+}
+
 // ─── Rendering ──────────────────────────────────────────────
 function render() {
     const { config, state, players, blindStructure } = T;
@@ -439,6 +490,9 @@ function render() {
 
     // Blind structure table
     renderBlindStructure();
+
+    // Event log
+    renderEventLog();
 }
 
 // ─── Player List ────────────────────────────────────────────
@@ -593,10 +647,11 @@ function renderWinners() {
     if (!hasFocus || currentFields.length !== paidPlaces) {
         let html = '';
         for (let i = 1; i <= paidPlaces; i++) {
+            const val = winners[i] || '';
             html += '<div class="winner-field">' +
                 '<label>' + i + '. místo</label>' +
                 '<input type="text" id="cfg-winner-' + i + '" placeholder="Jméno hráče..." value="' +
-                ((winners[i] || '').replace(/"/g, '&quot;')) + '">' +
+                val.replace(/"/g, '&quot;') + '">' +
                 '</div>';
         }
         wf.innerHTML = html;
@@ -953,13 +1008,19 @@ tournamentRef.on('value', (snap) => {
     T.breakLabels = data.breakLabels || {};
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
+    T.eventLog = data.eventLog || [];
 
     // Sound selection
     const soundSelect = document.getElementById('cfg-level-sound');
-    if (soundSelect) {
-        const currentSound = data.levelSound || 'whistle.wav';
-        soundSelect.value = currentSound;
-    }
+    if (soundSelect) soundSelect.value = data.levelSound || '';
+    const knockoutSoundSelect = document.getElementById('cfg-knockout-sound');
+    if (knockoutSoundSelect) knockoutSoundSelect.value = data.knockoutSound || '';
+    const knockoutWinSoundSelect = document.getElementById('cfg-knockout-win-sound');
+    if (knockoutWinSoundSelect) knockoutWinSoundSelect.value = data.knockoutWinSound || '';
+    const buySoundSelect = document.getElementById('cfg-buy-sound');
+    if (buySoundSelect) buySoundSelect.value = data.buySound || '';
+    const endSoundSelect = document.getElementById('cfg-end-sound');
+    if (endSoundSelect) endSoundSelect.value = data.endSound || '';
 
     render();
 });
@@ -1066,13 +1127,16 @@ document.getElementById('players-list').addEventListener('click', (e) => {
     if (btn.classList.contains('player-buys-btn')) {
         const idx = parseInt(btn.dataset.idx);
         if (!list[idx]) return;
+        let eventType = null;
         if (btn.dataset.dir === '-') {
             if (list[idx].buys > 0) list[idx].buys--;
         } else {
+            eventType = list[idx].buys === 0 ? 'buyin' : 'rebuy';
             list[idx].buys++;
             list[idx].active = true;
         }
         savePlayerList();
+        if (eventType) logEvent(eventType, list[idx].name);
         render();
         return;
     }
@@ -1082,14 +1146,21 @@ document.getElementById('players-list').addEventListener('click', (e) => {
         const field = btn.dataset.field;
         if (list[idx] && field) {
             list[idx][field] = !list[idx][field];
+            let eventType = null;
             if (field === 'active') {
                 if (!list[idx].active) {
                     list[idx].eliminatedAt = serverNow();
+                    eventType = 'knockout';
                 } else {
                     delete list[idx].eliminatedAt;
+                    eventType = 'reentry';
                 }
             }
+            if (field === 'addon' && list[idx].addon) {
+                eventType = 'addon';
+            }
             savePlayerList();
+            if (eventType) logEvent(eventType, list[idx].name);
             render();
         }
         return;
@@ -1142,7 +1213,10 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('Opravdu resetovat timer?')) return;
     tournamentRef.child('state').set(DEFAULTS.state);
     tournamentRef.child('payoutConfig').set(null);
+    tournamentRef.child('eventLog').set(null);
+    T.eventLog = [];
     recalcAndSync();
+    render();
 });
 
 // Winners
@@ -1159,6 +1233,13 @@ document.getElementById('btn-save-winners').addEventListener('click', () => {
         btn.textContent = 'Turnaj ukončen \u2713';
         setTimeout(() => { btn.textContent = 'Ukončit turnaj'; }, 2000);
     });
+});
+
+document.getElementById('btn-clear-winners').addEventListener('click', () => {
+    if (!confirm('Smazat výsledky?')) return;
+    T.state.winners = {};
+    tournamentRef.child('state/winners').set({});
+    renderWinners();
 });
 
 // Payouts
@@ -1539,15 +1620,67 @@ document.addEventListener('click', (e) => {
 });
 
 // ─── Sound Selection ────────────────────────────────────────
-// Add new .wav files to assets/sfx/level_up/ and to this array
-const LEVEL_SOUNDS = ['whistle.wav', 'superholy.wav'];
-
 document.getElementById('cfg-level-sound').addEventListener('change', (e) => {
     tournamentRef.child('levelSound').set(e.target.value);
 });
 
 document.getElementById('btn-test-sound').addEventListener('click', () => {
     const file = document.getElementById('cfg-level-sound').value;
-    const audio = new Audio('../../assets/sfx/level_up/' + file);
-    audio.play().catch(() => {});
+    if (!file) return;
+    new Audio('../../assets/sfx/level_up/' + file).play().catch(() => {});
+});
+
+document.getElementById('cfg-knockout-sound').addEventListener('change', (e) => {
+    tournamentRef.child('knockoutSound').set(e.target.value);
+});
+
+const KNOCKOUT_SOUNDS = ['key pickup guantlet 4.wav', 'power up1.wav', 'thumbs down.wav', 'thumbs up.wav', 'unholy!.wav'];
+document.getElementById('btn-test-knockout-sound').addEventListener('click', () => {
+    let file = document.getElementById('cfg-knockout-sound').value;
+    if (!file) return;
+    if (file === 'random') file = KNOCKOUT_SOUNDS[Math.floor(Math.random() * KNOCKOUT_SOUNDS.length)];
+    new Audio('../../assets/sfx/knockout/' + file).play().catch(() => {});
+});
+
+document.getElementById('cfg-knockout-win-sound').addEventListener('change', (e) => {
+    tournamentRef.child('knockoutWinSound').set(e.target.value);
+});
+
+document.getElementById('btn-test-knockout-win-sound').addEventListener('click', () => {
+    let file = document.getElementById('cfg-knockout-win-sound').value;
+    if (!file) return;
+    if (file === 'random') file = KNOCKOUT_SOUNDS[Math.floor(Math.random() * KNOCKOUT_SOUNDS.length)];
+    new Audio('../../assets/sfx/knockout/' + file).play().catch(() => {});
+});
+
+document.getElementById('cfg-buy-sound').addEventListener('change', (e) => {
+    tournamentRef.child('buySound').set(e.target.value);
+});
+
+const BUY_SOUNDS = ['coins falling 1.wav', 'coins falling 2.wav', 'key pickup guantlet 4.wav'];
+document.getElementById('btn-test-buy-sound').addEventListener('click', () => {
+    let file = document.getElementById('cfg-buy-sound').value;
+    if (!file) return;
+    if (file === 'random') file = BUY_SOUNDS[Math.floor(Math.random() * BUY_SOUNDS.length)];
+    new Audio('../../assets/sfx/buy/' + file).play().catch(() => {});
+});
+
+document.getElementById('cfg-end-sound').addEventListener('change', (e) => {
+    tournamentRef.child('endSound').set(e.target.value);
+});
+
+const END_SOUNDS = ['castleportcullis.wav', 'choir.wav', 'coins falling 1.wav', 'coins falling 2.wav', 'unholy!.wav'];
+document.getElementById('btn-test-end-sound').addEventListener('click', () => {
+    let file = document.getElementById('cfg-end-sound').value;
+    if (!file) return;
+    if (file === 'random') file = END_SOUNDS[Math.floor(Math.random() * END_SOUNDS.length)];
+    new Audio('../../assets/sfx/winners/' + file).play().catch(() => {});
+});
+
+// Clear event log
+document.getElementById('btn-clear-event-log').addEventListener('click', () => {
+    if (!confirm('Smazat log událostí?')) return;
+    tournamentRef.child('eventLog').set(null);
+    T.eventLog = [];
+    renderEventLog();
 });

@@ -774,3 +774,49 @@ body {
     .config-sub { grid-column: 1 / -1; }
     .full-row { grid-column: 1 / -1; }
 }
+
+/* Event log */
+#event-log-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.event-log-entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.95em;
+}
+.event-log-time {
+    flex: 0 0 auto;
+    font-family: monospace;
+    color: var(--text-muted);
+    font-size: 0.9em;
+}
+.event-log-type {
+    flex: 0 0 auto;
+    font-weight: 600;
+    font-size: 0.85em;
+    letter-spacing: 0.5px;
+}
+.event-log-name {
+    flex: 1;
+    color: var(--text);
+}
+.event-log-detail {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+    font-size: 0.85em;
+}
+.sound-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.sound-item label {
+    display: block;
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}

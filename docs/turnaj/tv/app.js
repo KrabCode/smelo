@@ -668,6 +668,7 @@ function render() {
     document.querySelector('.sidebar-right').style.display = allDeclared ? 'none' : '';
     document.getElementById('tracker-footer').style.display = (allDeclared || tickerHidden || rulesVisible) ? 'none' : '';
     if (allDeclared) {
+        const wasShowing = winnerBanner.style.display === 'flex';
         winnerBanner.style.display = 'flex';
         const buyInAmount = config.buyInAmount || 400;
         const addonPrice = config.addonAmount || 0;
@@ -682,6 +683,7 @@ function render() {
                 '<span class="name">' + winners[k] + '</span>' +
                 '<span class="payout"> — ' + amount.toLocaleString('cs') + ' Kč</span></div>';
         }).join('');
+        if (!wasShowing) playEndSound();
         // Stop tournament when all winners declared
         if (state.status === 'running') {
             tournamentRef.child('state/status').set('finished');
@@ -814,24 +816,6 @@ function render() {
     if (tickerA) tickerA.textContent = tickerText;
     if (tickerB) tickerB.textContent = tickerText;
 
-    // Elimination timeline
-    const elimTimeline = document.getElementById('elimination-timeline');
-    const eliminated = list.filter(p => !p.active && p.eliminatedAt);
-    if (eliminated.length > 0) {
-        eliminated.sort((a, b) => a.eliminatedAt - b.eliminatedAt);
-        const totalPlayers = list.length;
-        let html = '<div class="elim-heading">Vyřazení</div>';
-        // Most recent first in display
-        for (let i = eliminated.length - 1; i >= 0; i--) {
-            const place = totalPlayers - i;
-            html += '<div class="elim-entry">' + place + '. ' + eliminated[i].name + '</div>';
-        }
-        elimTimeline.innerHTML = html;
-        elimTimeline.style.display = '';
-    } else {
-        elimTimeline.style.display = 'none';
-    }
-
     // Payout (always visible)
     renderPayout();
 }
@@ -903,21 +887,150 @@ function tickTimer() {
 
 startTimerLoop();
 
+// ─── Preload all sounds ─────────────────────────────────────
+const ALL_SFX = [
+    '../assets/sfx/level_up/castleportcullis.wav',
+    '../assets/sfx/level_up/holy!.wav',
+    '../assets/sfx/level_up/superholy.wav',
+    '../assets/sfx/level_up/unholy!.wav',
+    '../assets/sfx/level_up/whistle.wav',
+    '../assets/sfx/knockout/key pickup guantlet 4.wav',
+    '../assets/sfx/knockout/power up1.wav',
+    '../assets/sfx/knockout/thumbs down.wav',
+    '../assets/sfx/knockout/thumbs up.wav',
+    '../assets/sfx/knockout/unholy!.wav',
+    '../assets/sfx/buy/coins falling 1.wav',
+    '../assets/sfx/buy/coins falling 2.wav',
+    '../assets/sfx/buy/key pickup guantlet 4.wav',
+    '../assets/sfx/winners/castleportcullis.wav',
+    '../assets/sfx/winners/choir.wav',
+    '../assets/sfx/winners/coins falling 1.wav',
+    '../assets/sfx/winners/coins falling 2.wav',
+    '../assets/sfx/winners/unholy!.wav'
+];
+// Preload all sounds into a reusable cache
+const sfxCache = {};
+ALL_SFX.forEach(src => { const a = new Audio(); a.preload = 'auto'; a.src = src; sfxCache[src] = a; });
+
+// Unlock audio on first user interaction (needed for browser autoplay policy)
+let audioUnlocked = false;
+function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    // Play a silent buffer on each cached audio to unlock it
+    Object.values(sfxCache).forEach(a => {
+        a.volume = 0;
+        a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = 1; }).catch(() => { a.volume = 1; });
+    });
+    [levelSound, knockoutSound, knockoutWinSound, buySound, endSound].forEach(a => {
+        a.volume = 0;
+        a.play().then(() => { a.pause(); a.currentTime = 0; a.volume = 1; }).catch(() => { a.volume = 1; });
+    });
+}
+document.addEventListener('click', unlockAudio, { once: true });
+document.addEventListener('keydown', unlockAudio, { once: true });
+
 // ─── Level Change Sound ─────────────────────────────────────
 const levelSound = new Audio();
 levelSound.preload = 'auto';
-let levelSoundFile = 'whistle.wav';
+let levelSoundFile = '';
 function loadLevelSound(filename) {
-    levelSoundFile = filename || 'whistle.wav';
-    levelSound.src = '../assets/sfx/level_up/' + levelSoundFile;
-    levelSound.load();
+    levelSoundFile = filename || '';
+    if (levelSoundFile) {
+        levelSound.src = '../assets/sfx/level_up/' + levelSoundFile;
+        levelSound.load();
+    }
 }
-loadLevelSound('whistle.wav');
 let isMuted = false;
 function playLevelSound() {
-    if (isMuted) return;
+    if (isMuted || !levelSoundFile) return;
     levelSound.currentTime = 0;
     levelSound.play().catch(() => {});
+}
+
+// ─── Knockout Sound ─────────────────────────────────────────
+const KNOCKOUT_SOUNDS = ['key pickup guantlet 4.wav', 'power up1.wav', 'thumbs down.wav', 'thumbs up.wav', 'unholy!.wav'];
+const knockoutSound = new Audio();
+knockoutSound.preload = 'auto';
+let knockoutSoundFile = '';
+function loadKnockoutSound(filename) {
+    knockoutSoundFile = filename || '';
+    if (knockoutSoundFile && knockoutSoundFile !== 'random') {
+        knockoutSound.src = '../assets/sfx/knockout/' + knockoutSoundFile;
+        knockoutSound.load();
+    }
+}
+function playKnockoutSound(inMoney) {
+    const file = inMoney ? knockoutWinSoundFile : knockoutSoundFile;
+    if (isMuted || !file) return;
+    if (file === 'random') {
+        const pick = KNOCKOUT_SOUNDS[Math.floor(Math.random() * KNOCKOUT_SOUNDS.length)];
+        const a = sfxCache['../assets/sfx/knockout/' + pick];
+        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+    } else {
+        const a = sfxCache['../assets/sfx/knockout/' + file];
+        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+    }
+}
+
+// ─── Knockout Win Sound ─────────────────────────────────────
+const knockoutWinSound = new Audio();
+knockoutWinSound.preload = 'auto';
+let knockoutWinSoundFile = '';
+function loadKnockoutWinSound(filename) {
+    knockoutWinSoundFile = filename || '';
+    if (knockoutWinSoundFile && knockoutWinSoundFile !== 'random') {
+        knockoutWinSound.src = '../assets/sfx/knockout/' + knockoutWinSoundFile;
+        knockoutWinSound.load();
+    }
+}
+
+// ─── Buy Sound ──────────────────────────────────────────────
+const BUY_SOUNDS = ['coins falling 1.wav', 'coins falling 2.wav', 'key pickup guantlet 4.wav'];
+const buySound = new Audio();
+buySound.preload = 'auto';
+let buySoundFile = '';
+function loadBuySound(filename) {
+    buySoundFile = filename || '';
+    if (buySoundFile && buySoundFile !== 'random') {
+        buySound.src = '../assets/sfx/buy/' + buySoundFile;
+        buySound.load();
+    }
+}
+function playBuySound() {
+    if (isMuted || !buySoundFile) return;
+    if (buySoundFile === 'random') {
+        const pick = BUY_SOUNDS[Math.floor(Math.random() * BUY_SOUNDS.length)];
+        const a = sfxCache['../assets/sfx/buy/' + pick];
+        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+    } else {
+        buySound.currentTime = 0;
+        buySound.play().catch(() => {});
+    }
+}
+
+// ─── End Sound ──────────────────────────────────────────────
+const END_SOUNDS = ['castleportcullis.wav', 'choir.wav', 'coins falling 1.wav', 'coins falling 2.wav', 'unholy!.wav'];
+const endSound = new Audio();
+endSound.preload = 'auto';
+let endSoundFile = '';
+function loadEndSound(filename) {
+    endSoundFile = filename || '';
+    if (endSoundFile && endSoundFile !== 'random') {
+        endSound.src = '../assets/sfx/winners/' + endSoundFile;
+        endSound.load();
+    }
+}
+function playEndSound() {
+    if (isMuted || !endSoundFile) return;
+    if (endSoundFile === 'random') {
+        const pick = END_SOUNDS[Math.floor(Math.random() * END_SOUNDS.length)];
+        const a = sfxCache['../assets/sfx/winners/' + pick];
+        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+    } else {
+        endSound.currentTime = 0;
+        endSound.play().catch(() => {});
+    }
 }
 
 document.getElementById('btn-test-sound').addEventListener('click', playLevelSound);
@@ -928,27 +1041,24 @@ document.getElementById('btn-mute').addEventListener('click', () => {
     btn.title = isMuted ? 'Zapnout zvuk' : 'Ztlumit';
 });
 
-// ─── Knockout Feed ──────────────────────────────────────────
+// ─── Event Feed ─────────────────────────────────────────────
 let prevPlayerList = null;
 
-function showKnockoutToast(name, place, payout) {
+function showFeedToast(html, type) {
     const feed = document.getElementById('knockout-feed');
     const toast = document.createElement('div');
-    toast.className = 'knockout-toast';
-    let text = place + '. místo — ' + name;
-    if (payout > 0) {
-        text += ' <span class="knockout-payout">— ' + payout.toLocaleString('cs') + ' Kč</span>';
-    }
-    toast.innerHTML = text;
+    toast.className = 'knockout-toast' + (type ? ' ' + type : '');
+    toast.innerHTML = html;
     feed.appendChild(toast);
     setTimeout(() => {
         toast.classList.add('removing');
         setTimeout(() => toast.remove(), 400);
-    }, 6000);
+    }, 10000);
 }
 
 // ─── Level Countdown ────────────────────────────────────────
 let lastCountdownSec = -1;
+let prevWinners = null;
 
 // ─── Firebase Listener ──────────────────────────────────────
 tournamentRef.on('value', (snap) => {
@@ -988,7 +1098,7 @@ tournamentRef.on('value', (snap) => {
         }
         T.players = { list: migrated, totalChips: rawPlayers.totalChips || 0 };
     }
-    // Detect knockouts (only after first load)
+    // Detect player events (only after first load)
     const newList = T.players.list || [];
     if (prevPlayerList !== null) {
         const paidPlaces = getPaidPlaces();
@@ -1003,15 +1113,49 @@ tournamentRef.on('value', (snap) => {
 
         newList.forEach((p, i) => {
             const prev = prevPlayerList[i];
-            if (prev && prev.active && !p.active) {
+            if (!prev) {
+                // New player added
+                if (p.buys > 0) {
+                    showFeedToast('\uD83E\uDE99 ' + p.name + ' — buy-in', 'entry');
+                }
+                return;
+            }
+            // Elimination
+            if (prev.active && !p.active) {
                 batchElimCount++;
                 const place = activePlayers + batchElimCount;
                 const payout = place <= paidPlaces ? (amounts[place - 1] || 0) : 0;
-                showKnockoutToast(p.name, place, payout);
+                let icon = '\u274C';
+                if (payout > 0) {
+                    if (place === 1) icon = '\uD83E\uDD47';
+                    else if (place === 2) icon = '\uD83E\uDD48';
+                    else if (place === 3) icon = '\uD83E\uDD49';
+                    else icon = '\uD83C\uDFC6';
+                }
+                let text = icon + ' ' + place + '. místo — ' + p.name;
+                if (payout > 0) {
+                    text += ' <span class="knockout-payout">— ' + payout.toLocaleString('cs') + ' Kč</span>';
+                }
+                showFeedToast(text);
+                playKnockoutSound(payout > 0);
+            }
+            // Buy-in / re-buy
+            if (p.buys > prev.buys) {
+                const label = prev.buys === 0 ? 'buy-in' : 're-buy';
+                showFeedToast('\uD83E\uDE99 ' + p.name + ' — ' + label, 'entry');
+                playBuySound();
+            }
+            // Add-on
+            if (p.addon && !prev.addon) {
+                showFeedToast('\u2B06\uFE0F ' + p.name + ' — add-on', 'entry');
+                playBuySound();
             }
         });
     }
-    prevPlayerList = newList.map(p => ({ name: p.name, active: p.active }));
+    prevPlayerList = newList.map(p => ({ name: p.name, active: p.active, buys: p.buys, addon: p.addon }));
+
+    // Track winners (no toasts — the winner banner is the display)
+    prevWinners = { ...(T.state.winners || {}) };
 
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
@@ -1026,11 +1170,17 @@ tournamentRef.on('value', (snap) => {
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
 
-    // Level sound from Firebase
-    const newSoundFile = data.levelSound || 'whistle.wav';
-    if (newSoundFile !== levelSoundFile) {
-        loadLevelSound(newSoundFile);
-    }
+    // Sounds from Firebase
+    const newSoundFile = data.levelSound || '';
+    if (newSoundFile !== levelSoundFile) loadLevelSound(newSoundFile);
+    const newKnockoutFile = data.knockoutSound || '';
+    if (newKnockoutFile !== knockoutSoundFile) loadKnockoutSound(newKnockoutFile);
+    const newKnockoutWinFile = data.knockoutWinSound || '';
+    if (newKnockoutWinFile !== knockoutWinSoundFile) loadKnockoutWinSound(newKnockoutWinFile);
+    const newBuyFile = data.buySound || '';
+    if (newBuyFile !== buySoundFile) loadBuySound(newBuyFile);
+    const newEndFile = data.endSound || '';
+    if (newEndFile !== endSoundFile) loadEndSound(newEndFile);
 
     // Auto-close rules when tournament starts
     if (rulesVisible && T.state.status === 'running') {
