@@ -170,7 +170,6 @@ const DEFAULTS = {
         startingStack: 5000,
         levelDuration: 20,
         maxLevels: 12,
-        smallestChip: 25,
         bonusAmount: 5000,
 
         levelsPerBreak: 0,
@@ -181,8 +180,6 @@ const DEFAULTS = {
         addonChips: 0,
         addonAmount: 0,
         addonCutoff: 0,
-        maxBB: 10000,
-        blindCurve: 1.0,
         anteMult: 0,
         date: ''
     },
@@ -199,7 +196,7 @@ const DEFAULTS = {
     blindOverrides: {},
     tableLocks: {},
     payoutConfig: null,
-    breakMessage: '',
+    breakMessages: {},
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
         'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
@@ -212,40 +209,12 @@ let T = JSON.parse(JSON.stringify(DEFAULTS));
 T.notes = DEFAULTS.notes.slice();
 
 // ─── Blind Calculation ──────────────────────────────────────
-function roundToChip(val, chip) {
-    let unit;
-    if (val >= 1000) unit = 100;
-    else if (val >= 100) unit = 25;
-    else if (val >= 10) unit = 5;
-    else unit = 1;
-    return Math.max(chip, Math.round(val / unit) * unit);
-}
-
 function calculateBlinds(config, totalChips, freezeUpTo) {
-    const { levelDuration, smallestChip } = config;
+    const { levelDuration } = config;
     const numLevels = Math.max(2, config.maxLevels || 12);
     const lpb = config.levelsPerBreak || 0;
     const breakDur = config.breakDuration || 30;
     const maxBreaks = config.maxBreaks || 0;
-    const curve = config.blindCurve || 1.0;
-    const maxBB = config.maxBB || 10000;
-
-    const ceilingSmall = totalChips > 0
-        ? roundToChip(totalChips / 3, smallestChip) / 2
-        : Infinity;
-
-    const startSB = smallestChip;
-    const targetSB = Math.min(maxBB / 2, ceilingSmall);
-
-    function generateCurve(N, fromSB, toSB) {
-        const raw = [];
-        if (N <= 1) { raw.push(fromSB); return raw; }
-        for (let i = 0; i < N; i++) {
-            const t = i / (N - 1);
-            raw.push(roundToChip(fromSB * Math.pow(toSB / fromSB, Math.pow(t, curve)), smallestChip));
-        }
-        return raw;
-    }
 
     const levels = [];
 
@@ -262,55 +231,23 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
 
         if (remaining > 0) {
             const lastBlind = [...levels].reverse().find(l => !l.isBreak);
-            const lastSB = lastBlind ? lastBlind.small : startSB;
-
-            const ratio = targetSB > startSB ? Math.log(lastSB / startSB) / Math.log(targetSB / startSB) : 1;
-            const tStart = Math.pow(Math.min(1, Math.max(0, ratio)), 1 / curve);
-
-            const newSBs = [];
-            for (let i = 1; i <= remaining; i++) {
-                const t = tStart + (1 - tStart) * (i / remaining);
-                const sb = Math.min(roundToChip(startSB * Math.pow(targetSB / startSB, Math.pow(t, curve)), smallestChip), ceilingSmall);
-                if (newSBs.length === 0 || sb !== newSBs[newSBs.length - 1]) newSBs.push(sb);
-            }
-            // Link last frozen level's BB to first new SB
-            if (lastBlind && newSBs.length > 0) lastBlind.big = newSBs[0];
-            for (let i = 0; i < newSBs.length; i++) {
-                const nextSB = i + 1 < newSBs.length ? newSBs[i + 1] : newSBs[i] * 2;
-                levels.push({ small: newSBs[i], big: nextSB, duration: levelDuration });
+            let sb = lastBlind ? lastBlind.big : 5;
+            for (let i = 0; i < remaining; i++) {
+                levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+                sb = sb * 2;
             }
         }
     } else {
-        const sbValues = generateCurve(numLevels, startSB, targetSB);
-        // Deduplicate consecutive equal SB values
-        const uniqueSB = [sbValues[0]];
-        for (let i = 1; i < sbValues.length; i++) {
-            if (sbValues[i] !== uniqueSB[uniqueSB.length - 1]) uniqueSB.push(sbValues[i]);
-        }
-        // BB of each level = SB of the next level; last level uses SB*2
-        for (let i = 0; i < uniqueSB.length; i++) {
-            const sb = Math.min(uniqueSB[i], ceilingSmall);
-            const nextSB = i + 1 < uniqueSB.length ? Math.min(uniqueSB[i + 1], ceilingSmall) : sb * 2;
-            levels.push({ small: sb, big: nextSB, duration: levelDuration });
+        // Simple doubling: 5/10, 10/20, 20/40, 40/80, ...
+        let sb = 5;
+        for (let i = 0; i < numLevels; i++) {
+            levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+            sb = sb * 2;
         }
     }
 
     // Insert breaks every N blind levels
     if (lpb > 0) {
-        // Count breaks already present in frozen section
-        const frozenBreakPositions = new Set();
-        if (freezeUpTo >= 0) {
-            let blindCount = 0;
-            for (let i = 0; i < levels.length && i <= freezeUpTo; i++) {
-                if (levels[i].isBreak) {
-                    frozenBreakPositions.add(i);
-                } else {
-                    blindCount++;
-                }
-            }
-        }
-
-        // Walk through levels, count blind levels, insert breaks at every N-th
         let blindCount = 0;
         let breakCount = 0;
         for (let i = 0; i < levels.length; i++) {
@@ -318,10 +255,8 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
             blindCount++;
             if (blindCount % lpb === 0) {
                 if (maxBreaks > 0 && breakCount >= maxBreaks) break;
-                // Don't insert after the very last blind level
                 const remainingBlinds = levels.slice(i + 1).some(l => !l.isBreak);
                 if (!remainingBlinds) break;
-                // Check if there's already a break right after this position
                 if (i + 1 < levels.length && levels[i + 1].isBreak) continue;
                 levels.splice(i + 1, 0, {
                     small: 0, big: 0,
@@ -329,7 +264,7 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
                     isBreak: true
                 });
                 breakCount++;
-                i++; // skip the just-inserted break
+                i++;
             }
         }
     }
@@ -662,8 +597,8 @@ function render() {
         progressBarEl.classList.add('on-break');
         document.getElementById('blinds-sub').textContent = '';
 
-        // Break message
-        const bMsg = (T.breakMessage || '').trim();
+        // Break message — use per-break message keyed by structure index
+        const bMsg = (T.breakMessages[lvl] || '').trim();
         if (bMsg) {
             const escaped = bMsg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const lines = escaped.split('\n');
@@ -863,7 +798,11 @@ tournamentRef.on('value', (snap) => {
     T.blindOverrides = data.blindOverrides || {};
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
-    T.breakMessage = data.breakMessage || '';
+    T.breakMessages = data.breakMessages || {};
+    // Migrate old single breakMessage to first break
+    if (!data.breakMessages && data.breakMessage) {
+        T.breakMessages = { 0: data.breakMessage };
+    }
     T.notes = data.notes || DEFAULTS.notes;
 
     render();

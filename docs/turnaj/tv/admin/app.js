@@ -61,7 +61,6 @@ const DEFAULTS = {
         startingStack: 5000,
         levelDuration: 20,
         maxLevels: 12,
-        smallestChip: 25,
         bonusAmount: 5000,
         levelsPerBreak: 0,
         breakDuration: 30,
@@ -71,8 +70,6 @@ const DEFAULTS = {
         addonChips: 0,
         addonAmount: 0,
         addonCutoff: 0,
-        maxBB: 10000,
-        blindCurve: 1.0,
         anteMult: 0,
         date: ''
     },
@@ -89,7 +86,7 @@ const DEFAULTS = {
     blindOverrides: {},
     tableLocks: {},
     payoutConfig: null,
-    breakMessage: '',
+    breakMessages: {},
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
         'Nepřítomným hráčům se automaticky platí blindy a foldují karty',
@@ -101,40 +98,12 @@ let T = JSON.parse(JSON.stringify(DEFAULTS));
 T.notes = DEFAULTS.notes.slice();
 
 // ─── Blind Calculation ──────────────────────────────────────
-function roundToChip(val, chip) {
-    let unit;
-    if (val >= 1000) unit = 100;
-    else if (val >= 100) unit = 25;
-    else if (val >= 10) unit = 5;
-    else unit = 1;
-    return Math.max(chip, Math.round(val / unit) * unit);
-}
-
 function calculateBlinds(config, totalChips, freezeUpTo) {
-    const { levelDuration, smallestChip } = config;
+    const { levelDuration } = config;
     const numLevels = Math.max(2, config.maxLevels || 12);
     const lpb = config.levelsPerBreak || 0;
     const breakDur = config.breakDuration || 30;
     const maxBreaks = config.maxBreaks || 0;
-    const curve = config.blindCurve || 1.0;
-    const maxBB = config.maxBB || 10000;
-
-    const ceilingSmall = totalChips > 0
-        ? roundToChip(totalChips / 3, smallestChip) / 2
-        : Infinity;
-
-    const startSB = smallestChip;
-    const targetSB = Math.min(maxBB / 2, ceilingSmall);
-
-    function generateCurve(N, fromSB, toSB) {
-        const raw = [];
-        if (N <= 1) { raw.push(fromSB); return raw; }
-        for (let i = 0; i < N; i++) {
-            const t = i / (N - 1);
-            raw.push(roundToChip(fromSB * Math.pow(toSB / fromSB, Math.pow(t, curve)), smallestChip));
-        }
-        return raw;
-    }
 
     const levels = [];
 
@@ -148,35 +117,17 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
 
         if (remaining > 0) {
             const lastBlind = [...levels].reverse().find(l => !l.isBreak);
-            const lastSB = lastBlind ? lastBlind.small : startSB;
-            const ratio = targetSB > startSB ? Math.log(lastSB / startSB) / Math.log(targetSB / startSB) : 1;
-            const tStart = Math.pow(Math.min(1, Math.max(0, ratio)), 1 / curve);
-
-            const newSBs = [];
-            for (let i = 1; i <= remaining; i++) {
-                const t = tStart + (1 - tStart) * (i / remaining);
-                const sb = Math.min(roundToChip(startSB * Math.pow(targetSB / startSB, Math.pow(t, curve)), smallestChip), ceilingSmall);
-                if (newSBs.length === 0 || sb !== newSBs[newSBs.length - 1]) newSBs.push(sb);
-            }
-            // Link last frozen level's BB to first new SB
-            if (lastBlind && newSBs.length > 0) lastBlind.big = newSBs[0];
-            for (let i = 0; i < newSBs.length; i++) {
-                const nextSB = i + 1 < newSBs.length ? newSBs[i + 1] : newSBs[i] * 2;
-                levels.push({ small: newSBs[i], big: nextSB, duration: levelDuration });
+            let sb = lastBlind ? lastBlind.big : 5;
+            for (let i = 0; i < remaining; i++) {
+                levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+                sb = sb * 2;
             }
         }
     } else {
-        const sbValues = generateCurve(numLevels, startSB, targetSB);
-        // Deduplicate consecutive equal SB values
-        const uniqueSB = [sbValues[0]];
-        for (let i = 1; i < sbValues.length; i++) {
-            if (sbValues[i] !== uniqueSB[uniqueSB.length - 1]) uniqueSB.push(sbValues[i]);
-        }
-        // BB of each level = SB of the next level; last level uses SB*2
-        for (let i = 0; i < uniqueSB.length; i++) {
-            const sb = Math.min(uniqueSB[i], ceilingSmall);
-            const nextSB = i + 1 < uniqueSB.length ? Math.min(uniqueSB[i + 1], ceilingSmall) : sb * 2;
-            levels.push({ small: sb, big: nextSB, duration: levelDuration });
+        let sb = 5;
+        for (let i = 0; i < numLevels; i++) {
+            levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+            sb = sb * 2;
         }
     }
 
@@ -184,7 +135,7 @@ function calculateBlinds(config, totalChips, freezeUpTo) {
         let blindCount = 0;
         let breakCount = 0;
         for (let i = 0; i < levels.length; i++) {
-            if (levels[i].isBreak) continue;
+            if (levels[i].isBreak) { breakCount++; continue; }
             blindCount++;
             if (blindCount % lpb === 0) {
                 if (maxBreaks > 0 && breakCount >= maxBreaks) break;
@@ -472,7 +423,6 @@ function render() {
         'cfg-stack': config.startingStack,
         'cfg-level-dur': config.levelDuration,
         'cfg-max-levels': config.maxLevels,
-        'cfg-smallest': config.smallestChip,
         'cfg-bonus': config.bonusAmount,
         'cfg-levels-per-break': config.levelsPerBreak,
         'cfg-break-dur': config.breakDuration,
@@ -481,17 +431,12 @@ function render() {
         'cfg-addon-chips': config.addonChips,
         'cfg-addon-amount': config.addonAmount,
         'cfg-start-time-est': config.startTime,
-        'cfg-max-bb': config.maxBB,
-        'cfg-blind-curve': config.blindCurve,
         'cfg-ante-mult': config.anteMult
     };
     for (const [id, val] of Object.entries(ids)) {
         const el = document.getElementById(id);
         if (el && document.activeElement !== el) el.value = val;
     }
-    const curveLabel = document.getElementById('blind-curve-val');
-    if (curveLabel) curveLabel.textContent = parseFloat(config.blindCurve || 1.0).toFixed(1);
-
     // Player list
     renderPlayerList();
     const sumEl = document.getElementById('player-summary');
@@ -521,11 +466,8 @@ function render() {
     const noteHasFocus = Array.from(noteInputs).some(el => el === document.activeElement);
     if (!noteHasFocus) renderNoteInputs();
 
-    // Break message
-    const breakMsgInput = document.getElementById('cfg-break-message');
-    if (breakMsgInput && document.activeElement !== breakMsgInput) {
-        breakMsgInput.value = T.breakMessage || '';
-    }
+    // Break messages
+    renderBreakMessages();
 
     // Table locks
     renderTableLocks();
@@ -908,11 +850,72 @@ function renderBlindStructure() {
                 '<td>' + levelNum + (isOverridden ? ' <button class="blind-reset" data-level="' + levelNum + '">&times;</button>' : '') + '</td>' +
                 '<td>' + timeStr + '</td>' +
                 '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="small" value="' + s.small + '" inputmode="numeric"></td>' +
-                '<td>' + s.big.toLocaleString('cs') + '</td>' + anteCell;
+                '<td><input type="number" class="blind-edit" data-level="' + levelNum + '" data-field="big" value="' + s.big + '" inputmode="numeric"></td>' +
+                anteCell;
         }
         runningMinutes += s.duration;
         tbody.appendChild(tr);
     });
+}
+
+function renderBreakMessages() {
+    const container = document.getElementById('break-messages-list');
+    if (!container) return;
+    const struct = T.blindStructure || [];
+    const config = T.config;
+
+    // Calculate start times for each entry
+    let runningMinutes;
+    if (T.state.startedAt) {
+        const d = new Date(T.state.startedAt);
+        runningMinutes = d.getHours() * 60 + d.getMinutes();
+    } else {
+        const parts = (config.startTime || '19:00').split(':');
+        runningMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
+    }
+
+    // Collect breaks with their info
+    const breaks = [];
+    let levelNum = 0;
+    for (let i = 0; i < struct.length; i++) {
+        const s = struct[i];
+        if (s.isBreak) {
+            const startMin = runningMinutes;
+            const endMin = runningMinutes + s.duration;
+            const startStr = String(Math.floor(startMin / 60) % 24).padStart(2, '0') + ':' + String(startMin % 60).padStart(2, '0');
+            const endStr = String(Math.floor(endMin / 60) % 24).padStart(2, '0') + ':' + String(endMin % 60).padStart(2, '0');
+            // Find next blind level after break
+            let nextLevel = null;
+            for (let j = i + 1; j < struct.length; j++) {
+                if (!struct[j].isBreak) { nextLevel = struct[j]; break; }
+            }
+            breaks.push({ index: i, startStr, endStr, nextLevel, levelNum });
+        } else {
+            levelNum++;
+        }
+        runningMinutes += s.duration;
+    }
+
+    if (breaks.length === 0) {
+        container.innerHTML = '<div style="opacity:0.4">Žádné přestávky ve struktuře</div>';
+        return;
+    }
+
+    // Only re-render if break count changed or no textareas focused
+    const hasFocus = Array.from(container.querySelectorAll('textarea')).some(el => el === document.activeElement);
+    if (hasFocus) return;
+
+    container.innerHTML = breaks.map((b, idx) => {
+        const nextInfo = b.nextLevel
+            ? 'Level ' + (b.levelNum + 1) + ': ' + b.nextLevel.small.toLocaleString('cs') + '/' + b.nextLevel.big.toLocaleString('cs')
+            : '';
+        const val = T.breakMessages[b.index] || '';
+        return '<div class="break-msg-field" style="margin-bottom:10px">' +
+            '<label style="font-size:0.85em;opacity:0.6">' + b.startStr + ' \u2013 ' + b.endStr +
+            (nextInfo ? ' \u2192 ' + nextInfo : '') + '</label>' +
+            '<textarea class="break-msg-input" data-break-index="' + b.index + '" rows="2" placeholder="Banner pro tuto p\u0159est\u00e1vku...">' + val.replace(/</g, '&lt;') + '</textarea>' +
+            '</div>';
+    }).join('');
 }
 
 // ─── Timer Loop ─────────────────────────────────────────────
@@ -982,7 +985,11 @@ tournamentRef.on('value', (snap) => {
     T.blindOverrides = data.blindOverrides || {};
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
-    T.breakMessage = data.breakMessage || '';
+    T.breakMessages = data.breakMessages || {};
+    // Migrate old single breakMessage to first break
+    if (!data.breakMessages && data.breakMessage) {
+        T.breakMessages = { 0: data.breakMessage };
+    }
     T.notes = data.notes || DEFAULTS.notes;
 
     render();
@@ -998,7 +1005,6 @@ function saveConfig() {
         levelDuration: parseInt(document.getElementById('cfg-level-dur').value) || 20,
         maxLevels: parseInt(document.getElementById('cfg-max-levels').value) || 12,
         startTime: document.getElementById('cfg-start-time-est').value || '19:00',
-        smallestChip: parseInt(document.getElementById('cfg-smallest').value) || 25,
         bonusAmount: parseInt(document.getElementById('cfg-bonus').value) || 5000,
         levelsPerBreak: parseInt(document.getElementById('cfg-levels-per-break').value) || 0,
         breakDuration: parseInt(document.getElementById('cfg-break-dur').value) || 30,
@@ -1007,8 +1013,6 @@ function saveConfig() {
         addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
         addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
         addonCutoff: T.config.addonCutoff || 0,
-        maxBB: parseInt(document.getElementById('cfg-max-bb').value) || 10000,
-        blindCurve: parseFloat(document.getElementById('cfg-blind-curve').value) || 1.0,
         anteMult: parseFloat(document.getElementById('cfg-ante-mult').value) || 0
     };
     const p = tournamentRef.child('config').set(config);
@@ -1020,11 +1024,6 @@ function saveConfig() {
 }
 
 document.getElementById('section-config').addEventListener('change', saveConfig);
-
-document.getElementById('cfg-blind-curve').addEventListener('input', (e) => {
-    document.getElementById('blind-curve-val').textContent = parseFloat(e.target.value).toFixed(1);
-    saveConfig();
-});
 
 // Add player
 document.getElementById('btn-add-player').addEventListener('click', () => {
@@ -1298,10 +1297,17 @@ notesList.addEventListener('drop', (e) => {
     saveNotes();
 });
 
-// Break message
-document.getElementById('cfg-break-message').addEventListener('change', () => {
-    const val = (document.getElementById('cfg-break-message').value || '').trim();
-    const p = tournamentRef.child('breakMessage').set(val);
+// Break messages
+document.getElementById('break-messages-list').addEventListener('change', (e) => {
+    if (!e.target.classList.contains('break-msg-input')) return;
+    const idx = e.target.dataset.breakIndex;
+    const val = (e.target.value || '').trim();
+    if (val) {
+        T.breakMessages[idx] = val;
+    } else {
+        delete T.breakMessages[idx];
+    }
+    const p = tournamentRef.child('breakMessages').set(T.breakMessages);
     showSaveStatus(document.getElementById('break-save-status'), p);
 });
 
@@ -1380,39 +1386,42 @@ document.getElementById('btn-reshuffle-seats').addEventListener('click', () => {
 document.getElementById('structure-body').addEventListener('change', (e) => {
     if (!e.target.classList.contains('blind-edit')) return;
     const level = parseInt(e.target.dataset.level);
+    const field = e.target.dataset.field; // 'small' or 'big'
     const val = parseInt(e.target.value);
     if (!level || isNaN(val) || val <= 0) return;
 
-    const totalChips = recalcTotalChips();
-    let freezeUpTo = -1;
-    if (T.state.status === 'running' && T.state.startedAt) {
-        freezeUpTo = getCurrentLevel(T.state.startedAt, T.blindStructure).levelIndex;
-    }
-    const baseStructure = calculateBlinds(T.config, totalChips, freezeUpTo);
-    let calcSmall = 0, bn = 0;
-    for (const be of baseStructure) {
-        if (be.isBreak) continue;
-        bn++;
-        if (bn === level) { calcSmall = be.small; break; }
+    // Get current override or current values from structure
+    const existing = T.blindOverrides[level] || {};
+    let currentSmall = existing.small, currentBig = existing.big;
+    if (!currentSmall || !currentBig) {
+        let bn = 0;
+        for (const be of (T.blindStructure || [])) {
+            if (be.isBreak) continue;
+            bn++;
+            if (bn === level) { currentSmall = currentSmall || be.small; currentBig = currentBig || be.big; break; }
+        }
     }
 
-    if (val === calcSmall) {
-        delete T.blindOverrides[level];
-    } else {
-        T.blindOverrides[level] = { small: val, big: val * 2 };
-    }
+    const newSmall = field === 'small' ? val : currentSmall;
+    const newBig = field === 'small' ? val * 2 : (field === 'big' ? val : currentBig);
+
+    T.blindOverrides[level] = { small: newSmall, big: newBig };
 
     tournamentRef.child('blindOverrides').set(T.blindOverrides);
     recalcAndSync();
 });
 
 document.getElementById('structure-body').addEventListener('click', (e) => {
-    if (!e.target.classList.contains('blind-reset')) return;
-    const level = parseInt(e.target.dataset.level);
-    if (!level) return;
-    delete T.blindOverrides[level];
-    tournamentRef.child('blindOverrides').set(T.blindOverrides);
-    recalcAndSync();
+    // Reset button
+    if (e.target.classList.contains('blind-reset')) {
+        const level = parseInt(e.target.dataset.level);
+        if (!level) return;
+        delete T.blindOverrides[level];
+        tournamentRef.child('blindOverrides').set(T.blindOverrides);
+        recalcAndSync();
+        return;
+    }
+
 });
 
 // ─── Guard Toggles ──────────────────────────────────────────

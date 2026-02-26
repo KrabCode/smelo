@@ -701,6 +701,18 @@ body {
     opacity: 0.6;
 }
 .blind-reset:active { opacity: 1; }
+.break-msg-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.9em;
+    resize: vertical;
+    margin-top: 4px;
+}
 
 /* Seating table visual */
 .seating-table-visual {
