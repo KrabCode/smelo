@@ -1165,7 +1165,6 @@ document.getElementById('btn-level-fwd').addEventListener('click', () => shiftLe
 document.getElementById('btn-reset').addEventListener('click', () => {
     if (!confirm('Opravdu resetovat timer?')) return;
     tournamentRef.child('state').set(DEFAULTS.state);
-    tournamentRef.child('blindOverrides').set({});
     tournamentRef.child('payoutConfig').set(null);
     recalcAndSync();
 });
