@@ -349,6 +349,7 @@ function render() {
         timerLevelEl.textContent = 'Turnaj ukončen';
         timerLevelEl.style.color = 'var(--green)';
     } else {
+        const statusLabel = { waiting: 'Čeká se', running: 'Běží', finished: 'Ukončen' };
         timerLevelEl.textContent = statusLabel[state.status] || '';
         timerLevelEl.style.color = '';
     }
