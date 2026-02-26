@@ -716,12 +716,14 @@ function renderRulesInputs() {
             '<button class="note-remove section-remove" data-section-idx="' + si + '" title="Smazat sekci">&times;</button>' +
             '</div>' +
             '<div class="rules-admin-items" data-section-idx="' + si + '">' +
-            items.map((r, i) =>
-                '<div class="note-row" data-rule-idx="' + i + '">' +
+            items.map((r, i) => {
+                const rows = Math.max(1, (r.match(/\n/g) || []).length + 1);
+                return '<div class="note-row" data-rule-idx="' + i + '">' +
                 '<span class="note-drag-handle">\u2630</span>' +
-                '<textarea rows="1" data-rule-idx="' + i + '">' + r.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
+                '<textarea rows="' + rows + '" data-rule-idx="' + i + '">' + r.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
                 '<button class="note-remove rule-remove" data-rule-idx="' + i + '">&times;</button>' +
-                '</div>'
+                '</div>';
+            }
             ).join('') +
             '</div>' +
             '<button class="btn rule-add" data-section-idx="' + si + '" style="margin-top:4px">+ Pravidlo</button>' +
@@ -736,7 +738,7 @@ function collectRules() {
         const titleInput = el.querySelector('.rules-title-input');
         const title = titleInput ? titleInput.value.trim() : '';
         const items = Array.from(el.querySelectorAll('.rules-admin-items textarea'))
-            .map(ta => ta.value.replace(/\n/g, ' ').trim()).filter(Boolean);
+            .map(ta => ta.value.trim()).filter(Boolean);
         sections.push({ title: title, items: items });
     });
     return sections;

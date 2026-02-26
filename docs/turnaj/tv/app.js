@@ -120,7 +120,7 @@ function renderRules() {
         if (!items.length) return '';
         return '<div class="rules-section">' +
             '<div class="rules-section-title">' + (sec.title || '').replace(/</g, '&lt;') + '</div>' +
-            items.map(r => '<div class="rule-card">' + r.replace(/</g, '&lt;') + '</div>').join('') +
+            items.map(r => '<div class="rule-card">' + r.replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</div>').join('') +
             '</div>';
     }).join('');
 }
