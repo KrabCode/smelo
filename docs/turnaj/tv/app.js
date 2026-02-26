@@ -115,14 +115,24 @@ function getRulesSections() {
 function renderRules() {
     const sections = getRulesSections();
     const grid = document.getElementById('rules-grid');
-    grid.innerHTML = sections.map(sec => {
+    grid.innerHTML = '';
+    sections.forEach(sec => {
         const items = sec.items || [];
-        if (!items.length) return '';
-        return '<div class="rules-section">' +
-            '<div class="rules-section-title">' + (sec.title || '').replace(/</g, '&lt;') + '</div>' +
-            items.map(r => '<div class="rule-card">' + r.replace(/</g, '&lt;').replace(/\n/g, '<br>') + '</div>').join('') +
-            '</div>';
-    }).join('');
+        if (!items.length) return;
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'rules-section';
+        const titleEl = document.createElement('div');
+        titleEl.className = 'rules-section-title';
+        titleEl.textContent = sec.title || '';
+        sectionEl.appendChild(titleEl);
+        items.forEach(r => {
+            const card = document.createElement('div');
+            card.className = 'rule-card';
+            card.textContent = r;
+            sectionEl.appendChild(card);
+        });
+        grid.appendChild(sectionEl);
+    });
 }
 
 function updateRulesView() {
