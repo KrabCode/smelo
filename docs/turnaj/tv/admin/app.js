@@ -1353,6 +1353,7 @@ document.getElementById('break-messages-list').addEventListener('change', (e) =>
 // Rules
 document.getElementById('rules-sections-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('rule-remove')) {
+        if (!confirm('Smazat pravidlo?')) return;
         const si = parseInt(e.target.closest('.rules-admin-items').dataset.sectionIdx);
         const idx = parseInt(e.target.dataset.ruleIdx);
         const rules = collectRules();
@@ -1362,6 +1363,7 @@ document.getElementById('rules-sections-list').addEventListener('click', (e) => 
         saveRules();
     }
     if (e.target.classList.contains('section-remove')) {
+        if (!confirm('Smazat celou sekci pravidel?')) return;
         const si = parseInt(e.target.dataset.sectionIdx);
         const rules = collectRules();
         rules.splice(si, 1);
