@@ -968,8 +968,9 @@ function playKnockoutSound(inMoney) {
         const a = sfxCache['../assets/sfx/knockout/' + pick];
         if (a) { a.currentTime = 0; a.play().catch(() => {}); }
     } else {
-        const a = sfxCache['../assets/sfx/knockout/' + file];
-        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
+        const snd = inMoney ? knockoutWinSound : knockoutSound;
+        snd.currentTime = 0;
+        snd.play().catch(() => {});
     }
 }
 
@@ -1110,11 +1111,12 @@ tournamentRef.on('value', (snap) => {
         const amounts = roundPayouts(dist, prizePool);
         const activePlayers = newList.filter(p => p.active).length;
         let batchElimCount = 0;
+        const prevByName = {};
+        prevPlayerList.forEach(p => { prevByName[p.name] = p; });
 
-        newList.forEach((p, i) => {
-            const prev = prevPlayerList[i];
+        newList.forEach((p) => {
+            const prev = prevByName[p.name];
             if (!prev) {
-                // New player added
                 if (p.buys > 0) {
                     showFeedToast('\uD83E\uDE99 ' + p.name + ' — buy-in', 'entry');
                 }
