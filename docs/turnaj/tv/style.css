@@ -530,8 +530,9 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     width: fit-content;
 }
 .rule-card.active .rule-pill {
-    color: var(--accent);
-    background: rgba(255,179,0,0.1);
+    color: var(--text-secondary);
+    background: rgba(255,255,255,0.06);
+    text-shadow: none;
 }
 .rule-card:hover {
     color: #888;
