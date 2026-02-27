@@ -646,8 +646,23 @@ body {
 .note-row {
     display: flex;
     gap: 6px;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.note-row input[type="text"] {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 1em;
+    font-family: inherit;
+}
+.note-row input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,179,0,0.15);
 }
 .note-row textarea {
     flex: 1;

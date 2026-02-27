@@ -500,7 +500,7 @@ function render() {
     renderWinners();
 
     // Notes
-    const noteInputs = document.querySelectorAll('#notes-list textarea');
+    const noteInputs = document.querySelectorAll('#notes-list input[type="text"]');
     const noteHasFocus = Array.from(noteInputs).some(el => el === document.activeElement);
     if (!noteHasFocus) renderNoteInputs();
 
@@ -711,15 +711,15 @@ function renderNoteInputs() {
     list.innerHTML = notes.map((note, i) =>
         '<div class="note-row" data-note-idx="' + i + '">' +
         '<span class="note-drag-handle">\u2630</span>' +
-        '<textarea rows="2" data-note-idx="' + i + '">' + note.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
+        '<input type="text" data-note-idx="' + i + '" value="' + note.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '">' +
         '<button class="note-remove" data-note-idx="' + i + '">&times;</button>' +
         '</div>'
     ).join('');
 }
 
 function saveNotes() {
-    const inputs = document.querySelectorAll('#notes-list textarea');
-    const notes = Array.from(inputs).map(el => el.value.replace(/\n/g, ' ').trim()).filter(Boolean);
+    const inputs = document.querySelectorAll('#notes-list input[type="text"]');
+    const notes = Array.from(inputs).map(el => el.value.trim()).filter(Boolean);
     const p = tournamentRef.child('notes').set(notes);
     showSaveStatus(document.getElementById('notes-save-status'), p);
 }
@@ -735,7 +735,8 @@ function renderRulesInputs() {
     const container = document.getElementById('rules-sections-list');
     if (!container) return;
     const sections = getRules();
-    container.innerHTML = sections.map((sec, si) => {
+    container.innerHTML = '<div class="hint" style="margin-bottom:10px;text-align:left">Text za <b>|</b> se zobraz\u00ed jako \u0161t\u00edtek</div>' +
+    sections.map((sec, si) => {
         const items = sec.items || [];
         return '<div class="rules-admin-section" data-section-idx="' + si + '">' +
             '<div class="rules-admin-header">' +
@@ -1469,20 +1470,13 @@ document.getElementById('notes-list').addEventListener('click', (e) => {
     saveNotes();
 });
 
-document.getElementById('notes-list').addEventListener('input', (e) => {
-    if (e.target.tagName === 'TEXTAREA' && e.target.value.includes('\n')) {
-        const pos = e.target.selectionStart;
-        e.target.value = e.target.value.replace(/\n/g, ' ');
-        e.target.selectionStart = e.target.selectionEnd = pos;
-    }
-});
 document.getElementById('notes-list').addEventListener('change', saveNotes);
 
 document.getElementById('btn-add-note').addEventListener('click', () => {
     T.notes = T.notes || [];
     T.notes.push('');
     renderNoteInputs();
-    const inputs = document.querySelectorAll('#notes-list textarea');
+    const inputs = document.querySelectorAll('#notes-list input[type="text"]');
     if (inputs.length) inputs[inputs.length - 1].focus();
 });
 
