@@ -662,8 +662,9 @@ function render() {
     const list = players.list || [];
     const stats = derivePlayerStats(list);
     document.getElementById('remaining-count').textContent = stats.activePlayers;
-    document.getElementById('remaining-verb').textContent = stats.activePlayers >= 5 ? 'zbývá' : 'zbývají';
-    document.getElementById('remaining-noun').textContent = stats.activePlayers >= 5 ? 'hráčů' : 'hráči';
+    const n = stats.activePlayers;
+    document.getElementById('remaining-verb').textContent = (n === 1 || n >= 5) ? 'zbývá' : 'zbývají';
+    document.getElementById('remaining-noun').textContent = n === 1 ? 'hráč' : n >= 5 ? 'hráčů' : 'hráči';
     document.getElementById('hd-chips').textContent = (players.totalChips || 0).toLocaleString('cs');
     const avgStack = stats.activePlayers > 0 ? Math.round((players.totalChips || 0) / stats.activePlayers) : 0;
     document.getElementById('hd-avg').textContent = avgStack.toLocaleString('cs');

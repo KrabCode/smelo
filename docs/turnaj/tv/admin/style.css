@@ -233,6 +233,7 @@ body {
 }
 .save-status.saving { color: var(--text-muted); }
 .save-status.saved { color: var(--green); }
+.save-status.error { color: var(--red); }
 
 /* Guard toggle */
 .guard-toggle {

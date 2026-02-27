@@ -320,6 +320,9 @@ function showSaveStatus(el, promise) {
         el.textContent = 'Uloženo ✓';
         el.className = 'save-status saved';
         setTimeout(() => { el.textContent = ''; el.className = 'save-status'; }, 2000);
+    }).catch(() => {
+        el.textContent = 'Chyba ✗';
+        el.className = 'save-status error';
     });
 }
 
@@ -668,6 +671,7 @@ function renderWinners() {
     const hasFocus = Array.from(currentFields).some(el => el === document.activeElement);
 
     // Build knockout lookup: place → knockout entry
+    // Most recent knockout = 1st place (winner gets knocked out last to trigger their notification/sound)
     const log = T.eventLog || [];
     const knockouts = log.filter(e => e.type === 'knockout').reverse();
     const koByPlace = {};
@@ -1782,15 +1786,6 @@ document.getElementById('structure-body').addEventListener('click', (e) => {
 
 // ─── Guard Toggles ──────────────────────────────────────────
 const guardState = JSON.parse(localStorage.getItem('adminGuards') || '{}');
-function setGuardLocked(id, locked) {
-    const section = document.getElementById(id);
-    const btn = document.querySelector('.guard-toggle[data-target="' + id + '"]');
-    if (!section || !btn) return;
-    section.classList.toggle('guarded', locked);
-    btn.textContent = locked ? '\u{1F512}' : '\u{1F513}';
-    guardState[id] = !locked;
-    localStorage.setItem('adminGuards', JSON.stringify(guardState));
-}
 
 document.querySelectorAll('.guard-toggle').forEach(btn => {
     const id = btn.dataset.target;
