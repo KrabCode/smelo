@@ -1066,6 +1066,7 @@ function renderBreakMessages() {
             '<label style="font-size:0.85em;opacity:0.6">' + b.startStr + ' \u2013 ' + b.endStr +
             (nextInfo ? ' \u2192 ' + nextInfo : '') + '</label>' +
             '<input type="text" class="break-label-input" data-break-index="' + b.index + '" value="' + labelVal.replace(/"/g, '&quot;') + '" placeholder="Popisek ve struktu\u0159e (nap\u0159. Konec re-buy\u016F)">' +
+            '<label style="font-size:0.85em;opacity:0.6;margin-top:6px;display:block">Banner <small class="hint" style="display:inline">\u2014 prvn\u00ed \u0159\u00e1dek se zobraz\u00ed v\u011bt\u0161\u00edm p\u00edsmem</small></label>' +
             '<textarea class="break-msg-input" data-break-index="' + b.index + '" rows="2" placeholder="Banner pro tuto p\u0159est\u00e1vku...">' + val.replace(/</g, '&lt;') + '</textarea>' +
             '</div>';
     }).join('');
