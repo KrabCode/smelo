@@ -402,6 +402,14 @@ body {
     transform: rotate(-45deg);
 }
 
+.seating-rebalance-warn {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+    margin-left: auto;
+}
+
 /* Table config */
 .table-config-row input[type="text"] {
     background: var(--bg-input);

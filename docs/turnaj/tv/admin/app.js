@@ -791,6 +791,7 @@ function renderTableLocks() {
     const statusEl = document.getElementById('seating-status');
     if (statusEl) {
         let statusHtml = '<div class="seating-status-bar">';
+        const playerCounts = [];
         TABLES.forEach(t => {
             const tl = locks[t.id] || {};
             if (tl.locked) {
@@ -803,10 +804,18 @@ function renderTableLocks() {
                     total++;
                     if (occupied.has(t.id + '-' + s)) seated++;
                 }
+                playerCounts.push(seated);
                 const cls = seated === total ? ' full' : '';
                 statusHtml += '<span class="seating-status-item' + cls + '"><span class="seating-dot" style="background:' + t.color + '"></span> ' + seated + '/' + total + '</span>';
             }
         });
+        if (playerCounts.length >= 2) {
+            const maxP = Math.max(...playerCounts);
+            const minP = Math.min(...playerCounts);
+            if (maxP - minP >= 2) {
+                statusHtml += '<span class="seating-rebalance-warn">Rebalance?</span>';
+            }
+        }
         statusHtml += '</div>';
         statusEl.innerHTML = statusHtml;
     }
