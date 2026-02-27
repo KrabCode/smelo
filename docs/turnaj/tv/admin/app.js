@@ -736,10 +736,9 @@ function renderRulesInputs() {
             '</div>' +
             '<div class="rules-admin-items" data-section-idx="' + si + '">' +
             items.map((r, i) => {
-                const rows = Math.max(1, (r.match(/\n/g) || []).length + 1);
                 return '<div class="note-row" data-rule-idx="' + i + '">' +
                 '<span class="note-drag-handle">\u2630</span>' +
-                '<textarea rows="' + rows + '" data-rule-idx="' + i + '">' + r.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
+                '<textarea data-rule-idx="' + i + '">' + r.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</textarea>' +
                 '<button class="note-remove rule-remove" data-rule-idx="' + i + '">&times;</button>' +
                 '</div>';
             }
@@ -749,7 +748,18 @@ function renderRulesInputs() {
             '</div>';
     }).join('') +
     '<button class="btn" id="btn-add-rule-section" style="margin-top:8px">+ Sekce</button>';
+    // Autofit all rule textareas
+    container.querySelectorAll('textarea').forEach(autofitTextarea);
 }
+
+function autofitTextarea(ta) {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+}
+
+document.getElementById('rules-sections-list').addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA') autofitTextarea(e.target);
+});
 
 function collectRules() {
     const sections = [];
