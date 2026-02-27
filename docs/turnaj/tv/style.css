@@ -33,9 +33,11 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .tracker-header .stat-item span { color: var(--accent); font-weight: bold; }
 .tracker-header .stat-item .muted { color: var(--text-secondary); font-weight: normal; }
 .tracker-footer {
-    font-family: 'Staatliches', sans-serif;
+    font-family: 'Oswald', sans-serif;
     font-size: 1em;
-    letter-spacing: 2px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
     color: var(--accent);
     background: var(--bg-card);
     border-top: 1px solid var(--border);
@@ -107,7 +109,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     line-height: 1;
     margin: 8px 0;
 }
-.timer.warning { color: var(--red); }
+.timer.warning { }
 
 /* Progress bar */
 .progress-wrap {
@@ -655,6 +657,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     display: flex;
     align-items: center;
     justify-content: center;
+    padding-top: 20%;
     z-index: 50;
     background: rgba(0, 0, 0, 0.5);
     pointer-events: none;

@@ -43,6 +43,17 @@ body {
 .section:not(.guarded) h2 {
     border-bottom-color: rgba(255,255,255,0.08);
 }
+#section-seating h2 {
+    border-bottom-color: transparent !important;
+    margin-bottom: 8px;
+}
+#seating-status {
+    padding-bottom: 12px;
+    border-bottom: 1px solid transparent;
+}
+#section-seating:not(.guarded) #seating-status {
+    border-bottom-color: rgba(255,255,255,0.08);
+}
 .section h2 .guard-toggle {
     margin-left: auto;
     order: 1;
