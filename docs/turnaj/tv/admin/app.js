@@ -576,7 +576,11 @@ function renderPlayerList() {
             '</tr>';
     });
     html += '</tbody></table></div>';
+    const wrap = container.querySelector('.player-table-wrap');
+    const scrollLeft = wrap ? wrap.scrollLeft : 0;
     container.innerHTML = html;
+    const newWrap = container.querySelector('.player-table-wrap');
+    if (newWrap) newWrap.scrollLeft = scrollLeft;
 }
 
 // ─── Payout Config ──────────────────────────────────────────
