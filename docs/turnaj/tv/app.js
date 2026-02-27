@@ -27,6 +27,23 @@ document.getElementById('zoom-out').addEventListener('click', () => {
     applyZoom();
 });
 
+// Sidebar offset controls
+let sidebarOffset = 0;
+function applySidebarOffset() {
+    const left = document.querySelector('.sidebar-left');
+    const right = document.querySelector('.sidebar-right');
+    if (left) left.style.marginLeft = sidebarOffset + 'px';
+    if (right) right.style.marginRight = sidebarOffset + 'px';
+}
+document.getElementById('sidebar-in').addEventListener('click', () => {
+    sidebarOffset = Math.min(192, sidebarOffset + 24);
+    applySidebarOffset();
+});
+document.getElementById('sidebar-out').addEventListener('click', () => {
+    sidebarOffset = Math.max(-96, sidebarOffset - 24);
+    applySidebarOffset();
+});
+
 // Ticker toggle
 let tickerHidden = localStorage.getItem('tickerHidden') === '1';
 const tickerBtn = document.getElementById('btn-toggle-ticker');
@@ -162,38 +179,42 @@ document.getElementById('rules-grid').addEventListener('click', (e) => {
 });
 
 // ─── Table Definitions ──────────────────────────────────────
-const TABLES = [
-    { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 10 },
-    { id: 2, name: 'Černý', color: '#2c3e50', shape: 'rect', seats: 6 },
-    { id: 3, name: 'Zelený', color: '#27ae60', shape: 'rect', seats: 6 }
+const DEFAULT_TABLES = [
+    { id: 1, name: 'Červený', color: '#c0392b', seats: 10 },
+    { id: 2, name: 'Černý', color: '#2c3e50', seats: 6 },
+    { id: 3, name: 'Zelený', color: '#27ae60', seats: 6 }
 ];
+let TABLES = DEFAULT_TABLES.slice();
 
 function getSeats(table) {
     return table.seats;
 }
+function getShape(table) {
+    return table.seats === 10 ? 'oval' : 'rect';
+}
 
-// Table tab selector for sidebar seating visual
-let selectedTable = parseInt(localStorage.getItem('tvTable')) || 1;
+// Table selector — single button that cycles through tables by index
+let selectedTableIndex = parseInt(localStorage.getItem('tvTableIdx')) || 0;
 
-function selectTable(tableId) {
-    selectedTable = tableId;
-    localStorage.setItem('tvTable', tableId);
+function selectTable() {
+    if (selectedTableIndex >= TABLES.length) selectedTableIndex = 0;
+    const table = TABLES[selectedTableIndex];
     renderTableTabs();
-    renderSeatingView(tableId);
+    renderSeatingView(table.id);
 }
 
 function renderTableTabs() {
     const container = document.getElementById('table-tabs');
     if (!container) return;
-    container.innerHTML = TABLES.map(t =>
-        '<div class="table-tab' + (t.id === selectedTable ? ' active' : '') +
-        '" data-table="' + t.id + '" style="background:' + t.color + '" title="' + t.name + '"></div>'
-    ).join('');
+    if (selectedTableIndex >= TABLES.length) selectedTableIndex = 0;
+    const t = TABLES[selectedTableIndex];
+    container.innerHTML = '<div class="table-tab active" style="background:' + t.color + '" title="' + t.name + '"></div>';
 }
 
-document.getElementById('table-tabs').addEventListener('click', (e) => {
-    const tab = e.target.closest('.table-tab');
-    if (tab) selectTable(parseInt(tab.dataset.table));
+document.getElementById('table-tabs').addEventListener('click', () => {
+    selectedTableIndex = (selectedTableIndex + 1) % TABLES.length;
+    localStorage.setItem('tvTableIdx', selectedTableIndex);
+    selectTable();
 });
 
 renderTableTabs();
@@ -555,7 +576,7 @@ function setLastPlaced(tableId, seat) {
 function buildTableVisualHTML(table, opts) {
     opts = opts || {};
     const list = T.players.list || [];
-    const positions = SEAT_POSITIONS[table.shape];
+    const positions = SEAT_POSITIONS[getShape(table)];
     const seatMap = {};
     list.forEach(p => {
         if (p.table === table.id && p.seat) seatMap[p.seat] = p.name;
@@ -567,7 +588,10 @@ function buildTableVisualHTML(table, opts) {
     const rot = tl.rotation || 0;
     const counterRot = rot ? 'rotate(' + (-rot) + 'deg)' : '';
 
-    let html = '<div class="seating-table-surface ' + table.shape + '" style="border-color:' + table.color + ';background:' + table.color + '22"></div>';
+    const normRot = ((rot % 360) + 360) % 360;
+    const nameTransform = (normRot > 90 && normRot < 270) ? 'translate(-50%,-50%) rotate(180deg)' : 'translate(-50%,-50%)';
+    let html = '<div class="seating-table-surface ' + getShape(table) + '" style="border-color:' + table.color + ';background:' + table.color + '22">' +
+        '<span class="seating-table-name" style="color:' + table.color + ';transform:' + nameTransform + '">' + table.name + '</span></div>';
 
     // Wall indicators (clickable in admin)
     ['top', 'bottom', 'left', 'right'].forEach(side => {
@@ -603,8 +627,10 @@ function renderSeatingView(tableId) {
     const rot = tl.rotation || 0;
     visual.style.transform = rot ? 'rotate(' + rot + 'deg)' : '';
     if (tl.locked) {
-        visual.innerHTML = '<div class="seating-table-surface ' + table.shape + '" style="border-color:' + table.color + ';background:' + table.color + '22;opacity:0.4"></div>' +
-            '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-muted);font-size:0.8em;z-index:1">Zamčený</div>';
+        const normRot = ((rot % 360) + 360) % 360;
+        const nameTransform = (normRot > 90 && normRot < 270) ? 'translate(-50%,-50%) rotate(180deg)' : 'translate(-50%,-50%)';
+        visual.innerHTML = '<div class="seating-table-surface ' + getShape(table) + '" style="border-color:' + table.color + ';background:' + table.color + '22;opacity:0.4">' +
+            '<span class="seating-table-name" style="color:' + table.color + ';transform:' + nameTransform + '">' + table.name + '</span></div>';
         return;
     }
     visual.innerHTML = buildTableVisualHTML(table);
@@ -696,7 +722,8 @@ function render() {
     }
 
     // Update seating in sidebar
-    renderSeatingView(selectedTable);
+    if (selectedTableIndex >= TABLES.length) selectedTableIndex = 0;
+    renderSeatingView(TABLES[selectedTableIndex].id);
 
     // Current blinds (derived from startedAt)
     const struct = blindStructure || [];
@@ -1199,6 +1226,8 @@ tournamentRef.on('value', (snap) => {
 
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
+    TABLES = data.tables || DEFAULT_TABLES.slice();
+    if (selectedTableIndex >= TABLES.length) selectedTableIndex = TABLES.length - 1;
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
     T.breakMessages = data.breakMessages || {};
@@ -1234,6 +1263,7 @@ tournamentRef.on('value', (snap) => {
     }
 
     if (rulesVisible) renderRules();
+    renderTableTabs();
     render();
 
 });

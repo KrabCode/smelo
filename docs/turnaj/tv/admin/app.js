@@ -40,14 +40,18 @@ function serverNow() { return Date.now() + serverTimeOffset; }
 db.ref('.info/connected').on('value', () => {});
 
 // ─── Table Definitions ──────────────────────────────────────
-const TABLES = [
-    { id: 1, name: 'Červený', color: '#c0392b', shape: 'oval', seats: 10 },
-    { id: 2, name: 'Černý', color: '#2c3e50', shape: 'rect', seats: 6 },
-    { id: 3, name: 'Zelený', color: '#27ae60', shape: 'rect', seats: 6 }
+const DEFAULT_TABLES = [
+    { id: 1, name: 'Červený', color: '#c0392b', seats: 10 },
+    { id: 2, name: 'Černý', color: '#2c3e50', seats: 6 },
+    { id: 3, name: 'Zelený', color: '#27ae60', seats: 6 }
 ];
+let TABLES = DEFAULT_TABLES.slice();
 
 function getSeats(table) {
     return table.seats;
+}
+function getShape(table) {
+    return table.seats === 10 ? 'oval' : 'rect';
 }
 
 // ─── Default data ───────────────────────────────────────────
@@ -833,7 +837,9 @@ function renderTableLocks() {
             html += '<div class="seat-grid">';
             for (let s = 1; s <= getSeats(t); s++) {
                 const seatLocked = lockedSeats.includes(s);
-                html += '<button class="seat-btn seat-lock-toggle' + (seatLocked ? ' locked' : '') +
+                const seatOccupied = occupied.has(t.id + '-' + s);
+                const cls = seatLocked ? ' locked' : (seatOccupied ? ' occupied' : '');
+                html += '<button class="seat-btn seat-lock-toggle' + cls +
                     '" data-table="' + t.id + '" data-seat="' + s + '">' +
                     s + (seatLocked ? ' \u2717' : '') + '</button>';
             }
@@ -851,6 +857,74 @@ function renderTableLocks() {
     });
     container.innerHTML = html;
 }
+
+// ─── Tables Config ──────────────────────────────────────────
+function renderTablesConfig() {
+    const container = document.getElementById('tables-config-list');
+    if (!container) return;
+    let html = '';
+    TABLES.forEach((t, i) => {
+        html += '<div class="table-config-row" style="display:flex;gap:8px;align-items:center;margin-bottom:6px">' +
+            '<input type="text" class="table-cfg-name" data-idx="' + i + '" value="' + (t.name || '') + '" style="flex:1;min-width:0">' +
+            '<input type="color" class="table-cfg-color" data-idx="' + i + '" value="' + t.color + '" style="width:40px;height:36px;padding:2px;border:1px solid var(--border);border-radius:4px;background:var(--bg-input);cursor:pointer">' +
+            '<select class="table-cfg-seats" data-idx="' + i + '" style="width:60px">' +
+            '<option value="6"' + (t.seats === 6 ? ' selected' : '') + '>6</option>' +
+            '<option value="10"' + (t.seats === 10 ? ' selected' : '') + '>10</option>' +
+            '</select>' +
+            '<button class="btn danger table-cfg-remove" data-idx="' + i + '" style="min-width:auto;padding:8px 12px">&times;</button>' +
+            '</div>';
+    });
+    container.innerHTML = html;
+}
+
+function saveTables() {
+    const clean = TABLES.map(t => ({ id: t.id, name: t.name, color: t.color, seats: t.seats }));
+    const statusEl = document.getElementById('tables-save-status');
+    statusEl.textContent = '';
+    statusEl.className = 'save-status';
+    tournamentRef.child('tables').set(clean).then(() => {
+        statusEl.textContent = 'Uloženo';
+        statusEl.className = 'save-status saved';
+        setTimeout(() => { statusEl.textContent = ''; statusEl.className = 'save-status'; }, 2000);
+    });
+}
+
+document.getElementById('tables-config-list').addEventListener('input', (e) => {
+    const idx = parseInt(e.target.dataset.idx);
+    if (isNaN(idx)) return;
+    if (e.target.classList.contains('table-cfg-name')) {
+        TABLES[idx].name = e.target.value;
+    } else if (e.target.classList.contains('table-cfg-color')) {
+        TABLES[idx].color = e.target.value;
+    }
+});
+document.getElementById('tables-config-list').addEventListener('change', (e) => {
+    const idx = parseInt(e.target.dataset.idx);
+    if (isNaN(idx)) return;
+    if (e.target.classList.contains('table-cfg-seats')) {
+        TABLES[idx].seats = parseInt(e.target.value);
+    }
+});
+
+document.getElementById('tables-config-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('.table-cfg-remove');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx);
+    if (TABLES.length <= 1) return;
+    if (!confirm('Smazat stůl "' + TABLES[idx].name + '"?')) return;
+    TABLES.splice(idx, 1);
+    renderTablesConfig();
+    render();
+});
+
+document.getElementById('btn-add-table').addEventListener('click', () => {
+    const maxId = TABLES.reduce((m, t) => Math.max(m, t.id), 0);
+    TABLES.push({ id: maxId + 1, name: 'Stůl ' + (maxId + 1), color: '#7f8c8d', seats: 6 });
+    renderTablesConfig();
+    render();
+});
+
+document.getElementById('btn-save-tables').addEventListener('click', saveTables);
 
 // ─── Blind Structure Table ──────────────────────────────────
 function renderBlindStructure() {
@@ -1052,6 +1126,7 @@ tournamentRef.on('value', (snap) => {
     }
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
+    TABLES = data.tables || DEFAULT_TABLES.slice();
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
     T.breakMessages = data.breakMessages || {};
@@ -1081,6 +1156,7 @@ tournamentRef.on('value', (snap) => {
     const endSoundSelect = document.getElementById('cfg-end-sound');
     if (endSoundSelect) endSoundSelect.value = data.endSound || '';
 
+    renderTablesConfig();
     render();
 });
 

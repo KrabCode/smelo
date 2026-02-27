@@ -18,9 +18,9 @@
     <!-- Header -->
     <div class="tracker-header">
         <span class="conn-dot" id="conn-dot"></span>
-        <div class="stat-item">Rebuy <span id="hd-buyin-amount">400</span> Kč: <span id="hd-buyin-chips">0</span>ž</div>
+        <div class="stat-item">Buy-in <span id="hd-buyin-amount">400</span> Kč: <span id="hd-buyin-chips">0</span>ž</div>
         <div class="stat-item" id="hd-addon-item" style="display:none">Add-on <span id="hd-addon-amount">0</span> Kč: <span id="hd-addon-chips">0</span>ž</div>
-        <div class="stat-item">Žetony ve hře: <span id="hd-chips">0</span></div>
+        <div class="stat-item">Žetonů ve hře: <span id="hd-chips">0</span></div>
         <div class="stat-item" style="display:none">Prize pool: <span id="hd-pool">0 Kč</span> / <span id="hd-places">0</span> <span id="hd-places-label">výherců</span></div>
         <div class="stat-item">Průměrný stack: <span id="hd-avg">0</span></div>
         <div class="header-controls" id="header-controls">
@@ -32,6 +32,9 @@
             <button id="zoom-out"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
             <button id="zoom-in"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
             <button id="btn-fullscreen" title="Celá obrazovka"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+            <span class="hdr-sep"></span>
+            <button id="sidebar-out" title="Posunout panely ven"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>
+            <button id="sidebar-in" title="Posunout panely dovnitř"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>
             <span class="hdr-sep"></span>
             <button id="btn-test-sound" title="Test zvuku"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></button>
             <button id="btn-mute" title="Ztlumit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>

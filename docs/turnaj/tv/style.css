@@ -78,19 +78,19 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     border: 1px solid var(--border-light);
     color: var(--text-muted);
     border-radius: 4px;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.header-controls button svg { display: block; }
+.header-controls button svg { display: block; width: 14px; height: 14px; }
 .header-controls button:hover { border-color: var(--accent); color: var(--text); }
 .hdr-sep {
     width: 1px;
-    height: 20px;
+    height: 16px;
     background: var(--border-light);
     margin: 0 4px;
     flex-shrink: 0;
@@ -419,6 +419,17 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     height: 48%;
     border-radius: 8px;
     border: 2px solid;
+}
+.seating-table-name {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-family: 'Staatliches', sans-serif;
+    font-size: 0.85em;
+    letter-spacing: 2px;
+    opacity: 0.5;
+    white-space: nowrap;
+    pointer-events: none;
 }
 .seating-seat {
     position: absolute;
