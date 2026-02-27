@@ -1072,7 +1072,12 @@ function renderBreakMessages() {
             '<textarea class="break-msg-input" data-break-index="' + b.index + '" rows="2" placeholder="Banner pro tuto p\u0159est\u00e1vku...">' + val.replace(/</g, '&lt;') + '</textarea>' +
             '</div>';
     }).join('');
+    container.querySelectorAll('textarea').forEach(autofitTextarea);
 }
+
+document.getElementById('break-messages-list').addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA') autofitTextarea(e.target);
+});
 
 // ─── Timer Loop ─────────────────────────────────────────────
 let prevLevel = -1;
