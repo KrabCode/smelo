@@ -865,6 +865,7 @@ function render() {
 
 // ─── Timer Loop ─────────────────────────────────────────────
 let prevLevel = -1;
+let prevStatus = 'waiting';
 let timerInterval = null;
 
 function startTimerLoop() {
@@ -1255,6 +1256,12 @@ tournamentRef.on('value', (snap) => {
     if (newBuyFile !== buySoundFile) loadBuySound(newBuyFile);
     const newEndFile = data.endSound || '';
     if (newEndFile !== endSoundFile) loadEndSound(newEndFile);
+
+    // Play level sound when timer starts
+    if (T.state.status === 'running' && prevStatus !== 'running') {
+        playLevelSound();
+    }
+    prevStatus = T.state.status;
 
     // Auto-close rules when tournament starts
     if (rulesVisible && T.state.status === 'running') {
