@@ -912,7 +912,18 @@ document.getElementById('tables-config-list').addEventListener('click', (e) => {
     const idx = parseInt(btn.dataset.idx);
     if (TABLES.length <= 1) return;
     if (!confirm('Smazat stůl "' + TABLES[idx].name + '"?')) return;
+    const removedId = TABLES[idx].id;
     TABLES.splice(idx, 1);
+    const list = T.players.list || [];
+    let unseated = false;
+    list.forEach(p => {
+        if (p.table === removedId) {
+            delete p.table;
+            delete p.seat;
+            unseated = true;
+        }
+    });
+    if (unseated) tournamentRef.child('players/list').set(list);
     renderTablesConfig();
     render();
 });
@@ -1285,9 +1296,12 @@ document.getElementById('players-list').addEventListener('click', (e) => {
             if (field === 'active') {
                 if (!list[idx].active) {
                     list[idx].eliminatedAt = serverNow();
+                    delete list[idx].table;
+                    delete list[idx].seat;
                     eventType = 'knockout';
                 } else {
                     delete list[idx].eliminatedAt;
+                    assignSeat(list[idx], list);
                     eventType = 'reentry';
                 }
             }
