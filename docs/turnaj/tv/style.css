@@ -129,12 +129,6 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 }
 
 /* Blinds display */
-.blinds-label {
-    font-size: 1em;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    margin-top: 8px;
-}
 .blinds-current {
     font-family: 'DM Sans', sans-serif;
     font-weight: 700;

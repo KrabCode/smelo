@@ -743,10 +743,9 @@ function render() {
     const anteOn = anteMult > 0;
 
     // Blinds / break / pause display
-    const blindsLabelEl = document.getElementById('blinds-label');
+
     const breakMsgEl = document.getElementById('break-message');
     if (isPaused) {
-        blindsLabelEl.style.display = 'none';
         blindsCurEl.textContent = 'PAUZA';
         blindsCurEl.classList.remove('on-break');
         blindsCurEl.classList.add('on-pause');
@@ -754,7 +753,6 @@ function render() {
         document.getElementById('blinds-sub').textContent = '';
         breakMsgEl.style.display = 'none';
     } else if (onBreak) {
-        blindsLabelEl.style.display = 'none';
         blindsCurEl.textContent = 'PŘESTÁVKA';
         blindsCurEl.classList.add('on-break');
         blindsCurEl.classList.remove('on-pause');
@@ -773,7 +771,6 @@ function render() {
             breakMsgEl.style.display = 'none';
         }
     } else if (curEntry) {
-        blindsLabelEl.style.display = '';
         blindsCurEl.textContent =
             curEntry.small.toLocaleString('cs') + ' / ' + curEntry.big.toLocaleString('cs');
         blindsCurEl.classList.remove('on-break');
@@ -783,7 +780,6 @@ function render() {
             anteOn ? 'Ante ' + Math.round(curEntry.big * anteMult).toLocaleString('cs') : '';
         breakMsgEl.style.display = 'none';
     } else {
-        blindsLabelEl.style.display = '';
         blindsCurEl.textContent = '– / –';
         blindsCurEl.classList.remove('on-break');
         blindsCurEl.classList.remove('on-pause');
