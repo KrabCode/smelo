@@ -16,7 +16,7 @@
 
         <!-- Timer controls -->
         <div class="section" id="section-timer">
-            <h2><button type="button" class="guard-toggle" data-target="section-timer">&#x1F512;</button> Timer</h2>
+            <h2>&#x23F1;&#xFE0F; Timer <button type="button" class="guard-toggle" data-target="section-timer">&#x1F512;</button></h2>
             <div class="timer-display" id="timer-display">00:00</div>
             <div class="timer-level" id="timer-level"></div>
             <div class="section-body">
@@ -41,7 +41,7 @@
 
         <!-- Players -->
         <div class="section" id="section-players">
-            <h2><button type="button" class="guard-toggle" data-target="section-players">&#x1F512;</button> Hráči <span class="badge" id="player-count">0</span></h2>
+            <h2>&#x1F465; Hráči <span class="badge" id="player-count">0</span> <button type="button" class="guard-toggle" data-target="section-players">&#x1F512;</button></h2>
             <div class="section-body">
             <div class="inline-row">
                 <input type="text" id="new-player-name" placeholder="Jméno hráče..." enterkeyhint="done">
@@ -58,7 +58,7 @@
 
         <!-- Winners -->
         <div class="section" id="section-winners">
-            <h2><button type="button" class="guard-toggle" data-target="section-winners">&#x1F512;</button> Výsledky</h2>
+            <h2>&#x1F3C6; Výsledky <button type="button" class="guard-toggle" data-target="section-winners">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="winners-fields"></div>
                 <div class="btn-row" style="margin-top:8px">
@@ -70,7 +70,7 @@
 
         <!-- Payouts -->
         <div class="section" id="section-payout">
-            <h2><button type="button" class="guard-toggle" data-target="section-payout">&#x1F512;</button> Výplaty</h2>
+            <h2>&#x1F4B0; Výplaty <button type="button" class="guard-toggle" data-target="section-payout">&#x1F512;</button></h2>
             <div class="section-body">
                 <div class="pool-display" id="pool-display"></div>
                 <div id="payout-config-rows"></div>
@@ -85,7 +85,7 @@
 
         <!-- Tables config -->
         <div class="section" id="section-tables">
-            <h2><button type="button" class="guard-toggle" data-target="section-tables">&#x1F512;</button> Stoly</h2>
+            <h2>&#x26E9;&#xFE0F; Stoly <button type="button" class="guard-toggle" data-target="section-tables">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="tables-config-list"></div>
                 <div class="btn-row" style="margin-top:8px">
@@ -98,7 +98,7 @@
 
         <!-- Seating -->
         <div class="section" id="section-seating">
-            <h2><button type="button" class="guard-toggle" data-target="section-seating">&#x1F512;</button> Místa</h2>
+            <h2>&#x1FA91; Místa <button type="button" class="guard-toggle" data-target="section-seating">&#x1F512;</button></h2>
             <div id="seating-status"></div>
             <div class="section-body">
                 <div id="table-locks-ui"></div>
@@ -110,7 +110,7 @@
 
         <!-- Notes -->
         <div class="section" id="section-notes">
-            <h2><button type="button" class="guard-toggle" data-target="section-notes">&#x1F512;</button> Poznámky (ticker)</h2>
+            <h2>&#x1F4F0; Poznámky (ticker) <button type="button" class="guard-toggle" data-target="section-notes">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="notes-list"></div>
                 <div class="btn-row" style="margin-top:8px">
@@ -131,7 +131,7 @@
 
         <!-- Rules -->
         <div class="section" id="section-rules">
-            <h2><button type="button" class="guard-toggle" data-target="section-rules">&#x1F512;</button> Pravidla (TV)</h2>
+            <h2>&#x1F4CB; Pravidla (TV) <button type="button" class="guard-toggle" data-target="section-rules">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="rules-sections-list"></div>
                 <span class="save-status" id="rules-save-status"></span>
@@ -140,7 +140,7 @@
 
         <!-- Blind structure preview -->
         <div class="section" id="section-blinds">
-            <h2><button type="button" class="guard-toggle" data-target="section-blinds">&#x1F512;</button> Struktura blindů</h2>
+            <h2>&#x1F4C8; Struktura blindů <button type="button" class="guard-toggle" data-target="section-blinds">&#x1F512;</button></h2>
             <div class="section-body">
             <table class="structure-table">
                 <thead>
@@ -153,7 +153,7 @@
 
         <!-- Config -->
         <div class="section" id="section-config">
-            <h2><button type="button" class="guard-toggle" data-target="section-config">&#x1F512;</button> Nastavení turnaje</h2>
+            <h2>&#x2699;&#xFE0F; Nastavení turnaje <button type="button" class="guard-toggle" data-target="section-config">&#x1F512;</button></h2>
             <div class="section-body">
                 <div class="config-grid">
                     <div class="config-sub">Struktura</div>
@@ -220,78 +220,41 @@
 
         <!-- Sounds -->
         <div class="section" id="section-sounds">
-            <h2><button type="button" class="guard-toggle" data-target="section-sounds">&#x1F512;</button> Zvuky</h2>
+            <h2>&#x1F50A; Zvuky <button type="button" class="guard-toggle" data-target="section-sounds">&#x1F512;</button></h2>
             <div class="section-body">
                 <div class="sound-list">
                     <div class="sound-item">
                         <label for="cfg-level-sound">Změna levelu</label>
                         <div class="inline-row" style="margin-bottom:0">
-                            <select id="cfg-level-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px">
-                                <option value="">— žádný —</option>
-                                <option value="castleportcullis.wav">castleportcullis.wav</option>
-                                <option value="holy!.wav">holy!.wav</option>
-                                <option value="superholy.wav">superholy.wav</option>
-                                <option value="unholy!.wav">unholy!.wav</option>
-                                <option value="whistle.wav">whistle.wav</option>
-                            </select>
+                            <select id="cfg-level-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
                             <button class="btn" id="btn-test-sound" type="button">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
                         <label for="cfg-buy-sound">Buy-in / re-buy</label>
                         <div class="inline-row" style="margin-bottom:0">
-                            <select id="cfg-buy-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px">
-                                <option value="">— žádný —</option>
-                                <option value="random">náhodný</option>
-                                <option value="coins falling 1.wav">coins falling 1.wav</option>
-                                <option value="coins falling 2.wav">coins falling 2.wav</option>
-                                <option value="key pickup guantlet 4.wav">key pickup guantlet 4.wav</option>
-                            </select>
+                            <select id="cfg-buy-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
                             <button class="btn" id="btn-test-buy-sound" type="button">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
                         <label for="cfg-knockout-sound">Vyřazení (prohra)</label>
                         <div class="inline-row" style="margin-bottom:0">
-                            <select id="cfg-knockout-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px">
-                                <option value="">— žádný —</option>
-                                <option value="random">náhodný</option>
-                                <option value="key pickup guantlet 4.wav">key pickup guantlet 4.wav</option>
-                                <option value="power up1.wav">power up1.wav</option>
-                                <option value="thumbs down.wav">thumbs down.wav</option>
-                                <option value="thumbs up.wav">thumbs up.wav</option>
-                                <option value="unholy!.wav">unholy!.wav</option>
-                            </select>
+                            <select id="cfg-knockout-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
                             <button class="btn" id="btn-test-knockout-sound" type="button">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
                         <label for="cfg-knockout-win-sound">Vyřazení (výhra)</label>
                         <div class="inline-row" style="margin-bottom:0">
-                            <select id="cfg-knockout-win-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px">
-                                <option value="">— žádný —</option>
-                                <option value="random">náhodný</option>
-                                <option value="key pickup guantlet 4.wav">key pickup guantlet 4.wav</option>
-                                <option value="power up1.wav">power up1.wav</option>
-                                <option value="thumbs down.wav">thumbs down.wav</option>
-                                <option value="thumbs up.wav">thumbs up.wav</option>
-                                <option value="unholy!.wav">unholy!.wav</option>
-                            </select>
+                            <select id="cfg-knockout-win-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
                             <button class="btn" id="btn-test-knockout-win-sound" type="button">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
                         <label for="cfg-end-sound">Konec turnaje</label>
                         <div class="inline-row" style="margin-bottom:0">
-                            <select id="cfg-end-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px">
-                                <option value="">— žádný —</option>
-                                <option value="random">náhodný</option>
-                                <option value="castleportcullis.wav">castleportcullis.wav</option>
-                                <option value="choir.wav">choir.wav</option>
-                                <option value="coins falling 1.wav">coins falling 1.wav</option>
-                                <option value="coins falling 2.wav">coins falling 2.wav</option>
-                                <option value="unholy!.wav">unholy!.wav</option>
-                            </select>
+                            <select id="cfg-end-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
                             <button class="btn" id="btn-test-end-sound" type="button">Test</button>
                         </div>
                     </div>
@@ -301,7 +264,7 @@
 
         <!-- Event Log -->
         <div class="section" id="section-event-log">
-            <h2><button type="button" class="guard-toggle" data-target="section-event-log">&#x1F512;</button> Průběh</h2>
+            <h2>&#x1F4C3; Log <button type="button" class="guard-toggle" data-target="section-event-log">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="event-log-list"></div>
                 <div class="btn-row" style="margin-top:8px">

@@ -954,26 +954,12 @@ function tickTimer() {
 startTimerLoop();
 
 // ─── Preload all sounds ─────────────────────────────────────
-const ALL_SFX = [
-    '../assets/sfx/level_up/castleportcullis.wav',
-    '../assets/sfx/level_up/holy!.wav',
-    '../assets/sfx/level_up/superholy.wav',
-    '../assets/sfx/level_up/unholy!.wav',
-    '../assets/sfx/level_up/whistle.wav',
-    '../assets/sfx/knockout/key pickup guantlet 4.wav',
-    '../assets/sfx/knockout/power up1.wav',
-    '../assets/sfx/knockout/thumbs down.wav',
-    '../assets/sfx/knockout/thumbs up.wav',
-    '../assets/sfx/knockout/unholy!.wav',
-    '../assets/sfx/buy/coins falling 1.wav',
-    '../assets/sfx/buy/coins falling 2.wav',
-    '../assets/sfx/buy/key pickup guantlet 4.wav',
-    '../assets/sfx/winners/castleportcullis.wav',
-    '../assets/sfx/winners/choir.wav',
-    '../assets/sfx/winners/coins falling 1.wav',
-    '../assets/sfx/winners/coins falling 2.wav',
-    '../assets/sfx/winners/unholy!.wav'
+const ALL_SOUND_FILES = [
+    'castleportcullis.wav', 'choir.wav', 'coins falling 1.wav', 'coins falling 2.wav',
+    'holy!.wav', 'key pickup guantlet 4.wav', 'power up1.wav', 'superholy.wav',
+    'thumbs down.wav', 'thumbs up.wav', 'unholy!.wav', 'whistle.wav'
 ];
+const ALL_SFX = ALL_SOUND_FILES.map(f => '../assets/sfx/' + f);
 // Preload all sounds into a reusable cache
 const sfxCache = {};
 ALL_SFX.forEach(src => { const a = new Audio(); a.preload = 'auto'; a.src = src; sfxCache[src] = a; });
@@ -1003,7 +989,7 @@ let levelSoundFile = '';
 function loadLevelSound(filename) {
     levelSoundFile = filename || '';
     if (levelSoundFile) {
-        levelSound.src = '../assets/sfx/level_up/' + levelSoundFile;
+        levelSound.src = '../assets/sfx/' + levelSoundFile;
         levelSound.load();
     }
 }
@@ -1015,29 +1001,22 @@ function playLevelSound() {
 }
 
 // ─── Knockout Sound ─────────────────────────────────────────
-const KNOCKOUT_SOUNDS = ['key pickup guantlet 4.wav', 'power up1.wav', 'thumbs down.wav', 'thumbs up.wav', 'unholy!.wav'];
 const knockoutSound = new Audio();
 knockoutSound.preload = 'auto';
 let knockoutSoundFile = '';
 function loadKnockoutSound(filename) {
     knockoutSoundFile = filename || '';
-    if (knockoutSoundFile && knockoutSoundFile !== 'random') {
-        knockoutSound.src = '../assets/sfx/knockout/' + knockoutSoundFile;
+    if (knockoutSoundFile) {
+        knockoutSound.src = '../assets/sfx/' + knockoutSoundFile;
         knockoutSound.load();
     }
 }
 function playKnockoutSound(inMoney) {
     const file = inMoney ? knockoutWinSoundFile : knockoutSoundFile;
     if (isMuted || !file) return;
-    if (file === 'random') {
-        const pick = KNOCKOUT_SOUNDS[Math.floor(Math.random() * KNOCKOUT_SOUNDS.length)];
-        const a = sfxCache['../assets/sfx/knockout/' + pick];
-        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
-    } else {
-        const snd = inMoney ? knockoutWinSound : knockoutSound;
-        snd.currentTime = 0;
-        snd.play().catch(() => {});
-    }
+    const snd = inMoney ? knockoutWinSound : knockoutSound;
+    snd.currentTime = 0;
+    snd.play().catch(() => {});
 }
 
 // ─── Knockout Win Sound ─────────────────────────────────────
@@ -1046,61 +1025,51 @@ knockoutWinSound.preload = 'auto';
 let knockoutWinSoundFile = '';
 function loadKnockoutWinSound(filename) {
     knockoutWinSoundFile = filename || '';
-    if (knockoutWinSoundFile && knockoutWinSoundFile !== 'random') {
-        knockoutWinSound.src = '../assets/sfx/knockout/' + knockoutWinSoundFile;
+    if (knockoutWinSoundFile) {
+        knockoutWinSound.src = '../assets/sfx/' + knockoutWinSoundFile;
         knockoutWinSound.load();
     }
 }
 
 // ─── Buy Sound ──────────────────────────────────────────────
-const BUY_SOUNDS = ['coins falling 1.wav', 'coins falling 2.wav', 'key pickup guantlet 4.wav'];
 const buySound = new Audio();
 buySound.preload = 'auto';
 let buySoundFile = '';
 function loadBuySound(filename) {
     buySoundFile = filename || '';
-    if (buySoundFile && buySoundFile !== 'random') {
-        buySound.src = '../assets/sfx/buy/' + buySoundFile;
+    if (buySoundFile) {
+        buySound.src = '../assets/sfx/' + buySoundFile;
         buySound.load();
     }
 }
 function playBuySound() {
     if (isMuted || !buySoundFile) return;
-    if (buySoundFile === 'random') {
-        const pick = BUY_SOUNDS[Math.floor(Math.random() * BUY_SOUNDS.length)];
-        const a = sfxCache['../assets/sfx/buy/' + pick];
-        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
-    } else {
-        buySound.currentTime = 0;
-        buySound.play().catch(() => {});
-    }
+    buySound.currentTime = 0;
+    buySound.play().catch(() => {});
 }
 
 // ─── End Sound ──────────────────────────────────────────────
-const END_SOUNDS = ['castleportcullis.wav', 'choir.wav', 'coins falling 1.wav', 'coins falling 2.wav', 'unholy!.wav'];
 const endSound = new Audio();
 endSound.preload = 'auto';
 let endSoundFile = '';
 function loadEndSound(filename) {
     endSoundFile = filename || '';
-    if (endSoundFile && endSoundFile !== 'random') {
-        endSound.src = '../assets/sfx/winners/' + endSoundFile;
+    if (endSoundFile) {
+        endSound.src = '../assets/sfx/' + endSoundFile;
         endSound.load();
     }
 }
 function playEndSound() {
     if (isMuted || !endSoundFile) return;
-    if (endSoundFile === 'random') {
-        const pick = END_SOUNDS[Math.floor(Math.random() * END_SOUNDS.length)];
-        const a = sfxCache['../assets/sfx/winners/' + pick];
-        if (a) { a.currentTime = 0; a.play().catch(() => {}); }
-    } else {
-        endSound.currentTime = 0;
-        endSound.play().catch(() => {});
-    }
+    endSound.currentTime = 0;
+    endSound.play().catch(() => {});
 }
 
-document.getElementById('btn-test-sound').addEventListener('click', playLevelSound);
+document.getElementById('btn-test-sound').addEventListener('click', () => {
+    if (!levelSoundFile) return;
+    levelSound.currentTime = 0;
+    levelSound.play().catch(() => {});
+});
 document.getElementById('btn-mute').addEventListener('click', () => {
     isMuted = !isMuted;
     const btn = document.getElementById('btn-mute');

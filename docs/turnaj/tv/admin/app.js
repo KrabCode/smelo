@@ -1813,62 +1813,54 @@ document.addEventListener('click', (e) => {
 });
 
 // ─── Sound Selection ────────────────────────────────────────
+const ALL_SOUND_FILES = [
+    'castleportcullis.wav', 'choir.wav', 'coins falling 1.wav', 'coins falling 2.wav',
+    'holy!.wav', 'key pickup guantlet 4.wav', 'power up1.wav', 'superholy.wav',
+    'thumbs down.wav', 'thumbs up.wav', 'unholy!.wav', 'whistle.wav'
+];
+
+function populateSoundSelects() {
+    const ids = ['cfg-level-sound', 'cfg-buy-sound', 'cfg-knockout-sound', 'cfg-knockout-win-sound', 'cfg-end-sound'];
+    for (const id of ids) {
+        const sel = document.getElementById(id);
+        if (!sel) continue;
+        sel.innerHTML = '';
+        sel.appendChild(new Option('— žádný —', ''));
+        for (const f of ALL_SOUND_FILES) sel.appendChild(new Option(f, f));
+    }
+}
+populateSoundSelects();
+
+function testSound(selectId) {
+    const file = document.getElementById(selectId).value;
+    if (!file) return;
+    new Audio('../../assets/sfx/' + file).play().catch(() => {});
+}
+
 document.getElementById('cfg-level-sound').addEventListener('change', (e) => {
     tournamentRef.child('levelSound').set(e.target.value);
 });
-
-document.getElementById('btn-test-sound').addEventListener('click', () => {
-    const file = document.getElementById('cfg-level-sound').value;
-    if (!file) return;
-    new Audio('../../assets/sfx/level_up/' + file).play().catch(() => {});
-});
+document.getElementById('btn-test-sound').addEventListener('click', () => testSound('cfg-level-sound'));
 
 document.getElementById('cfg-knockout-sound').addEventListener('change', (e) => {
     tournamentRef.child('knockoutSound').set(e.target.value);
 });
-
-const KNOCKOUT_SOUNDS = ['key pickup guantlet 4.wav', 'power up1.wav', 'thumbs down.wav', 'thumbs up.wav', 'unholy!.wav'];
-document.getElementById('btn-test-knockout-sound').addEventListener('click', () => {
-    let file = document.getElementById('cfg-knockout-sound').value;
-    if (!file) return;
-    if (file === 'random') file = KNOCKOUT_SOUNDS[Math.floor(Math.random() * KNOCKOUT_SOUNDS.length)];
-    new Audio('../../assets/sfx/knockout/' + file).play().catch(() => {});
-});
+document.getElementById('btn-test-knockout-sound').addEventListener('click', () => testSound('cfg-knockout-sound'));
 
 document.getElementById('cfg-knockout-win-sound').addEventListener('change', (e) => {
     tournamentRef.child('knockoutWinSound').set(e.target.value);
 });
-
-document.getElementById('btn-test-knockout-win-sound').addEventListener('click', () => {
-    let file = document.getElementById('cfg-knockout-win-sound').value;
-    if (!file) return;
-    if (file === 'random') file = KNOCKOUT_SOUNDS[Math.floor(Math.random() * KNOCKOUT_SOUNDS.length)];
-    new Audio('../../assets/sfx/knockout/' + file).play().catch(() => {});
-});
+document.getElementById('btn-test-knockout-win-sound').addEventListener('click', () => testSound('cfg-knockout-win-sound'));
 
 document.getElementById('cfg-buy-sound').addEventListener('change', (e) => {
     tournamentRef.child('buySound').set(e.target.value);
 });
-
-const BUY_SOUNDS = ['coins falling 1.wav', 'coins falling 2.wav', 'key pickup guantlet 4.wav'];
-document.getElementById('btn-test-buy-sound').addEventListener('click', () => {
-    let file = document.getElementById('cfg-buy-sound').value;
-    if (!file) return;
-    if (file === 'random') file = BUY_SOUNDS[Math.floor(Math.random() * BUY_SOUNDS.length)];
-    new Audio('../../assets/sfx/buy/' + file).play().catch(() => {});
-});
+document.getElementById('btn-test-buy-sound').addEventListener('click', () => testSound('cfg-buy-sound'));
 
 document.getElementById('cfg-end-sound').addEventListener('change', (e) => {
     tournamentRef.child('endSound').set(e.target.value);
 });
-
-const END_SOUNDS = ['castleportcullis.wav', 'choir.wav', 'coins falling 1.wav', 'coins falling 2.wav', 'unholy!.wav'];
-document.getElementById('btn-test-end-sound').addEventListener('click', () => {
-    let file = document.getElementById('cfg-end-sound').value;
-    if (!file) return;
-    if (file === 'random') file = END_SOUNDS[Math.floor(Math.random() * END_SOUNDS.length)];
-    new Audio('../../assets/sfx/winners/' + file).play().catch(() => {});
-});
+document.getElementById('btn-test-end-sound').addEventListener('click', () => testSound('cfg-end-sound'));
 
 // Clear event log
 document.getElementById('btn-clear-event-log').addEventListener('click', () => {

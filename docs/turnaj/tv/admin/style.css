@@ -25,18 +25,27 @@ body {
     background: var(--bg-card);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 12px;
-    padding: 20px 16px;
+    padding: 12px 16px;
     margin: 10px 0;
 }
 .section h2 {
-    font-size: 1em;
+    font-size: 1.25em;
     letter-spacing: 2px;
-    color: var(--text-muted);
+    color: var(--text);
     margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid transparent;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 8px;
+}
+.section:not(.guarded) h2 {
+    border-bottom-color: rgba(255,255,255,0.08);
+}
+.section h2 .guard-toggle {
+    margin-left: auto;
+    order: 1;
 }
 
 /* Badge (player count etc.) */
@@ -216,13 +225,24 @@ body {
 
 /* Guard toggle */
 .guard-toggle {
-    background: none;
-    border: none;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1.3em;
-    padding: 4px 6px;
+    font-size: 1.4em;
+    padding: 8px 12px;
     vertical-align: middle;
     line-height: 1;
+    transition: border-color 0.15s, background 0.15s;
+}
+.guard-toggle:active { transform: scale(0.95); }
+.section.guarded .guard-toggle {
+    border-color: var(--red);
+    background: rgba(248,113,113,0.1);
+}
+.section:not(.guarded) .guard-toggle {
+    border-color: var(--green);
+    background: rgba(74,222,128,0.1);
 }
 .section.guarded .section-body {
     opacity: 0.25;
