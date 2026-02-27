@@ -311,7 +311,6 @@ const DEFAULTS = {
         buyInAmount: 400,
         addonChips: 0,
         addonAmount: 0,
-        addonCutoff: 0,
         anteMult: 0,
         date: ''
     },

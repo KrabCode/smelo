@@ -68,7 +68,6 @@ const DEFAULTS = {
         buyInAmount: 400,
         addonChips: 0,
         addonAmount: 0,
-        addonCutoff: 0,
         anteMult: 0,
         date: ''
     },
@@ -450,14 +449,6 @@ function render() {
         btnPause.className = isPaused ? 'btn accent big' : 'btn big';
     } else {
         btnPause.style.display = 'none';
-    }
-
-    // Auto-lock config when tournament starts (guard-based, still unlockable)
-    if (state.status !== 'waiting' && !configAutoLocked) {
-        configAutoLocked = true;
-        setGuardLocked('section-config', true);
-    } else if (state.status === 'waiting') {
-        configAutoLocked = false;
     }
 
     // Populate config inputs
@@ -1199,7 +1190,6 @@ function saveConfig() {
         buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400,
         addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
         addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
-        addonCutoff: T.config.addonCutoff || 0,
         anteMult: parseFloat(document.getElementById('cfg-ante-mult').value) || 0
     };
     const p = tournamentRef.child('config').set(config);
@@ -1218,12 +1208,13 @@ document.getElementById('btn-add-player').addEventListener('click', () => {
     const name = (input.value || '').trim();
     if (!name) { input.focus(); return; }
     const list = T.players.list || [];
-    const player = { name, buys: 0, addon: false, bonus: false, active: true };
+    const player = { name, buys: 1, addon: false, bonus: false, active: true };
     assignSeat(player, list);
     list.push(player);
     T.players.list = list;
     input.value = '';
     savePlayerList();
+    logEvent('buyin', name);
     render();
 });
 
@@ -1237,9 +1228,10 @@ document.getElementById('btn-add-test-players').addEventListener('click', () => 
     const names = ['Adam', 'Bára', 'Cyril', 'Dana', 'Emil', 'Fanda', 'Gita', 'Honza'];
     const list = T.players.list || [];
     names.forEach(name => {
-        const player = { name, buys: 0, addon: false, bonus: false, active: true };
+        const player = { name, buys: 1, addon: false, bonus: false, active: true };
         assignSeat(player, list);
         list.push(player);
+        logEvent('buyin', name);
     });
     T.players.list = list;
     savePlayerList();
@@ -1532,8 +1524,8 @@ notesList.addEventListener('drop', (e) => {
     if (!row || dragIdx === null) return;
     const dropIdx = parseInt(row.dataset.noteIdx);
     if (dragIdx === dropIdx) return;
-    const inputs = notesList.querySelectorAll('textarea');
-    inputs.forEach(el => { T.notes[parseInt(el.dataset.noteIdx)] = el.value.replace(/\n/g, ' '); });
+    const inputs = notesList.querySelectorAll('input[type="text"]');
+    inputs.forEach(el => { T.notes[parseInt(el.dataset.noteIdx)] = el.value; });
     const moved = T.notes.splice(dragIdx, 1)[0];
     T.notes.splice(dropIdx, 0, moved);
     renderNoteInputs();
@@ -1771,8 +1763,6 @@ document.getElementById('structure-body').addEventListener('click', (e) => {
 
 // ─── Guard Toggles ──────────────────────────────────────────
 const guardState = JSON.parse(localStorage.getItem('adminGuards') || '{}');
-let configAutoLocked = false;
-
 function setGuardLocked(id, locked) {
     const section = document.getElementById(id);
     const btn = document.querySelector('.guard-toggle[data-target="' + id + '"]');
