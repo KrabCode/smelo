@@ -1200,7 +1200,6 @@ tournamentRef.on('value', (snap) => {
 
 // Config auto-save
 function saveConfig() {
-    if (T.state.status !== 'waiting') return;
     const config = {
         startingStack: parseInt(document.getElementById('cfg-stack').value) || 5000,
         levelDuration: parseInt(document.getElementById('cfg-level-dur').value) || 20,
