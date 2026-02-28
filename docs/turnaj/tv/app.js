@@ -1150,6 +1150,7 @@ tournamentRef.on('value', (snap) => {
             if (!prev) {
                 if (p.buys > 0) {
                     showFeedToast('\uD83E\uDE99 ' + p.name + ' — buy-in', 'entry');
+                    playBuySound();
                 }
                 return;
             }
