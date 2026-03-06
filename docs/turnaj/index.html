@@ -129,6 +129,7 @@
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
+        import { FISH_MODEL, FISH_SWIM_CLIP } from './assets/fish-config.js';
 
         /* ================================================
            Dimensions from table_specs (1 unit = 30 cm)
@@ -351,9 +352,9 @@
         ];
 
         const loader = new GLTFLoader();
-        loader.load('assets/clown_fish_low_poly_animated.glb', (gltf) => {
+        loader.load(`assets/${FISH_MODEL}`, (gltf) => {
             // Fix swim clip once
-            const swimClip = gltf.animations.find(c => c.name === 'swim');
+            const swimClip = gltf.animations.find(c => c.name === FISH_SWIM_CLIP);
             if (swimClip) {
                 swimClip.resetDuration();
                 const minTime = swimClip.tracks.reduce((m, t) => Math.min(m, t.times[0]), Infinity);
