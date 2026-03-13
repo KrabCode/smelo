@@ -43,20 +43,21 @@
             letter-spacing: 0.25em;
             text-transform: uppercase;
             color: #1a1a1a;
-            margin-bottom: 0.1em;
+            margin-bottom: 0;
         }
 
         .divider {
             width: 160px;
             height: 2px;
             background: linear-gradient(90deg, transparent, #1a1a1a, transparent);
-            margin: 0.6em 0 1em;
+            margin: 0.4em 0 0.6em;
         }
 
         .date {
-            font-size: 1.5rem;
-            color: #444;
-            letter-spacing: 0.08em;
+            font-family: 'Staatliches', sans-serif;
+            font-size: 2.8rem;
+            color: #1a1a1a;
+            letter-spacing: 0.12em;
         }
 
         .time {
@@ -68,9 +69,9 @@
         }
 
         #fish-container {
-            width: 400px;
-            height: 250px;
-            margin: 2em 0;
+            width: 800px;
+            height: 400px;
+            margin: 0 0;
         }
 
         #fish-container canvas {
@@ -80,8 +81,8 @@
         }
 
         .details {
-            font-size: 1.1rem;
-            line-height: 2.2;
+            font-size: 2rem;
+            line-height: 1.9;
             color: #555;
         }
 
@@ -91,7 +92,7 @@
         }
 
         .url {
-            margin-top: 2.5em;
+            margin-top: 1em;
             font-size: 1.3rem;
             font-weight: 700;
             letter-spacing: 0.05em;
@@ -116,9 +117,9 @@
             }
             h1 { font-size: 3.5rem; }
             .time { font-size: 1.8rem; }
-            .date { font-size: 1.2rem; }
+            .date { font-size: 1.8rem; }
             .details { font-size: 0.95rem; }
-            #fish-container { width: 280px; height: 175px; }
+            #fish-container { width: 320px; height: 200px; }
         }
     </style>
     <script type="importmap">
@@ -134,18 +135,16 @@
     <div class="page">
         <h1><span style="font-size: 0.45em; letter-spacing: 0.35em;">Pokerový</span><br>Turnaj</h1>
         <div class="divider"></div>
-        <div class="date">18. 4.</div>
-        <div class="time">19:00</div>
+        <div class="date">Sobota 18. 4.</div>
+        <div class="time">Začátek 19:00</div>
+        <div class="time" style="font-size: 1.6rem;">Konec registrace 22:00</div>
         <div id="fish-container"></div>
         <div class="details">
             Buy-in: <span>400</span><br>
-            Re-buy možný do <span>21:30</span><br>
-            Přestávka <span>21:00</span>–<span>21:30</span><br>
             Prvních <span>25%</span> hráčů vyhrává<br>
             Vítěz získá min. <span>40%</span> vkladů<br>
-            Po turnaji Cash Game
+            <u>Přineste si vlastní hotovost</u>
         </div>
-        <div class="url">smelo.cz/turnaj</div>
     </div>
 
     <script type="module">
