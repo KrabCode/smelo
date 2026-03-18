@@ -26,7 +26,11 @@
       "WebSearch",
       "WebFetch(domain:www.jsdelivr.com)",
       "Bash(python:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(bash:*)",
+      "Bash(notepad:*)",
+      "Bash(\"C:/Program Files/Notepad++/notepad++.exe\":*)",
+      "Bash(git:*)"
     ]
   }
 }

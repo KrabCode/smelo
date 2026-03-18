@@ -25,8 +25,8 @@
     <div class="container">
         <h2>Implied Odds</h2>
         <p>
-            Implied odds rozšiřují pot odds o peníze, které očekáváš vyhrát na dalších streetech, když trefíš draw.
-            Pot odds se dívají jen na aktuální pot. Implied odds počítají i s budoucími bety soupeře.
+            Implied odds rozšiřují pot odds o peníze, které očekáváš, že ti soupeř zaplatí na dalších streetech, pokud trefíš draw.
+            Pot odds se dívají jen na aktuální pot. Implied odds počítají s celým zbytkem ruky.
         </p>
 
         <div class="formula">
@@ -34,7 +34,7 @@
         </div>
 
         <p>
-            Když pot odds nestačí na call, ale soupeř pravděpodobně zaplatí velký bet, když trefíš, implied odds to mohou ospravedlnit.
+            Když pot odds nestačí na call, ale soupeř evidentně něco drží a pravděpodobně zaplatí velký bet, když ti to dochčije, tak nejasné rozhodnutí mohou implied odds překlopit na stranu callu.
         </p>
 
         <h2>Pot Odds vs. Implied Odds</h2>
@@ -49,7 +49,7 @@
             <div class="vs-box">
                 <h3 class="vs-imp">Implied Odds</h3>
                 <p style="font-size:0.9em; color:#aaa;">
-                    Celkový očekávaný výdělek, když trefíš.
+                    Celkový očekávaný výdělek, když ti to dochčije.
                     Dynamický pohled &mdash; zahrnuje budoucí streety.
                 </p>
             </div>
@@ -113,10 +113,10 @@
 
         <h2>Kdy jsou implied odds dobré?</h2>
         <div class="tip">
-            <strong>Silné implied odds:</strong> skryté drawy (sety, backdoor flush), loose soupeř co payoffuje, deep stacky.
+            <strong>Silné implied odds:</strong> skryté draws (sety, backdoor flush), loose soupeř co rád calluje, deep stacky.
         </div>
         <div class="tip">
-            <strong>Slabé implied odds:</strong> zjevné drawy (4 karty na flush na boardu), tight soupeř, shallow stacky.
+            <strong>Slabé implied odds:</strong> zjevné draws (4 karty na flush na boardu), tight soupeř, shallow stacky.
         </div>
 
         <h2>Reverse Implied Odds</h2>
@@ -126,7 +126,7 @@
         </p>
         <p>
             Pozor na drawy, kde nemáš nuts.
-            Chasovat non-nut flush proti soupeři, co 3-betoval preflop, může být drahé.
+            Spoléhat na non-nut flush proti soupeři, co 3-betoval preflop, může být drahé.
         </p>
     </div>
 
@@ -169,7 +169,7 @@
                 noteEl.style.borderColor = '#2a4a2a';
                 noteEl.style.color = '#8fbc8f';
             } else if (!isNaN(rem) && rem >= needed) {
-                noteEl.textContent = 'Soupeř má dost behind (' + rem.toFixed(0) + ' >= ' + needed.toFixed(0) + '). Implied odds ospravedlňují call.';
+                noteEl.textContent = 'Soupeř má dost behind (' + rem.toFixed(0) + ' >= ' + needed.toFixed(0) + '). Implied odds říkají call.';
                 noteEl.style.background = '#1a2e1a';
                 noteEl.style.borderColor = '#2a4a2a';
                 noteEl.style.color = '#8fbc8f';
@@ -179,7 +179,7 @@
                 noteEl.style.borderColor = '#4a2a2a';
                 noteEl.style.color = '#bc8f8f';
             } else {
-                noteEl.textContent = 'Potřebuješ vyhrát minimálně ' + needed.toFixed(0) + ' navíc na dalších streetech.';
+                noteEl.textContent = 'Potřebuješ vyhrát minimálně ' + needed.toFixed(0) + ' na dalších streetech.';
                 noteEl.style.background = '#1a1a2e';
                 noteEl.style.borderColor = '#2a2a4e';
                 noteEl.style.color = '#aab';
