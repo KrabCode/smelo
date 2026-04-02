@@ -1,5 +1,6 @@
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv';
 const SETTINGS_KEY = 'smelo_input_settings';
+const DRAFT_KEY = 'smelo_input_draft';
 const DEFAULT_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxU2-HMmck8ljuCMSYXqtG4o7UC4tRApexvwWvvNoaVKlgUoae1FrAShNGO4ZGf5Ruv/exec';
 
 const form = document.getElementById('inputForm');
@@ -36,8 +37,44 @@ function saveSettings() {
     } catch(e) {}
 }
 
-webappUrlInput.addEventListener('change', saveSettings);
-secretInput.addEventListener('change', saveSettings);
+function updateSettingsWarning() {
+    const warn = document.getElementById('settingsWarning');
+    if (warn) warn.style.display = (!webappUrlInput.value.trim() || !secretInput.value.trim()) ? '' : 'none';
+}
+
+webappUrlInput.addEventListener('change', () => { saveSettings(); updateSettingsWarning(); });
+webappUrlInput.addEventListener('input', updateSettingsWarning);
+secretInput.addEventListener('change', () => { saveSettings(); updateSettingsWarning(); });
+secretInput.addEventListener('input', updateSettingsWarning);
+
+// --- Draft persistence ---
+function saveDraft() {
+    try {
+        const entries = Array.from(entriesContainer.querySelectorAll('.entry')).map(row => ({
+            name: row.querySelector('.entry-name').value,
+            amount: row.querySelector('.entry-amount').value
+        }));
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ date: sessionDate.value, entries }));
+    } catch(e) {}
+}
+
+function loadDraft() {
+    try {
+        const d = JSON.parse(localStorage.getItem(DRAFT_KEY));
+        if (!d) return false;
+        if (d.date) sessionDate.value = d.date;
+        if (d.entries && d.entries.length > 0) {
+            entriesContainer.innerHTML = '';
+            d.entries.forEach(({ name, amount }) => createEntry(name, amount || ''));
+            return true;
+        }
+    } catch(e) {}
+    return false;
+}
+
+function clearDraft() {
+    try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
+}
 
 // --- Fetch player names from the published CSV ---
 function fetchPlayers() {
@@ -78,6 +115,18 @@ function filterChips() {
 }
 
 playerSearch.addEventListener('input', filterChips);
+playerSearch.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const chips = Array.from(playerChips.querySelectorAll('.player-chip'));
+    const firstChip = chips.find(c => c.style.display !== 'none');
+    if (!firstChip) return;
+    createEntry(firstChip.textContent);
+    updateChipStates();
+    playerSearch.value = '';
+    filterChips();
+    playerSearch.focus();
+});
 
 function updateChipStates() {
     const usedNames = new Set();
@@ -127,10 +176,25 @@ function createEntry(name, amount) {
         div.remove();
         updateChipStates();
         updateSum();
+        saveDraft();
         if (entriesContainer.children.length === 0) addEntry();
     });
-    div.querySelector('.entry-name').addEventListener('input', () => updateChipStates());
-    div.querySelector('.entry-amount').addEventListener('input', () => updateSum());
+    div.querySelector('.entry-name').addEventListener('input', () => { updateChipStates(); saveDraft(); });
+    const amountInput = div.querySelector('.entry-amount');
+    amountInput.addEventListener('keydown', (e) => {
+        if (e.key === '+') { e.preventDefault(); return; }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const entries = Array.from(entriesContainer.children);
+            const nextEntry = entries[entries.indexOf(div) + 1];
+            if (nextEntry) {
+                nextEntry.querySelector('.entry-name').focus();
+            } else {
+                playerSearch.focus();
+            }
+        }
+    });
+    amountInput.addEventListener('input', () => { updateSum(); saveDraft(); });
     entriesContainer.appendChild(div);
     return div;
 }
@@ -191,6 +255,7 @@ form.addEventListener('submit', async (e) => {
 
         if (res.ok && json && json.ok !== false) {
             setStatus('Záznam přidán.', false);
+            clearDraft();
             entriesContainer.innerHTML = '';
             addEntry();
             updateChipStates();
@@ -211,8 +276,14 @@ function setStatus(msg, isError) {
 // --- Init ---
 sessionDate.value = new Date().toISOString().slice(0, 10);
 loadSettings();
+updateSettingsWarning();
+if (!loadDraft()) addEntry();
+updateChipStates();
+updateSum();
 fetchPlayers();
+playerSearch.focus();
 
+sessionDate.addEventListener('change', saveDraft);
 addEntryBtn.addEventListener('click', () => addEntry());
 
 document.getElementById('refreshChartBtn').addEventListener('click', () => {
