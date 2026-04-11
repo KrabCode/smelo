@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Staatliches&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { overflow: hidden; background: #0a0a0a; font-family: 'DM Sans', sans-serif; }
+        body { overflow: hidden; background: #000000; font-family: 'DM Sans', sans-serif; }
         canvas { display: block; }
 
         #back-link {
@@ -157,7 +157,7 @@
 
         // --- Scene ---
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a0a0a);
+        scene.background = new THREE.Color(0x000000);
 
         // --- Camera ---
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);

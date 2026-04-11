@@ -30,7 +30,11 @@
       "Bash(bash:*)",
       "Bash(notepad:*)",
       "Bash(\"C:/Program Files/Notepad++/notepad++.exe\":*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(pip list:*)",
+      "Bash(npm list:*)",
+      "Bash(npm --version)",
+      "Bash(pip install:*)"
     ]
   }
 }
