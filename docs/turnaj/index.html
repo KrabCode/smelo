@@ -18,11 +18,7 @@
         }
         #back-link:hover { color: #ccc; }
 
-        /* --- Vignette --- */
-        #vignette {
-            position: fixed; inset: 0; z-index: 3; pointer-events: none;
-            background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
-        }
+        /* --- Vignette (disabled) --- */
 
         /* --- Center overlay --- */
         #overlay {
@@ -110,7 +106,6 @@
 </head>
 <body>
     <!-- <a id="back-link" href="../">← SMELO.CZ</a> -->
-    <div id="vignette"></div>
     <div id="overlay">
         <h1>Turnaj</h1>
         <div class="divider"></div>
@@ -118,12 +113,10 @@
         <div class="time">19:00</div>
     </div>
     <div id="footer">
-        Buy-in: <span>400</span><br>
-        Re-buy možný do <span>21:30</span><br>
-        Přestávka <span>21:00</span>–<span>21:30</span><br>
+        Poslední registrace <span>22:00</span><br>
         Prvních <span>25%</span> hráčů vyhrává<br>
-        Vítěz získá min. <span>40%</span> vkladů<br>
-        Po turnaji Cash Game
+        Vítěz získá minimálně <span>40%</span> vkladů<br>
+        <u>Přineste si vlastní hotovost</u>
     </div>
     <script type="module">
         import * as THREE from 'three';
@@ -165,7 +158,6 @@
         // --- Scene ---
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0a0a0a);
-        scene.fog = new THREE.FogExp2(0x0a0a0a, 0.035);
 
         // --- Camera ---
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -386,15 +378,6 @@
         });
 
 
-        // --- Ground ---
-        const ground = new THREE.Mesh(
-            new THREE.PlaneGeometry(60, 60),
-            new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 })
-        );
-        ground.rotation.x = -Math.PI / 2;
-        ground.position.y = -0.01;
-        ground.receiveShadow = true;
-        scene.add(ground);
 
         // --- Lighting ---
         scene.add(new THREE.AmbientLight(0x404050, 0.6));
@@ -533,7 +516,7 @@
 
         function recordLoop() {
             recording = true;
-            const fps = 15;
+            const fps = 30;
             const duration = (2 * Math.PI) / fishSpeed; // one full fish revolution
             const totalFrames = Math.round(fps * duration);
             const dt = 1 / fps;
@@ -549,13 +532,6 @@
             const ctx = comp.getContext('2d');
 
             function drawOverlay() {
-                // Vignette
-                const vg = ctx.createRadialGradient(w/2, h/2, w*0.2, w/2, h/2, w*0.55);
-                vg.addColorStop(0, 'rgba(0,0,0,0)');
-                vg.addColorStop(1, 'rgba(0,0,0,0.7)');
-                ctx.fillStyle = vg;
-                ctx.fillRect(0, 0, w, h);
-
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
@@ -603,12 +579,10 @@
                 ctx.shadowColor = 'rgba(0,0,0,0.8)';
                 ctx.shadowBlur = 8;
                 const lines = [
-                    [{t:'Buy-in: ',c:'#777'},{t:'400',c:'#ffb300'}],
-                    [{t:'Re-buy možný do ',c:'#777'},{t:'21:30',c:'#ffb300'}],
-                    [{t:'Přestávka ',c:'#777'},{t:'21:00',c:'#ffb300'},{t:'–',c:'#777'},{t:'21:30',c:'#ffb300'}],
+                    [{t:'Poslední registrace ',c:'#777'},{t:'22:00',c:'#ffb300'}],
                     [{t:'Prvních ',c:'#777'},{t:'25%',c:'#ffb300'},{t:' hráčů vyhrává',c:'#777'}],
-                    [{t:'Vítěz získá min. ',c:'#777'},{t:'40%',c:'#ffb300'},{t:' vkladů',c:'#777'}],
-                    [{t:'Po turnaji Cash Game',c:'#777'}],
+                    [{t:'Vítěz získá minimálně ',c:'#777'},{t:'40%',c:'#ffb300'},{t:' vkladů',c:'#777'}],
+                    [{t:'Přineste si vlastní hotovost',c:'#777',u:true}],
                 ];
                 const lineH = footSize * 1.8;
                 const footTop = h - 28 * (h / window.innerHeight) - (lines.length - 1) * lineH;
@@ -622,7 +596,16 @@
                     segs.forEach(s => {
                         ctx.fillStyle = s.c;
                         ctx.fillText(s.t, x, y);
-                        x += ctx.measureText(s.t).width;
+                        const tw = ctx.measureText(s.t).width;
+                        if (s.u) {
+                            ctx.strokeStyle = s.c;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(x, y + footSize * 0.4);
+                            ctx.lineTo(x + tw, y + footSize * 0.4);
+                            ctx.stroke();
+                        }
+                        x += tw;
                     });
                 });
                 ctx.textAlign = 'center';
@@ -657,20 +640,15 @@
             };
 
             mediaRecorder.start();
-            const recStart = performance.now();
-            let lastT = 0;
+            let frame = 0;
 
             function captureFrame() {
-                const elapsed = (performance.now() - recStart) / 1000;
-                if (elapsed >= duration) { mediaRecorder.stop(); return; }
+                if (frame >= totalFrames) { mediaRecorder.stop(); return; }
 
-                const mixerDt = elapsed - lastT;
-                lastT = elapsed;
-
-                const simTime = simTimeOffset + elapsed;
+                const simTime = simTimeOffset + frame * dt;
                 orbitAngle = fixedAngle;
                 updateCamera();
-                updateFish(simTime, mixerDt);
+                updateFish(simTime, dt);
 
                 renderer.render(scene, camera);
 
@@ -678,7 +656,8 @@
                 ctx.drawImage(renderer.domElement, 0, 0);
                 drawOverlay();
 
-                rec.textContent = 'REC ' + Math.floor((elapsed / duration) * 100) + '%';
+                rec.textContent = 'REC ' + Math.floor((frame / totalFrames) * 100) + '%';
+                frame++;
                 requestAnimationFrame(captureFrame);
             }
             captureFrame();
