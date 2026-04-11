@@ -34,7 +34,8 @@
       "Bash(pip list:*)",
       "Bash(npm list:*)",
       "Bash(npm --version)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(ffmpeg -y -i \"C:/Users/Krab/Downloads/turnaj-loop\\(2\\).webm\" -vf \"scale=trunc\\(iw/2\\)*2:trunc\\(ih/2\\)*2\" -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -r 24 -movflags +faststart \"D:/fish_3.mp4\")"
     ]
   }
 }

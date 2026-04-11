@@ -55,12 +55,6 @@
             to   { text-shadow: 0 0 80px rgba(255,179,0,0.6), 0 0 160px rgba(255,179,0,0.25), 0 4px 30px rgba(0,0,0,0.7); }
         }
 
-        .divider {
-            width: clamp(80px, 20vw, 200px); height: 2px;
-            background: linear-gradient(90deg, transparent, #ffb300, transparent);
-            margin: 0.8em 0;
-        }
-
         #overlay .date {
             font-size: clamp(1rem, 2.8vw, 1.6rem);
             color: #ccc;
@@ -108,7 +102,6 @@
     <!-- <a id="back-link" href="../">← SMELO.CZ</a> -->
     <div id="overlay">
         <h1>Turnaj</h1>
-        <div class="divider"></div>
         <div class="date">18. 4.</div>
         <div class="time">19:00</div>
     </div>
@@ -162,6 +155,8 @@
         // --- Camera ---
         const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
         camera.position.set(6, 5, 8);
+        const SCENE_Y_OFFSET = -75; // shift scene down 75px on screen
+        camera.setViewOffset(window.innerWidth, window.innerHeight, 0, SCENE_Y_OFFSET, window.innerWidth, window.innerHeight);
 
         // --- Stadium shape helpers ---
         function stadiumPoints(hs, r, segments = 64) {
@@ -435,6 +430,7 @@
         // --- Resize ---
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
+            camera.setViewOffset(window.innerWidth, window.innerHeight, 0, SCENE_Y_OFFSET, window.innerWidth, window.innerHeight);
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
@@ -492,41 +488,37 @@
             camera.lookAt(0, 0.5, 0);
         }
 
-        // Patch webm Duration field so players/uploaders know the length
-        function fixWebmDuration(blob, durationMs) {
-            return blob.arrayBuffer().then(buf => {
-                const bytes = new Uint8Array(buf);
-                // Search for EBML Duration element ID: 0x44 0x89
-                for (let i = 0; i < bytes.length - 10; i++) {
-                    if (bytes[i] === 0x44 && bytes[i + 1] === 0x89) {
-                        const size = bytes[i + 2];
-                        if (size === 0x88) { // 8-byte float64
-                            new DataView(buf, i + 3, 8).setFloat64(0, durationMs);
-                            return new Blob([bytes], { type: blob.type });
-                        }
-                        if (size === 0x84) { // 4-byte float32
-                            new DataView(buf, i + 3, 4).setFloat32(0, durationMs);
-                            return new Blob([bytes], { type: blob.type });
-                        }
-                    }
-                }
-                return blob; // not found, return as-is
-            });
-        }
+        async function recordLoop() {
+            if (!window.showDirectoryPicker) {
+                alert('Recording requires a Chromium-based browser (Chrome/Edge)');
+                return;
+            }
+            let dirHandle;
+            try {
+                dirHandle = await window.showDirectoryPicker({ mode: 'readwrite', startIn: 'downloads' });
+            } catch (e) { return; }
 
-        function recordLoop() {
             recording = true;
-            const fps = 30;
+            const fps = 60;
             const duration = (2 * Math.PI) / fishSpeed; // one full fish revolution
             const totalFrames = Math.round(fps * duration);
             const dt = 1 / fps;
             const fixedAngle = orbitAngle;
             const simTimeOffset = (7 * Math.PI / 6) / fishSpeed;
 
+            // Force Full HD for recording, independent of window size
+            const REC_W = 1920, REC_H = 1080;
+            const prevPixelRatio = renderer.getPixelRatio();
+            renderer.setPixelRatio(1);
+            renderer.setSize(REC_W, REC_H, false);
+            camera.aspect = REC_W / REC_H;
+            camera.setViewOffset(REC_W, REC_H, 0, SCENE_Y_OFFSET, REC_W, REC_H);
+            camera.updateProjectionMatrix();
+
             // Composite canvas (draws 3D + text overlay)
             const comp = document.createElement('canvas');
-            const w = renderer.domElement.width;
-            const h = renderer.domElement.height;
+            const w = REC_W;
+            const h = REC_H;
             comp.width = w;
             comp.height = h;
             const ctx = comp.getContext('2d');
@@ -543,20 +535,6 @@
                 ctx.shadowBlur = titleSize * 0.4;
                 ctx.fillText('TURNAJ', w/2, h * 0.12);
                 ctx.shadowBlur = 0;
-
-                // Divider
-                const divW = w * 0.15;
-                const divY = h * 0.18;
-                const grad = ctx.createLinearGradient(w/2 - divW, divY, w/2 + divW, divY);
-                grad.addColorStop(0, 'transparent');
-                grad.addColorStop(0.5, '#ffb300');
-                grad.addColorStop(1, 'transparent');
-                ctx.strokeStyle = grad;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(w/2 - divW, divY);
-                ctx.lineTo(w/2 + divW, divY);
-                ctx.stroke();
 
                 // Date
                 const dateSize = Math.min(w * 0.028, h * 0.035);
@@ -585,7 +563,7 @@
                     [{t:'Přineste si vlastní hotovost',c:'#777',u:true}],
                 ];
                 const lineH = footSize * 1.8;
-                const footTop = h - 28 * (h / window.innerHeight) - (lines.length - 1) * lineH;
+                const footTop = h - 28 - (lines.length - 1) * lineH;
                 lines.forEach((segs, li) => {
                     const y = footTop + li * lineH;
                     // Measure total width to center
@@ -617,50 +595,39 @@
             rec.textContent = 'REC';
             document.body.appendChild(rec);
 
-            const stream = comp.captureStream(fps);
-            const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-                    ? 'video/webm;codecs=vp9' : 'video/webm',
-                videoBitsPerSecond: 8000000
-            });
-            const chunks = [];
-            mediaRecorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-            mediaRecorder.onstop = () => {
-                const raw = new Blob(chunks, { type: 'video/webm' });
-                fixWebmDuration(raw, duration * 1000).then(blob => {
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'turnaj-loop.webm';
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    rec.remove();
-                    recording = false;
-                });
-            };
-
-            mediaRecorder.start();
-            let frame = 0;
-
-            function captureFrame() {
-                if (frame >= totalFrames) { mediaRecorder.stop(); return; }
-
+            for (let frame = 0; frame < totalFrames; frame++) {
                 const simTime = simTimeOffset + frame * dt;
                 orbitAngle = fixedAngle;
                 updateCamera();
                 updateFish(simTime, dt);
-
                 renderer.render(scene, camera);
 
                 // Composite: 3D scene + text overlay
                 ctx.drawImage(renderer.domElement, 0, 0);
                 drawOverlay();
 
-                rec.textContent = 'REC ' + Math.floor((frame / totalFrames) * 100) + '%';
-                frame++;
-                requestAnimationFrame(captureFrame);
+                const blob = await new Promise(r => comp.toBlob(r, 'image/png'));
+                const name = 'frame_' + String(frame).padStart(5, '0') + '.png';
+                const fh = await dirHandle.getFileHandle(name, { create: true });
+                const writable = await fh.createWritable();
+                await writable.write(blob);
+                await writable.close();
+
+                rec.textContent = 'REC ' + Math.floor((frame + 1) / totalFrames * 100) + '%';
+                await new Promise(r => requestAnimationFrame(r));
             }
-            captureFrame();
+
+            rec.remove();
+
+            // Restore renderer + camera to window size
+            renderer.setPixelRatio(prevPixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight, false);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.setViewOffset(window.innerWidth, window.innerHeight, 0, SCENE_Y_OFFSET, window.innerWidth, window.innerHeight);
+            camera.updateProjectionMatrix();
+            recording = false;
+
+            console.log('Done. Run:\n  ffmpeg -framerate ' + fps + ' -i frame_%05d.png -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -movflags +faststart fish.mp4');
         }
 
         // --- Animate ---
