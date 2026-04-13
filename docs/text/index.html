@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <link rel="icon" type="image/x-icon" href="../favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text – ŠMELO.CZ</title>
+    <link rel="stylesheet" href="../base.css">
+    <style>
+        .text-wrap {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 0 20px;
+        }
+        .text-tile {
+            position: relative;
+            background: linear-gradient(135deg, #1e1a10, #222);
+            border: 1px solid #ffb300;
+            border-radius: 10px;
+            padding: 32px 48px;
+            font-family: 'Staatliches', sans-serif;
+            font-size: 1.6em;
+            letter-spacing: 2px;
+            color: #ffb300;
+            text-align: center;
+            box-shadow: 0 0 16px rgba(255,179,0,0.25), 0 0 40px rgba(255,179,0,0.08);
+            text-shadow: 0 0 12px rgba(255,179,0,0.3);
+            animation: glow-pulse 2s ease-in-out infinite;
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .text-tile::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,179,0,0.08), transparent);
+            animation: shimmer 5s ease-in-out infinite;
+        }
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 16px rgba(255,179,0,0.25), 0 0 40px rgba(255,179,0,0.08); }
+            50% { box-shadow: 0 0 24px rgba(255,179,0,0.4), 0 0 60px rgba(255,179,0,0.15); }
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+        .tile-controls {
+            position: absolute;
+            top: 8px; right: 8px;
+            display: flex;
+            gap: 2px;
+            z-index: 2;
+        }
+        .tile-btn {
+            background: none;
+            border: none;
+            color: #ffb300;
+            opacity: 0.3;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: opacity 0.2s;
+        }
+        .tile-btn:hover { opacity: 0.8; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #222;
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 24px;
+            width: 90%;
+            max-width: 480px;
+        }
+        .modal-box textarea {
+            width: 100%;
+            min-height: 120px;
+            background: #181818;
+            color: #eee;
+            border: 1px solid #444;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif;
+            font-size: 1em;
+            resize: vertical;
+        }
+        .modal-box textarea:focus {
+            outline: none;
+            border-color: #ffb300;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .modal-actions button {
+            padding: 8px 20px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #181818;
+            color: #eee;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95em;
+            transition: border-color 0.2s;
+        }
+        .modal-actions button:hover { border-color: #888; }
+        .modal-actions .save-btn {
+            background: #ffb300;
+            color: #181818;
+            border-color: #ffb300;
+            font-weight: 700;
+        }
+        .modal-actions .save-btn:hover { background: #ffc233; }
+    </style>
+</head>
+<body>
+<div class="text-wrap">
+  <div class="text-tile" id="tile">
+    <div class="tile-controls">
+      <button class="tile-btn" id="zoomOutBtn" title="Zmenšit">&#8722;</button>
+      <button class="tile-btn" id="zoomInBtn" title="Zvětšit">&#43;</button>
+      <button class="tile-btn" id="editBtn" title="Upravit">&#9998;</button>
+    </div>
+    <span id="tileText">Nezdržuj.</span>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <textarea id="modalInput" placeholder="Zadej text..."></textarea>
+    <div class="modal-actions">
+      <button id="cancelBtn">Zrušit</button>
+      <button class="save-btn" id="saveBtn">Uložit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var tile = document.getElementById('tile');
+var tileText = document.getElementById('tileText');
+var modal = document.getElementById('modal');
+var modalInput = document.getElementById('modalInput');
+var STORAGE_KEY = 'smelo_text_tile';
+var ZOOM_KEY = 'smelo_text_zoom';
+
+var ZOOM_MIN = 0.8, ZOOM_MAX = 4, ZOOM_STEP = 0.2;
+var zoom = parseFloat(localStorage.getItem(ZOOM_KEY)) || 1.6;
+tile.style.fontSize = zoom + 'em';
+
+// Load saved text
+var saved = localStorage.getItem(STORAGE_KEY);
+if (saved !== null) tileText.textContent = saved;
+
+document.getElementById('zoomInBtn').addEventListener('click', function() {
+    zoom = Math.min(ZOOM_MAX, +(zoom + ZOOM_STEP).toFixed(1));
+    tile.style.fontSize = zoom + 'em';
+    localStorage.setItem(ZOOM_KEY, zoom);
+});
+
+document.getElementById('zoomOutBtn').addEventListener('click', function() {
+    zoom = Math.max(ZOOM_MIN, +(zoom - ZOOM_STEP).toFixed(1));
+    tile.style.fontSize = zoom + 'em';
+    localStorage.setItem(ZOOM_KEY, zoom);
+});
+
+document.getElementById('editBtn').addEventListener('click', function() {
+    modalInput.value = tileText.textContent;
+    modal.classList.add('open');
+    modalInput.focus();
+});
+
+document.getElementById('saveBtn').addEventListener('click', save);
+document.getElementById('cancelBtn').addEventListener('click', close);
+
+modal.addEventListener('click', function(e) {
+    if (e.target === modal) close();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (!modal.classList.contains('open')) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'Enter' && e.ctrlKey) save();
+});
+
+function save() {
+    var text = modalInput.value.trim();
+    if (text) {
+        tileText.textContent = text;
+        localStorage.setItem(STORAGE_KEY, text);
+    }
+    close();
+}
+
+function close() {
+    modal.classList.remove('open');
+}
+</script>
+</body>
+</html>
