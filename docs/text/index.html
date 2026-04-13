@@ -155,23 +155,15 @@ var tile = document.getElementById('tile');
 var tileText = document.getElementById('tileText');
 var modal = document.getElementById('modal');
 var modalInput = document.getElementById('modalInput');
-var STORAGE_KEY = 'smelo_text_tile';
 var ZOOM_KEY = 'smelo_text_zoom';
 
 var ZOOM_MIN = 0.8, ZOOM_MAX = 4, ZOOM_STEP = 0.2;
 var zoom = parseFloat(localStorage.getItem(ZOOM_KEY)) || 1.6;
 tile.style.fontSize = zoom + 'em';
 
-// Load text: query param > localStorage > default
-var params = new URLSearchParams(location.search);
-var paramText = params.get('t');
-if (paramText) {
-    tileText.textContent = paramText;
-    localStorage.setItem(STORAGE_KEY, paramText);
-} else {
-    var saved = localStorage.getItem(STORAGE_KEY);
-    if (saved !== null) tileText.textContent = saved;
-}
+// Load text from query param
+var paramText = new URLSearchParams(location.search).get('t');
+if (paramText) tileText.textContent = paramText;
 
 document.getElementById('zoomInBtn').addEventListener('click', function() {
     zoom = Math.min(ZOOM_MAX, +(zoom + ZOOM_STEP).toFixed(1));
@@ -208,7 +200,6 @@ function save() {
     var text = modalInput.value.trim();
     if (text) {
         tileText.textContent = text;
-        localStorage.setItem(STORAGE_KEY, text);
         var url = new URL(location);
         url.searchParams.set('t', text);
         history.replaceState(null, '', url);
