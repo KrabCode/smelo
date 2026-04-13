@@ -134,7 +134,7 @@
   <button class="tile-btn" id="zoomOutBtn" title="Zmenšit">&#8722;</button>
   <button class="tile-btn" id="zoomInBtn" title="Zvětšit">&#43;</button>
   <button class="tile-btn" id="editBtn" title="Upravit">&#9998;</button>
-  <button class="tile-btn" id="shareBtn" title="Kopírovat odkaz">&#128279;</button>
+  <button class="tile-btn" id="shareBtn" title="Kopírovat odkaz">&#8599;</button>
 </div>
 <div class="text-wrap">
   <div class="text-tile" id="tile"><span id="tileText" style="white-space:pre-wrap">Nezdržuj.</span></div>
@@ -217,7 +217,7 @@ document.getElementById('shareBtn').addEventListener('click', function() {
     navigator.clipboard.writeText(url.toString());
     var btn = this;
     btn.textContent = '\u2713';
-    setTimeout(function() { btn.innerHTML = '&#128279;'; }, 1000);
+    setTimeout(function() { btn.innerHTML = '&#8599;'; }, 1000);
 });
 </script>
 </body>
