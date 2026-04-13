@@ -19,7 +19,7 @@
             background: linear-gradient(135deg, #1e1a10, #222);
             border: 1px solid #ffb300;
             border-radius: 10px;
-            padding: 32px 48px;
+            padding: 18px 24px;
             font-family: 'Staatliches', sans-serif;
             font-size: 1.6em;
             letter-spacing: 2px;
@@ -49,8 +49,8 @@
             100% { left: 200%; }
         }
         .tile-controls {
-            position: absolute;
-            top: 8px; right: 8px;
+            position: fixed;
+            top: 12px; right: 12px;
             display: flex;
             gap: 2px;
             z-index: 2;
@@ -131,13 +131,13 @@
     </style>
 </head>
 <body>
+<div class="tile-controls">
+  <button class="tile-btn" id="zoomOutBtn" title="Zmenšit">&#8722;</button>
+  <button class="tile-btn" id="zoomInBtn" title="Zvětšit">&#43;</button>
+  <button class="tile-btn" id="editBtn" title="Upravit">&#9998;</button>
+</div>
 <div class="text-wrap">
   <div class="text-tile" id="tile">
-    <div class="tile-controls">
-      <button class="tile-btn" id="zoomOutBtn" title="Zmenšit">&#8722;</button>
-      <button class="tile-btn" id="zoomInBtn" title="Zvětšit">&#43;</button>
-      <button class="tile-btn" id="editBtn" title="Upravit">&#9998;</button>
-    </div>
     <span id="tileText">Nezdržuj.</span>
   </div>
 </div>
