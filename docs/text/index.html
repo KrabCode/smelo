@@ -31,7 +31,6 @@
             overflow: hidden;
             max-width: calc(100vw - 40px);
             word-break: break-word;
-            white-space: pre-wrap;
         }
         .text-tile::after {
             content: '';
@@ -137,9 +136,7 @@
   <button class="tile-btn" id="editBtn" title="Upravit">&#9998;</button>
 </div>
 <div class="text-wrap">
-  <div class="text-tile" id="tile">
-    <span id="tileText">Nezdržuj.</span>
-  </div>
+  <div class="text-tile" id="tile"><span id="tileText" style="white-space:pre-wrap">Nezdržuj.</span></div>
 </div>
 
 <div class="modal-overlay" id="modal">
