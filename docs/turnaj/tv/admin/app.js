@@ -468,7 +468,8 @@ function render() {
         'cfg-addon-amount': config.addonAmount,
         'cfg-start-time-est': config.startTime,
         'cfg-ante-mult': config.anteMult,
-        'cfg-organizer-fee': config.organizerFee
+        'cfg-organizer-fee': config.organizerFee,
+        'cfg-waiting-msg': config.waitingMessage || 'Orientační začátek'
     };
     for (const [id, val] of Object.entries(ids)) {
         const el = document.getElementById(id);
@@ -1219,7 +1220,8 @@ function saveConfig() {
         addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
         addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
         anteMult: parseFloat(document.getElementById('cfg-ante-mult').value) || 0,
-        organizerFee: parseInt(document.getElementById('cfg-organizer-fee').value) || 0
+        organizerFee: parseInt(document.getElementById('cfg-organizer-fee').value) || 0,
+        waitingMessage: (document.getElementById('cfg-waiting-msg').value || '').trim() || 'Orientační začátek'
     };
     const p = tournamentRef.child('config').set(config);
     showSaveStatus(document.getElementById('config-save-status'), p);
@@ -1410,7 +1412,9 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     tournamentRef.child('state').set(DEFAULTS.state);
     tournamentRef.child('payoutConfig').set(null);
     tournamentRef.child('eventLog').set(null);
+    tournamentRef.child('blindOverrides').set({});
     T.eventLog = [];
+    T.blindOverrides = {};
     recalcAndSync();
     render();
 });

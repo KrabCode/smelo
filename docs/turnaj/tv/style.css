@@ -233,6 +233,10 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 
 /* Waiting state */
 .blinds-current.on-waiting { color: var(--text-secondary); font-weight: 400; }
+.display.waiting { display: flex; flex-direction: column; align-items: center; }
+.display.waiting .blinds-current { order: -2; }
+.display.waiting .timer { order: -1; }
+.display.waiting .progress-wrap { display: none; }
 
 
 /* Break message */

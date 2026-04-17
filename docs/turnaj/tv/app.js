@@ -748,9 +748,9 @@ function render() {
     // Blinds / break / pause display
 
     const breakMsgEl = document.getElementById('break-message');
+    const displayEl = document.getElementById('display');
     if (state.status === 'waiting') {
-        const startTime = config.startTime || '19:00';
-        blindsCurEl.textContent = 'Orientační začátek';
+        blindsCurEl.textContent = config.waitingMessage || 'Orientační začátek';
         blindsCurEl.classList.remove('on-break');
         blindsCurEl.classList.remove('on-pause');
         blindsCurEl.classList.add('on-waiting');
@@ -803,6 +803,7 @@ function render() {
         document.getElementById('blinds-sub').textContent = '';
         breakMsgEl.style.display = 'none';
     }
+    displayEl.classList.toggle('waiting', state.status === 'waiting');
 
     updateFishVisibility();
     fitBlindsText();
