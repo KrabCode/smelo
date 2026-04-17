@@ -1189,6 +1189,11 @@ tournamentRef.on('value', (snap) => {
     document.getElementById('cfg-ticker-speed').value = savedSpeed;
     document.getElementById('ticker-speed-label').textContent = savedSpeed + 's';
 
+    // Ticker bottom margin
+    const savedBottom = data.tickerBottom || 0;
+    document.getElementById('cfg-ticker-bottom').value = savedBottom;
+    document.getElementById('ticker-bottom-label').textContent = savedBottom + 'px';
+
     // Sound selection
     const soundSelect = document.getElementById('cfg-level-sound');
     if (soundSelect) soundSelect.value = data.levelSound || '';
@@ -1515,6 +1520,16 @@ tickerSpeedSlider.addEventListener('input', () => {
 });
 tickerSpeedSlider.addEventListener('change', () => {
     tournamentRef.child('tickerSpeed').set(parseInt(tickerSpeedSlider.value));
+});
+
+// Ticker bottom margin
+const tickerBottomSlider = document.getElementById('cfg-ticker-bottom');
+const tickerBottomLabel = document.getElementById('ticker-bottom-label');
+tickerBottomSlider.addEventListener('input', () => {
+    tickerBottomLabel.textContent = tickerBottomSlider.value + 'px';
+});
+tickerBottomSlider.addEventListener('change', () => {
+    tournamentRef.child('tickerBottom').set(parseInt(tickerBottomSlider.value));
 });
 
 // Note drag & drop

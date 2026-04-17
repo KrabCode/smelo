@@ -1238,6 +1238,11 @@ tournamentRef.on('value', (snap) => {
     const track = document.querySelector('.tracker-footer .ticker-track');
     if (track) track.style.animationDuration = tickerSpeed + 's';
 
+    // Ticker bottom margin
+    const tickerBottom = data.tickerBottom || 0;
+    const footer = document.getElementById('tracker-footer');
+    if (footer) footer.style.bottom = tickerBottom + 'px';
+
     // Sounds from Firebase
     const newSoundFile = data.levelSound || '';
     if (newSoundFile !== levelSoundFile) loadLevelSound(newSoundFile);
