@@ -312,7 +312,9 @@ const DEFAULTS = {
         addonChips: 0,
         addonAmount: 0,
         anteMult: 0,
-        date: ''
+        date: '',
+        organizerFee: 0,
+        waitingMessage: 'Orientační začátek'
     },
     state: {
         status: 'waiting',   // waiting | running | finished
