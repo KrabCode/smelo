@@ -467,7 +467,8 @@ function render() {
         'cfg-addon-chips': config.addonChips,
         'cfg-addon-amount': config.addonAmount,
         'cfg-start-time-est': config.startTime,
-        'cfg-ante-mult': config.anteMult
+        'cfg-ante-mult': config.anteMult,
+        'cfg-organizer-fee': config.organizerFee
     };
     for (const [id, val] of Object.entries(ids)) {
         const el = document.getElementById(id);
@@ -481,9 +482,12 @@ function render() {
     // Payout
     const buyInAmount = config.buyInAmount || 400;
     const addonPrice = config.addonAmount || 0;
-    const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+    const organizerFee = config.organizerFee || 0;
+    const grossPool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+    const prizePool = Math.max(0, grossPool - organizerFee);
     document.getElementById('pool-display').textContent =
-        'Prize pool: ' + prizePool.toLocaleString('cs') + ' Kč (' + paidPlaces + ' míst)';
+        'Prize pool: ' + prizePool.toLocaleString('cs') + ' Kč (' + paidPlaces + ' míst)' +
+        (organizerFee ? ' · Poplatek: ' + organizerFee.toLocaleString('cs') + ' Kč' : '');
 
     const payoutActive = document.activeElement &&
         (document.activeElement.classList.contains('payout-config-slider') ||
@@ -600,8 +604,9 @@ function renderPayoutConfig() {
     const values = getPayoutConfigValues();
     const buyInAmount = T.config.buyInAmount || 400;
     const addonPrice = T.config.addonAmount || 0;
+    const organizerFee = T.config.organizerFee || 0;
     const stats = derivePlayerStats(T.players.list || []);
-    const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+    const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
     const cfgAmounts = roundPayouts(values, prizePool);
 
     container.innerHTML = values.map((pct, i) =>
@@ -640,8 +645,9 @@ function applyPayoutChange(place, newVal) {
     // Update in-place
     const buyInAmount = T.config.buyInAmount || 400;
     const addonPrice = T.config.addonAmount || 0;
+    const organizerFee = T.config.organizerFee || 0;
     const stats = derivePlayerStats(T.players.list || []);
-    const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+    const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
     document.querySelectorAll('.payout-config-slider').forEach(sl => {
         sl.value = values[parseInt(sl.dataset.place)];
     });
@@ -1212,7 +1218,8 @@ function saveConfig() {
         buyInAmount: parseInt(document.getElementById('cfg-buyin-amount').value) || 400,
         addonChips: parseInt(document.getElementById('cfg-addon-chips').value) || 0,
         addonAmount: parseInt(document.getElementById('cfg-addon-amount').value) || 0,
-        anteMult: parseFloat(document.getElementById('cfg-ante-mult').value) || 0
+        anteMult: parseFloat(document.getElementById('cfg-ante-mult').value) || 0,
+        organizerFee: parseInt(document.getElementById('cfg-organizer-fee').value) || 0
     };
     const p = tournamentRef.child('config').set(config);
     showSaveStatus(document.getElementById('config-save-status'), p);

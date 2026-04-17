@@ -498,7 +498,8 @@ function renderPayout() {
     const buyIns = stats.buyIns;
     const buyInAmount = config.buyInAmount || 400;
     const addonPrice = config.addonAmount || 0;
-    const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+    const organizerFee = config.organizerFee || 0;
+    const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
     const paidPlaces = getPaidPlaces();
     const dist = getPayoutDistribution(paidPlaces);
 
@@ -699,7 +700,8 @@ function render() {
         winnerBanner.style.display = 'flex';
         const buyInAmount = config.buyInAmount || 400;
         const addonPrice = config.addonAmount || 0;
-        const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+        const organizerFee = config.organizerFee || 0;
+        const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
         const dist = getPayoutDistribution(paidPlaces);
         const winAmounts = roundPayouts(dist, prizePool);
         const listEl = document.getElementById('winner-list');
@@ -1137,8 +1139,9 @@ tournamentRef.on('value', (snap) => {
         const dist = getPayoutDistribution(paidPlaces);
         const buyInAmount = T.config.buyInAmount || 400;
         const addonPrice = T.config.addonAmount || 0;
+        const organizerFee = T.config.organizerFee || 0;
         const stats = derivePlayerStats(newList);
-        const prizePool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
+        const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
         const amounts = roundPayouts(dist, prizePool);
         const activePlayers = newList.filter(p => p.active).length;
         let batchElimCount = 0;
