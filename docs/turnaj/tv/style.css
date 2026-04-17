@@ -231,6 +231,9 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .blinds-current.on-pause { color: var(--accent); }
 .timer.paused { color: var(--accent); }
 
+/* Waiting state */
+.blinds-current.on-waiting { color: var(--text-secondary); font-weight: 400; }
+
 
 /* Break message */
 .break-message {
