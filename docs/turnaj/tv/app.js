@@ -37,12 +37,12 @@ function applyVertCrop() {
 }
 applyVertCrop();
 document.getElementById('header-top-down').addEventListener('click', () => {
-    vertCrop = Math.min(100, vertCrop + 5);
+    vertCrop = Math.min(100, vertCrop + 2);
     localStorage.setItem('tvVertCrop', vertCrop);
     applyVertCrop();
 });
 document.getElementById('header-top-up').addEventListener('click', () => {
-    vertCrop = Math.max(0, vertCrop - 5);
+    vertCrop = Math.max(0, vertCrop - 2);
     localStorage.setItem('tvVertCrop', vertCrop);
     applyVertCrop();
 });
