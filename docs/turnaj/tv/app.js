@@ -27,6 +27,26 @@ document.getElementById('zoom-out').addEventListener('click', () => {
     applyZoom();
 });
 
+// Vertical crop (symmetric top/bottom margin for overscan compensation)
+let vertCrop = parseInt(localStorage.getItem('tvVertCrop')) || 0;
+function applyVertCrop() {
+    const header = document.querySelector('.tracker-header');
+    const footer = document.getElementById('tracker-footer');
+    if (header) header.style.marginTop = vertCrop + 'px';
+    if (footer) footer.style.bottom = vertCrop + 'px';
+}
+applyVertCrop();
+document.getElementById('header-top-down').addEventListener('click', () => {
+    vertCrop = Math.min(100, vertCrop + 5);
+    localStorage.setItem('tvVertCrop', vertCrop);
+    applyVertCrop();
+});
+document.getElementById('header-top-up').addEventListener('click', () => {
+    vertCrop = Math.max(0, vertCrop - 5);
+    localStorage.setItem('tvVertCrop', vertCrop);
+    applyVertCrop();
+});
+
 // Sidebar offset controls
 let sidebarOffset = 0;
 function applySidebarOffset() {
@@ -1237,11 +1257,6 @@ tournamentRef.on('value', (snap) => {
     const tickerSpeed = data.tickerSpeed || 40;
     const track = document.querySelector('.tracker-footer .ticker-track');
     if (track) track.style.animationDuration = tickerSpeed + 's';
-
-    // Ticker bottom margin
-    const tickerBottom = data.tickerBottom || 0;
-    const footer = document.getElementById('tracker-footer');
-    if (footer) footer.style.bottom = tickerBottom + 'px';
 
     // Sounds from Firebase
     const newSoundFile = data.levelSound || '';
