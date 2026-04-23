@@ -44,3 +44,7 @@ This calculation exists in **6 places** — 3 in `tv/app.js` (payout table, winn
 
 ### UI language
 The tournament UI is in **Czech**. Use Czech for all user-facing labels and hints.
+
+## Results chart (`docs/chart.js`)
+
+Reads the results CSV from a published Google Sheet. **Assume CSV rows are in chronological order** (oldest → newest); the last row is the most recent session. Existing logic (cutoff slicing, "present in last session" filter override) relies on this.

@@ -79,7 +79,13 @@ function processAndRender() {
         for (const row of rowsRecent) { const v = row[x.i]; if (v !== undefined && v !== '' && v !== '0' && Number(v) !== 0) c++; }
         return c;
     });
-    const filteredColumns = validColumns.filter((_, i) => appearances[i] >= PLAYER_MIN_SESSIONS);
+    const lastRow = allRowsWithDate.length ? allRowsWithDate[allRowsWithDate.length - 1].row : null;
+    const presentInLast = col => {
+        if (!lastRow) return false;
+        const v = lastRow[col.i];
+        return v !== undefined && v !== '' && v !== '0' && Number(v) !== 0;
+    };
+    const filteredColumns = validColumns.filter((col, i) => appearances[i] >= PLAYER_MIN_SESSIONS || presentInLast(col));
     playerNames = filteredColumns.map(x => x.h);
     playerNames.forEach((name, i) => { playerColors[name] = COLORS[i % COLORS.length]; });
 
