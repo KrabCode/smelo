@@ -23,6 +23,36 @@ docs/
 └── assets/, reveal.js/                # Shared assets & presentation framework
 ```
 
+## Flutter sub-projects (`docs/pre/`, `docs/hand/`)
+
+Both directories contain **generated** Flutter web build output. Edits made directly there will be overwritten on the next build. The source repos are siblings of `smelo` in `C:\Users\Krab\Documents\GitHub\`:
+
+| Source repo | Deploys to | `--base-href` |
+| --- | --- | --- |
+| `poker_flash_cards` | `docs/pre/` | `/pre/` |
+| `poker-hand-tracker` | `docs/hand/` | `/hand/` |
+
+### Build & deploy
+
+Run from the Flutter project root, **using PowerShell** (Git Bash mangles the `--base-href` value via MSYS path conversion, silently producing `<base href="/">` and breaking asset loading in production):
+
+```powershell
+# 1. Build (replace /<target>/ with /pre/ or /hand/)
+flutter build web --release --base-href /<target>/
+
+# 2. Deploy to smelo
+Remove-Item -Recurse -Force ..\smelo\docs\<target>\*
+Copy-Item -Recurse build\web\* ..\smelo\docs\<target>\
+
+# 3. Commit and push BOTH the Flutter repo AND smelo
+```
+
+The `--base-href` flag is **mandatory** — without it, the deployed app will 404 on its own assets at smelo.cz/pre/ and smelo.cz/hand/. Verify with `grep "base href" docs/<target>/index.html` before pushing — the value must be `/pre/` or `/hand/`, not `/`.
+
+### Site-wide changes that affect Flutter pages
+
+Anything that needs to apply to `pre/` and `hand/` (e.g. analytics scripts, meta tags) must be added to the **source** `web/index.html` in the Flutter repo, not to `docs/pre/index.html` or `docs/hand/index.html`. Then rebuild + redeploy.
+
 ## Poker tournament system (`docs/turnaj/tv/`)
 
 The main feature. Firebase Realtime Database syncs state between the admin console and TV display.
