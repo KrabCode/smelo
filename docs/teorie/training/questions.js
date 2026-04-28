@@ -17,12 +17,21 @@ function nearestPool(v) {
   return PCT_POOL.reduce((best, x) => Math.abs(x - v) < Math.abs(best - v) ? x : best, PCT_POOL[0]);
 }
 
+// Returns null if correctRaw is too far from any pool entry (ambiguous snap).
 function buildPctChoices(correctRaw) {
   const correct = nearestPool(correctRaw);
+  if (Math.abs(correctRaw - correct) > 1.5) return null;
   const candidates = PCT_POOL.filter(v => v !== correct && Math.abs(v - correct) >= 5);
   candidates.sort((a, b) => Math.abs(a - correct) - Math.abs(b - correct));
   const distractors = candidates.slice(0, 3);
   const all = shuffle([correct, ...distractors]);
+  return { choices: all.map(v => v + '%'), correctIndex: all.indexOf(correct) };
+}
+
+// For exact integer % answers (rule of 2 & 4) — no snapping.
+function buildIntPctChoices(correct) {
+  const nearby = [-4, -2, 2, 4].map(d => correct + d).filter(v => v > 0 && v <= 80);
+  const all = shuffle([correct, ...shuffle(nearby).slice(0, 3)]);
   return { choices: all.map(v => v + '%'), correctIndex: all.indexOf(correct) };
 }
 
@@ -35,10 +44,13 @@ const MATH_TEMPLATES = [
     tooltip: 'Equity needed to call a bet profitably',
     categoryId: 'pot-odds',
     generate() {
-      const pot = pick([50, 100, 150, 200, 300, 500]);
-      const bet = Math.round(pot * pick([0.33, 0.5, 0.67, 0.75, 1.0, 1.5]));
-      const equity = bet / (pot + 2 * bet) * 100;
-      const c = buildPctChoices(equity);
+      let pot, bet, equity, c;
+      do {
+        pot = pick([50, 100, 150, 200, 300, 500]);
+        bet = Math.round(pot * pick([0.33, 0.5, 0.67, 0.75, 1.0, 1.5]));
+        equity = bet / (pot + 2 * bet) * 100;
+        c = buildPctChoices(equity);
+      } while (!c);
       return {
         id: 'pot-odds-' + uid(), templateId: 'pot-odds', categoryId: 'pot-odds', type: 'math',
         question: `Pot is $${pot}. Villain bets $${bet}. What equity do you need to call profitably?`,
@@ -60,10 +72,13 @@ const MATH_TEMPLATES = [
     tooltip: 'How often villain must fold for a pure bluff to break even',
     categoryId: 'bluff-fold-equity',
     generate() {
-      const pot = pick([50, 100, 200, 300, 500]);
-      const bet = Math.round(pot * pick([0.33, 0.5, 0.67, 1.0, 1.5, 2.0]));
-      const breakeven = bet / (pot + bet) * 100;
-      const c = buildPctChoices(breakeven);
+      let pot, bet, breakeven, c;
+      do {
+        pot = pick([50, 100, 200, 300, 500]);
+        bet = Math.round(pot * pick([0.33, 0.5, 0.67, 1.0, 1.5, 2.0]));
+        breakeven = bet / (pot + bet) * 100;
+        c = buildPctChoices(breakeven);
+      } while (!c);
       return {
         id: 'bluff-fe-' + uid(), templateId: 'bluff-fold-equity', categoryId: 'bluff-fold-equity', type: 'math',
         question: `Pot is $${pot}. You bet $${bet} as a pure bluff (no equity). How often does villain need to fold to make it break even?`,
@@ -89,7 +104,7 @@ const MATH_TEMPLATES = [
       const outs = pick([4, 5, 6, 8, 9, 10, 12, 15]);
       const mult = street === 'flop' ? 4 : 2;
       const equity = outs * mult;
-      const c = buildPctChoices(equity);
+      const c = buildIntPctChoices(equity);
       return {
         id: 'rule24-' + uid(), templateId: 'rule-2-4', categoryId: 'rule-2-4', type: 'math',
         question: `On the ${street} you have ${outs} outs to improve. Approximately what is your equity to ${street === 'flop' ? 'the river' : 'hit on the river'} (rule of 2 & 4)?`,
@@ -115,10 +130,13 @@ const MATH_TEMPLATES = [
     tooltip: 'Minimum % of your range to defend so villain can\'t bluff any two cards profitably',
     categoryId: 'mdf',
     generate() {
-      const pot = pick([50, 100, 150, 200, 300]);
-      const bet = Math.round(pot * pick([0.33, 0.5, 0.67, 0.75, 1.0, 1.5]));
-      const mdf = pot / (pot + bet) * 100;
-      const c = buildPctChoices(mdf);
+      let pot, bet, mdf, c;
+      do {
+        pot = pick([50, 100, 150, 200, 300]);
+        bet = Math.round(pot * pick([0.33, 0.5, 0.67, 0.75, 1.0, 1.5]));
+        mdf = pot / (pot + bet) * 100;
+        c = buildPctChoices(mdf);
+      } while (!c);
       return {
         id: 'mdf-' + uid(), templateId: 'mdf', categoryId: 'mdf', type: 'math',
         question: `Pot is $${pot}. Villain bets $${bet}. What percentage of your range must you defend (MDF) to prevent villain from profitably bluffing any two cards?`,
