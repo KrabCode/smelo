@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Training — Šmelo</title>
+<link rel="icon" href="../../favicon.ico">
+<link rel="stylesheet" href="../../base.css">
+<link rel="stylesheet" href="style.css">
+<script data-goatcounter="https://smelo.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="header">
+  <h1><a href="../../">ŠMELO.CZ</a></h1>
+  <p style="color:var(--text-muted);font-size:0.9em;margin:4px 0 0;">
+    <a href="../../#teorie" style="color:var(--text-muted);text-decoration:none;">Teorie</a>
+    &rsaquo; Training
+  </p>
+  <hr>
+</div>
+<div class="container">
+  <p style="color:var(--text-secondary);line-height:1.6;margin-bottom:4px;">
+    Quiz on poker math and rules of thumb. Pick categories, set a count, generate — then answer A/B/C/D and hit <strong>Show results</strong> for the explanation and a tweakable formula for each math question.
+  </p>
+
+  <div class="setup-panel">
+    <h2>Setup</h2>
+    <div id="categories"></div>
+    <div class="setup-footer">
+      <button id="generate">Generate quiz</button>
+    </div>
+  </div>
+
+  <div id="quiz"></div>
+  <button id="reveal">Show results</button>
+  <div id="reveal-hint" style="display:none">↓ Show results</div>
+  <div id="summary"></div>
+</div>
+<script src="questions.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
