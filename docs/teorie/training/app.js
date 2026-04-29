@@ -26,7 +26,6 @@
   let state = loadState();
   if (!state.rulesSelected) state.rulesSelected = CATEGORIES.filter(c => c.kind === 'rules').map(c => c.id);
   if (!state.rulesCount) state.rulesCount = 10;
-  if (state.showFormula === undefined) state.showFormula = true;
   if (!state.mathCounts) {
     state.mathCounts = {};
     MATH_TEMPLATES.forEach(t => { state.mathCounts[t.id] = 1; });
@@ -63,15 +62,6 @@
     });
     mathGrp.appendChild(mathList);
     elCats.appendChild(mathGrp);
-
-    const formulaToggle = document.createElement('label');
-    formulaToggle.className = 'cat-item formula-toggle-opt';
-    formulaToggle.innerHTML = `<input type="checkbox" id="show-formula"${state.showFormula ? ' checked' : ''}> Show tweakable formula after reveal`;
-    mathGrp.appendChild(formulaToggle);
-    document.getElementById('show-formula').addEventListener('change', e => {
-      state.showFormula = e.target.checked;
-      saveState(state);
-    });
 
     mathList.querySelectorAll('.math-count-input').forEach(inp => {
       inp.addEventListener('change', () => {
@@ -252,7 +242,7 @@
       exp.innerHTML = colorSuits(q.explanation);
       reveal.appendChild(exp);
 
-      if (q.formula && state.showFormula) renderFormula(q.formula, reveal);
+      if (q.formula) renderFormula(q.formula, reveal);
 
       if (q.source) {
         const src = document.createElement('div');
