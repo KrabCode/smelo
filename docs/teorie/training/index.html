@@ -23,6 +23,90 @@
     Quiz on poker math and rules of thumb. Pick categories, set a count, generate — then answer A/B/C/D and hit <strong>Show results</strong> for the explanation and a tweakable formula for each math question.
   </p>
 
+  <details class="ref-panel">
+    <summary>Math reference</summary>
+    <div class="ref-list">
+
+      <div class="ref-item">
+        <div class="ref-name">Pot odds <span class="ref-tag">equity needed to call</span></div>
+        <div class="ref-formula">bet / (pot + 2 × bet)</div>
+        <ul class="ref-examples">
+          <li>Pot 100, bet 33 (⅓) → 33 / 166 ≈ <b>20%</b></li>
+          <li>Pot 100, bet 50 (½) → 50 / 200 = <b>25%</b></li>
+          <li>Pot 100, bet 75 (¾) → 75 / 250 = <b>30%</b></li>
+          <li>Pot 100, bet 100 (pot) → 100 / 300 ≈ <b>33%</b></li>
+        </ul>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-name">Bluff fold equity <span class="ref-tag">fold % to break even</span></div>
+        <div class="ref-formula">bet / (pot + bet)</div>
+        <ul class="ref-examples">
+          <li>Bet ⅓ pot → <b>25%</b></li>
+          <li>Bet ½ pot → <b>33%</b></li>
+          <li>Pot-sized bet → <b>50%</b></li>
+          <li>Overbet 2× pot → <b>67%</b></li>
+        </ul>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-name">MDF <span class="ref-tag">min. defense frequency</span></div>
+        <div class="ref-formula">pot / (pot + bet)</div>
+        <ul class="ref-examples">
+          <li>Bet ⅓ pot → <b>75%</b></li>
+          <li>Bet ½ pot → <b>67%</b></li>
+          <li>Bet ⅔ pot → <b>60%</b></li>
+          <li>Pot-sized bet → <b>50%</b></li>
+        </ul>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-name">Rule of 2 &amp; 4 <span class="ref-tag">approx. draw equity</span></div>
+        <div class="ref-formula">outs × 4 (flop → river)  |  outs × 2 (one card)</div>
+        <ul class="ref-examples">
+          <li>4 outs (gutshot), turn → <b>8%</b></li>
+          <li>8 outs (open-ender), turn → <b>16%</b></li>
+          <li>9 outs (flush draw), flop → <b>36%</b></li>
+          <li>15 outs (combo draw), flop → <b>60%</b></li>
+        </ul>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-name">Set mining <span class="ref-tag">need ≥ 20 : 1</span></div>
+        <div class="ref-formula">effective stack / call</div>
+        <ul class="ref-examples">
+          <li>100bb stack, 3bb open → 33 : 1 <b>✓</b></li>
+          <li>200bb stack, 5bb open → 40 : 1 <b>✓</b></li>
+          <li>50bb stack, 3bb open → 17 : 1 <b>✗</b></li>
+          <li>25bb stack, 2.5bb open → 10 : 1 <b>✗</b></li>
+        </ul>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-name">M-ratio <span class="ref-tag">tournament zone</span></div>
+        <div class="ref-formula">stack / (SB + BB + ante × players)</div>
+        <ul class="ref-examples">
+          <li>M ≥ 20 → <b>Green</b> (full play)</li>
+          <li>M 10–20 → <b>Yellow</b> (some pressure)</li>
+          <li>M 6–10 → <b>Orange</b> (push/fold most spots)</li>
+          <li>M 1–6 → <b>Red</b> (push/fold always)</li>
+        </ul>
+      </div>
+
+      <div class="ref-item">
+        <div class="ref-name">Effective stack <span class="ref-tag">caps win/loss</span></div>
+        <div class="ref-formula">min(hero stack, villain stack)</div>
+        <ul class="ref-examples">
+          <li>100bb vs 40bb → <b>40bb</b></li>
+          <li>200bb vs 200bb → <b>200bb</b></li>
+          <li>25bb vs 80bb → <b>25bb</b></li>
+          <li>50bb vs 50bb → <b>50bb</b></li>
+        </ul>
+      </div>
+
+    </div>
+  </details>
+
   <div class="setup-panel">
     <h2>Setup</h2>
     <div id="categories"></div>

@@ -7,6 +7,73 @@
   margin: 20px 0 24px;
 }
 
+/* ── Math reference panel ── */
+.ref-panel {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: var(--shadow);
+  border-radius: 12px;
+  padding: 14px 24px;
+  margin: 20px 0 0;
+}
+.ref-panel[open] { padding-bottom: 20px; }
+.ref-panel summary {
+  font-family: 'Staatliches', sans-serif;
+  font-size: 1.3em;
+  letter-spacing: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+  list-style: none;
+}
+.ref-panel summary::-webkit-details-marker { display: none; }
+.ref-panel summary::after { content: '▼'; font-size: 0.55em; color: var(--text-muted); }
+.ref-panel[open] summary { margin-bottom: 14px; }
+.ref-panel[open] summary::after { content: '▲'; }
+
+.ref-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px 20px;
+}
+.ref-item {
+  background: var(--bg-formula);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 10px 12px;
+}
+.ref-name {
+  font-size: 0.95em;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.ref-tag {
+  font-size: 0.72em;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-left: 4px;
+}
+.ref-formula {
+  font-family: monospace;
+  font-size: 0.85em;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+.ref-examples {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 0.88em;
+  line-height: 1.55;
+}
+.ref-examples li { font-family: monospace; }
+.ref-examples b { color: var(--accent); font-family: inherit; }
+
 .setup-panel h2 {
   margin: 0 0 14px;
   font-size: 1.3em;
