@@ -151,6 +151,12 @@ document.getElementById('btnAll').addEventListener('click', () => {
     document.getElementById('btnHalf').classList.remove('active');
     processAndRender();
 });
+document.getElementById('btnRefreshChart').addEventListener('click', () => {
+    try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TS_KEY); } catch(e) {}
+    document.getElementById('graphSpinner').style.display = '';
+    document.getElementById('chartDiv').style.visibility = 'hidden';
+    fetchAndRender();
+});
 
 function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     const date = storedSessionLabels[rowIdx];
@@ -249,7 +255,7 @@ function drawChart() {
     const series = {};
     playerNames.forEach((name, i) => {
         const color = playerColors[name];
-        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
         else if (selectedPlayer) series[i] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
         else series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
     });
@@ -257,7 +263,7 @@ function drawChart() {
     const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' };
     const options = {
         title: 'Kumulativní šmelo', titleTextStyle: { fontSize: 14, color: '#eee' },
-        legend: 'none', interpolateNulls: false, dataOpacity: 1.0, series,
+        legend: 'none', interpolateNulls: false, dataOpacity: 1.0, curveType: 'function', series,
         hAxis: { textStyle: { fontSize: 10, color: '#aaa' }, slantedText: true, slantedTextAngle: 45, gridlines: { color: '#333' }, baselineColor: '#444' },
         vAxes: { 0: vAxisShared, 1: { ...vAxisShared, gridlines: { color: 'transparent' } } },
         chartArea: { left: 60, top: 40, right: 60, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
