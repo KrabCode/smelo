@@ -239,8 +239,8 @@ function drawChart() {
                 const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
                 if (!played) continue;
                 const v = Number(cell);
-                if (v > bestVal) { bestVal = v; bestIdx = i; }
-                if (v < worstVal) { worstVal = v; worstIdx = i; }
+                if (v > 0 && v > bestVal) { bestVal = v; bestIdx = i; }
+                if (v < 0 && v < worstVal) { worstVal = v; worstIdx = i; }
             }
             if (bestIdx >= 0) {
                 highlightTypes[bestIdx] = 'best';
@@ -364,12 +364,14 @@ function computeStats() {
         let total = 0;
         for (let j = cum.length - 1; j >= 0; j--) { if (cum[j] != null) { total = cum[j]; break; } }
         if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, color: playerColors[name] };
+        const wins = sessions.filter(s => s > 0);
+        const losses = sessions.filter(s => s < 0);
         return {
             name: name.split('/')[0].trim(),
             fullName: name,
             avg: Math.round(sessions.reduce((a, b) => a + b, 0) / sessions.length),
-            best: Math.max(...sessions),
-            worst: Math.min(...sessions),
+            best: wins.length ? Math.max(...wins) : 0,
+            worst: losses.length ? Math.min(...losses) : 0,
             total,
             games: sessions.length,
             color: playerColors[name]
