@@ -455,8 +455,7 @@ function setChartHighlight(rowIdx) {
     chart.setSelection(selections);
 }
 
-document.getElementById('sliderInput').addEventListener('input', updateSliderInfo);
-document.getElementById('sliderInput').addEventListener('change', () => setChartHighlight(sliderIdx));
+document.getElementById('sliderInput').addEventListener('input', () => { updateSliderInfo(); setChartHighlight(sliderIdx); });
 document.getElementById('sliderPrev').addEventListener('click', () => {
     if (sliderIdx > 0) { sliderIdx--; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); setChartHighlight(sliderIdx); }
 });
