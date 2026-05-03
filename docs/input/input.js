@@ -98,15 +98,12 @@ function fetchPlayers() {
 
             knownPlayers = Object.keys(colIndex).sort((a, b) => a.localeCompare(b, 'cs'));
 
+            // Line 1 is the precomputed totals row
+            const totalsRow = lines[1].split(',');
             playerTotals = {};
-            knownPlayers.forEach(n => playerTotals[n] = 0);
-            lines.slice(1).forEach(line => {
-                if (!line.trim()) return;
-                const cols = line.split(',');
-                knownPlayers.forEach(name => {
-                    const val = parseFloat(cols[colIndex[name]]);
-                    if (!isNaN(val)) playerTotals[name] += val;
-                });
+            knownPlayers.forEach(name => {
+                const val = parseFloat(totalsRow[colIndex[name]]);
+                playerTotals[name] = isNaN(val) ? 0 : val;
             });
 
             populateChips();
