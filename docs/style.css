@@ -213,7 +213,7 @@ a.card { color: var(--text); text-decoration: none; }
 
 /* === Input panel === */
 .input-panel {
-    max-width: 480px;
+    max-width: 680px;
     margin: 0 auto;
     padding: 0 20px;
 }
