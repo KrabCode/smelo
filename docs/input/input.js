@@ -10,7 +10,6 @@ const sessionDate = document.getElementById('sessionDate');
 const statusEl = document.getElementById('status');
 const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
-const playerChips = document.getElementById('playerChips');
 const playerSearch = document.getElementById('playerSearch');
 const searchGhost = document.getElementById('searchGhost');
 const sumDisplay = document.getElementById('sumDisplay');
@@ -106,28 +105,11 @@ function fetchPlayers() {
                 playerTotals[name] = isNaN(val) ? 0 : val;
             });
 
-            populateChips();
             populatePlayerList();
         })
         .catch(() => {});
 }
 
-function populateChips() {
-    playerChips.innerHTML = '';
-    knownPlayers.forEach(name => {
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'player-chip';
-        chip.textContent = name;
-        chip.addEventListener('click', () => {
-            addEntry(name);
-            updateChipStates();
-            playerSearch.value = '';
-            filterChips();
-        });
-        playerChips.appendChild(chip);
-    });
-}
 
 function populatePlayerList() {
     playerListEl.innerHTML = '';
@@ -154,9 +136,6 @@ function populatePlayerList() {
 function filterChips() {
     const q = playerSearch.value.trim();
     const ql = q.toLowerCase();
-    playerChips.querySelectorAll('.player-chip').forEach(chip => {
-        chip.style.display = (!ql || chip.textContent.toLowerCase().includes(ql)) ? '' : 'none';
-    });
     ghostMatch = ql ? (knownPlayers.find(n => n.toLowerCase().startsWith(ql)) || null) : null;
     searchGhost.innerHTML = '';
     if (ghostMatch) {
@@ -172,9 +151,8 @@ playerSearch.addEventListener('input', filterChips);
 playerSearch.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && !(e.key === 'Tab' && ghostMatch)) return;
     e.preventDefault();
-    const chips = Array.from(playerChips.querySelectorAll('.player-chip'));
-    const firstChip = chips.find(c => c.style.display !== 'none');
-    const name = ghostMatch || (firstChip ? firstChip.textContent : null);
+    const ql = playerSearch.value.trim().toLowerCase();
+    const name = ghostMatch || (ql ? knownPlayers.find(n => n.toLowerCase().includes(ql)) : null);
     if (!name) return;
     const entry = createEntry(name);
     updateChipStates();
@@ -188,9 +166,6 @@ function updateChipStates() {
     entriesContainer.querySelectorAll('.entry-name').forEach(input => {
         const val = input.value.trim();
         if (val) usedNames.add(val);
-    });
-    playerChips.querySelectorAll('.player-chip').forEach(chip => {
-        chip.classList.toggle('used', usedNames.has(chip.textContent));
     });
     playerListEl.querySelectorAll('.player-list-item').forEach(item => {
         item.classList.toggle('used', usedNames.has(item.dataset.name));
