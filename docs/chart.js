@@ -167,16 +167,29 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         const cell = storedOriginalCells[rowIdx][ci];
         const delta = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
         if (delta === 0) return null;
-        return { name: name.split('/')[0].trim(), fullName: name, val: storedCumulative[ci][rowIdx], delta, color: playerColors[name] };
+        const po = storedCumulative[ci][rowIdx];
+        const pred = po != null ? po - delta : null;
+        return { name: name.split('/')[0].trim(), fullName: name, pred, delta, po, color: playerColors[name] };
     }).filter(Boolean).sort((a, b) => b.delta - a.delta);
-    let html = `<div class="tt"><div class="tt-header">${date}</div>`;
+
+    const sign = v => v > 0 ? '+' + v : String(v);
+    const deltaClass = v => v > 0 ? 'tt-delta-pos' : v < 0 ? 'tt-delta-neg' : 'tt-delta-zero';
+
+    let html = `<div class="tt"><table class="tt-table">`;
+    html += `<thead><tr><th colspan="2">${date}</th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>`;
     entries.forEach(e => {
-        const sign = e.delta > 0 ? '+' : '';
-        const cls = e.delta > 0 ? 'pos' : e.delta < 0 ? 'neg' : '';
-        const bold = e.fullName === hoveredPlayer ? 'font-weight:bold;' : '';
-        const bg = e.fullName === hoveredPlayer ? 'background:rgba(255,255,255,0.06);border-radius:3px;' : '';
-        html += `<div class="tt-row" style="${bg}"><span class="tt-dot" style="background:${e.color}"></span><span class="tt-name" style="${bold}">${e.name}</span><span class="tt-val" style="${bold}">${e.val}</span><span class="tt-delta ${cls}" style="${bold}">(${sign}${e.delta})</span></div>`;
+        const isFocus = e.fullName === hoveredPlayer;
+        const bld = isFocus ? 'font-weight:bold;' : '';
+        const bg = isFocus ? 'background:rgba(255,255,255,0.06);' : '';
+        html += `<tr style="${bg}">` +
+            `<td><span class="tt-dot" style="background:${e.color}"></span></td>` +
+            `<td style="${bld}">${e.name}</td>` +
+            `<td class="tt-pred" style="${bld}">${e.pred != null ? e.pred : '—'}</td>` +
+            `<td class="${deltaClass(e.delta)}" style="${bld}">${sign(e.delta)}</td>` +
+            `<td class="tt-po" style="${bld}">${e.po != null ? e.po : '—'}</td>` +
+            `</tr>`;
     });
+    html += `</tbody></table>`;
     if (highlightLabels && highlightLabels[rowIdx]) {
         const pName = selectedPlayer ? selectedPlayer.split('/')[0].trim() : '';
         const pColor = selectedPlayer ? playerColors[selectedPlayer] : '#ffb300';

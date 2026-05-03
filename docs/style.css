@@ -120,9 +120,7 @@ img { border-radius: 16px; }
     pointer-events: none;
 }
 #sessionDetails {
-    max-width: 680px;
-    margin: 4px auto 0;
-    padding: 0 12px;
+    margin: 4px 0 0;
 }
 #sessionDetails > summary {
     color: #aaa;
@@ -154,15 +152,18 @@ img { border-radius: 16px; }
     cursor: pointer;
     background: transparent;
 }
-.tt { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #ddd; padding: 8px 12px; min-width: 180px; text-align: left; }
-.tt-header { font-weight: bold; color: #fff; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #444; text-align: left; }
-.tt-row { display: flex; align-items: center; padding: 2px 0; font-family: monospace; font-size: 12px; }
-.tt-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; flex-shrink: 0; }
-.tt-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
-.tt-val { margin-left: 8px; white-space: nowrap; text-align: right; min-width: 30px; }
-.tt-delta { margin-left: 6px; white-space: nowrap; color: #888; text-align: right; min-width: 40px; }
-.tt-delta.pos { color: #4ade80; }
-.tt-delta.neg { color: #f87171; }
+.tt { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #ddd; padding: 6px 0; display: inline-block; }
+.tt-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; }
+.tt-table { border-collapse: collapse; font-family: monospace; font-size: 12px; }
+.tt-table thead th { color: #888; font-weight: normal; font-size: 11px; padding: 0 8px 4px 8px; border-bottom: 1px solid #444; text-align: right; white-space: nowrap; }
+.tt-table thead th:first-child { text-align: left; padding-left: 0; font-size: 12px; color: #fff; font-weight: bold; }
+.tt-table tbody td { padding: 2px 8px; white-space: nowrap; text-align: right; }
+.tt-table tbody td:first-child { text-align: left; padding-left: 0; }
+.tt-pred { color: #aaa; }
+.tt-delta-pos { color: #4ade80; }
+.tt-delta-neg { color: #f87171; }
+.tt-delta-zero { color: #888; }
+.tt-po { color: #eee; }
 
 /* === Stats table === */
 #statsTableDiv {
