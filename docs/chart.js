@@ -136,6 +136,21 @@ function processAndRender() {
     storedSessionLabels = sessionLabels;
     storedDates = rows.map(x => x.date);
 
+    if (!selectedPlayer) {
+        const lastIdx = originalCells.length - 1;
+        if (lastIdx >= 0) {
+            let winnerName = '', winnerDelta = -Infinity;
+            playerNames.forEach((name, ci) => {
+                const cell = originalCells[lastIdx][ci];
+                const v = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
+                if (v <= 0) return;
+                const d = name.split('/')[0].trim(), wd = winnerName.split('/')[0].trim();
+                if (v > winnerDelta || (v === winnerDelta && d < wd)) { winnerDelta = v; winnerName = name; }
+            });
+            if (winnerName) selectedPlayer = winnerName;
+        }
+    }
+
     drawChart();
     drawStatsChart();
 }
