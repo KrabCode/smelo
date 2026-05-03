@@ -16,6 +16,7 @@ let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = n
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
 let storedHighlightTooltips = {}, storedRenderOrder = [];
+let sliderIdx = -1;
 const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 1800000;
 
 function fetchCSV() {
@@ -61,6 +62,7 @@ function fetchAndRender() {
         }
         processAndRender();
         document.getElementById('rangeToggle').style.display = '';
+        document.getElementById('sessionDetails').style.display = '';
         document.getElementById('graphSpinner').style.display = 'none';
         document.getElementById('chartDiv').style.visibility = 'visible';
     });
@@ -292,21 +294,17 @@ function drawChart() {
         chart = new google.visualization.LineChart(document.getElementById('chartDiv'));
         google.visualization.events.addListener(chart, 'select', function() {
             var sel = chart.getSelection();
-            if (sel.length) chart.setSelection(sel);
-        });
-        const fixedTt = document.getElementById('chartTooltipFixed');
-        google.visualization.events.addListener(chart, 'onmouseover', function(e) {
-            if (e.row == null) return;
-            const playerIdx = (e.column != null && e.column > 0) ? Math.floor((e.column - 1) / 3) : -1;
-            const hoveredPlayer = playerIdx >= 0 ? playerNames[storedRenderOrder[playerIdx]] : selectedPlayer;
-            fixedTt.innerHTML = buildTooltip(e.row, storedHighlightTooltips, hoveredPlayer);
-            fixedTt.style.display = '';
-        });
-        google.visualization.events.addListener(chart, 'onmouseout', function() {
-            fixedTt.style.display = 'none';
+            if (sel.length && sel[0].row != null) {
+                sliderIdx = sel[0].row;
+                const sliderEl = document.getElementById('sliderInput');
+                if (sliderEl) sliderEl.value = sliderIdx;
+                updateSliderInfo();
+                document.getElementById('sessionDetails').open = true;
+            }
         });
     }
     chart.draw(chartData, options);
+    initSlider();
 }
 
 let statsSortCol = 'total', statsSortAsc = false, statsData = null;
@@ -391,3 +389,32 @@ function renderStatsTable() {
 }
 
 window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
+
+function initSlider() {
+    const slider = document.getElementById('sliderInput');
+    const n = storedSessionLabels ? storedSessionLabels.length : 0;
+    if (!n) return;
+    slider.max = n - 1;
+    if (sliderIdx < 0 || sliderIdx >= n) sliderIdx = n - 1;
+    slider.value = sliderIdx;
+    updateSliderInfo();
+}
+
+function updateSliderInfo() {
+    const slider = document.getElementById('sliderInput');
+    sliderIdx = parseInt(slider.value);
+    if (!storedSessionLabels || sliderIdx < 0) return;
+    const label = storedSessionLabels[sliderIdx];
+    document.getElementById('sessionSummary').textContent = 'Relace: ' + label;
+    document.getElementById('sessionSliderInfo').innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
+    if (chart) chart.setSelection([{row: sliderIdx}]);
+}
+
+document.getElementById('sliderInput').addEventListener('input', updateSliderInfo);
+document.getElementById('sliderPrev').addEventListener('click', () => {
+    if (sliderIdx > 0) { sliderIdx--; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); }
+});
+document.getElementById('sliderNext').addEventListener('click', () => {
+    const n = storedSessionLabels ? storedSessionLabels.length : 0;
+    if (sliderIdx < n - 1) { sliderIdx++; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); }
+});
