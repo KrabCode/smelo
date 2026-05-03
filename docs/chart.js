@@ -270,8 +270,7 @@ function drawChart() {
         const name = playerNames[ci];
         const color = playerColors[name];
         if (selectedPlayer && name === selectedPlayer) series[j] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
-        else if (selectedPlayer) series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
-        else series[j] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+        else series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
     });
     series[playerNames.length] = { targetAxisIndex: 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
     const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short', ticks: axisTicks };
