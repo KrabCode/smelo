@@ -1,5 +1,6 @@
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv';
 const PLAYER_MIN_SESSIONS = 2;
+const PLAYER_RECENT_SESSION_COUNT = 3;
 const COLORS = [
     "#E15759","#4E79A7","#F28E2B","#76B7B2","#59A14F","#EDC948",
     "#B07AA1","#FF9DA7","#9C755F","#BAB0AC","#1F77B4","#AEC7E8",
@@ -83,12 +84,11 @@ function processAndRender() {
         for (const row of rowsRecent) { const v = row[x.i]; if (v !== undefined && v !== '' && v !== '0' && Number(v) !== 0) c++; }
         return c;
     });
-    const lastRow = allRowsWithDate.length ? allRowsWithDate[allRowsWithDate.length - 1].row : null;
-    const presentInLast = col => {
-        if (!lastRow) return false;
-        const v = lastRow[col.i];
+    const recentRows = allRowsWithDate.slice(-PLAYER_RECENT_SESSION_COUNT).map(x => x.row);
+    const presentInLast = col => recentRows.some(row => {
+        const v = row[col.i];
         return v !== undefined && v !== '' && v !== '0' && Number(v) !== 0;
-    };
+    });
     const filteredColumns = validColumns.filter((col, i) => appearances[i] >= PLAYER_MIN_SESSIONS || presentInLast(col));
     playerNames = filteredColumns.map(x => x.h);
     playerNames.forEach((name, i) => { playerColors[name] = COLORS[i % COLORS.length]; });
