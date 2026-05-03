@@ -235,10 +235,19 @@ a.card { color: var(--text); text-decoration: none; }
 .player-list-total.neg { color: #f87171; }
 .player-list-total.zero { color: #555; }
 .player-search-section { margin-bottom: 8px; }
-.search-suggestion { font-size: 0.85em; color: #4a4a4a; padding: 4px 16px; min-height: 1.4em; }
+.search-wrap { position: relative; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; }
+.search-wrap:focus-within { border-color: #888; }
+.search-ghost {
+    position: absolute; inset: 0; padding: 8px 16px;
+    font-size: 0.95em; font-family: 'Segoe UI', Arial, sans-serif;
+    pointer-events: none; white-space: nowrap; overflow: hidden;
+    color: transparent; display: flex; align-items: center;
+}
+.search-ghost-suffix { color: #555; }
 .player-search {
+    background: transparent !important; border: none !important; outline: none !important;
     border-radius: 20px !important; padding: 8px 16px !important; margin-bottom: 0;
-    background: #1a1a1a !important; border: 1px solid #333 !important;
+    position: relative;
 }
 .player-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .player-chip {

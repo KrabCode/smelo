@@ -207,8 +207,10 @@
         <div id="entriesContainer"></div>
         <div id="sumDisplay" class="sum-display"></div>
         <div class="player-search-section">
-          <input type="text" id="playerSearch" class="player-search" placeholder="Hledat hráče…" autocomplete="off">
-          <div id="searchSuggestion" class="search-suggestion"></div>
+          <div class="search-wrap">
+            <div id="searchGhost" class="search-ghost" aria-hidden="true"></div>
+            <input type="text" id="playerSearch" class="player-search" placeholder="Hledat hráče…" autocomplete="off">
+          </div>
         </div>
         <button type="button" id="addEntryBtn" class="btn" style="width:100%; border-style:dashed; color:#888;">+ Jiný hráč</button>
         <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Odeslat</button>

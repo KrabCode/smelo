@@ -12,13 +12,14 @@ const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
 const playerChips = document.getElementById('playerChips');
 const playerSearch = document.getElementById('playerSearch');
-const searchSuggestion = document.getElementById('searchSuggestion');
+const searchGhost = document.getElementById('searchGhost');
 const sumDisplay = document.getElementById('sumDisplay');
 const playerListEl = document.getElementById('playerList');
 const playerListCount = document.getElementById('playerListCount');
 
 let knownPlayers = [];
 let playerTotals = {};
+let ghostMatch = null;
 
 // --- Settings persistence ---
 function loadSettings() {
@@ -149,12 +150,20 @@ function populatePlayerList() {
 }
 
 function filterChips() {
-    const q = playerSearch.value.trim().toLowerCase();
+    const q = playerSearch.value.trim();
+    const ql = q.toLowerCase();
     playerChips.querySelectorAll('.player-chip').forEach(chip => {
-        chip.style.display = (!q || chip.textContent.toLowerCase().includes(q)) ? '' : 'none';
+        chip.style.display = (!ql || chip.textContent.toLowerCase().includes(ql)) ? '' : 'none';
     });
-    const first = Array.from(playerChips.querySelectorAll('.player-chip')).find(c => c.style.display !== 'none');
-    searchSuggestion.textContent = (q && first) ? first.textContent : '';
+    ghostMatch = ql ? (knownPlayers.find(n => n.toLowerCase().startsWith(ql)) || null) : null;
+    searchGhost.innerHTML = '';
+    if (ghostMatch) {
+        searchGhost.appendChild(document.createTextNode(ghostMatch.slice(0, q.length)));
+        const suffix = document.createElement('span');
+        suffix.className = 'search-ghost-suffix';
+        suffix.textContent = ghostMatch.slice(q.length);
+        searchGhost.appendChild(suffix);
+    }
 }
 
 playerSearch.addEventListener('input', filterChips);
@@ -163,8 +172,9 @@ playerSearch.addEventListener('keydown', (e) => {
     e.preventDefault();
     const chips = Array.from(playerChips.querySelectorAll('.player-chip'));
     const firstChip = chips.find(c => c.style.display !== 'none');
-    if (!firstChip) return;
-    const entry = createEntry(firstChip.textContent);
+    const name = ghostMatch || (firstChip ? firstChip.textContent : null);
+    if (!name) return;
+    const entry = createEntry(name);
     updateChipStates();
     playerSearch.value = '';
     filterChips();
