@@ -157,6 +157,7 @@ img { border-radius: 16px; }
     display: flex;
     align-items: flex-start;
     gap: 8px;
+    justify-content: center;
 }
 #sessionSliderInfo {
     background: #1e1e1e;
