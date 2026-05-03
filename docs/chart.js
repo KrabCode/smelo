@@ -430,7 +430,7 @@ function updateSliderInfo() {
     const slider = document.getElementById('sliderInput');
     sliderIdx = parseInt(slider.value);
     if (!storedSessionLabels || sliderIdx < 0) return;
-    document.getElementById('sessionSummary').textContent = storedSessionLabels[sliderIdx];
+    document.getElementById('sessionSummary').textContent = 'Detail';
     const infoEl = document.getElementById('sessionSliderInfo');
     infoEl.innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
     infoEl.querySelectorAll('tr[data-player]').forEach(tr => {
