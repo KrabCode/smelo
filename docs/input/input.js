@@ -128,7 +128,7 @@ function populateChips() {
 
 function populatePlayerList() {
     playerListEl.innerHTML = '';
-    const sorted = [...knownPlayers].sort((a, b) => (playerTotals[b] || 0) - (playerTotals[a] || 0));
+    const sorted = [...knownPlayers];
     playerListCount.textContent = '(' + sorted.length + ')';
     sorted.forEach(name => {
         const total = playerTotals[name] || 0;
