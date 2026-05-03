@@ -177,12 +177,12 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     const sign = v => v > 0 ? '+' + v : String(v);
     const deltaClass = v => v > 0 ? 'tt-delta-pos' : v < 0 ? 'tt-delta-neg' : 'tt-delta-zero';
 
-    const sizer = `<tr aria-hidden="true" style="visibility:hidden;line-height:0;">` +
-        `<td style="padding:0;"></td>` +
-        `<td style="padding:0;white-space:nowrap;">${maxPlayerDisplayName}</td>` +
-        `<td style="padding:0;text-align:right;">-99999</td>` +
-        `<td style="padding:0;text-align:right;">-99999</td>` +
-        `<td style="padding:0;text-align:right;">-99999</td>` +
+    const sizer = `<tr aria-hidden="true" style="visibility:hidden;">` +
+        `<td></td>` +
+        `<td style="white-space:nowrap;">${maxPlayerDisplayName}</td>` +
+        `<td>-99999</td>` +
+        `<td>-99999</td>` +
+        `<td>-99999</td>` +
         `</tr>`;
     let html = `<div class="tt"><table class="tt-table">`;
     html += `<thead><tr><th colspan="2">${date}</th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
