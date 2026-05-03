@@ -122,11 +122,11 @@ playerSearch.addEventListener('keydown', (e) => {
     const chips = Array.from(playerChips.querySelectorAll('.player-chip'));
     const firstChip = chips.find(c => c.style.display !== 'none');
     if (!firstChip) return;
-    createEntry(firstChip.textContent);
+    const entry = createEntry(firstChip.textContent);
     updateChipStates();
     playerSearch.value = '';
     filterChips();
-    playerSearch.focus();
+    entry.querySelector('.entry-invest').focus();
 });
 
 function updateChipStates() {
@@ -226,13 +226,7 @@ function createEntry(name, invest, withdraw) {
     withdrawInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            const entries = Array.from(entriesContainer.children);
-            const nextEntry = entries[entries.indexOf(div) + 1];
-            if (nextEntry) {
-                nextEntry.querySelector('.entry-name').focus();
-            } else {
-                playerSearch.focus();
-            }
+            playerSearch.focus();
         }
     });
     withdrawInput.addEventListener('input', () => { updateRowResult(div); updateSum(); saveDraft(); });
