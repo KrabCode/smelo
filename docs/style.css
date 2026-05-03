@@ -158,7 +158,7 @@ img { border-radius: 16px; }
     background: transparent;
 }
 #sessionPanel {
-    min-height: 230px;
+    min-height: 300px;
 }
 #sessionCardRow {
     display: flex;
