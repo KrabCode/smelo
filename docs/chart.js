@@ -15,6 +15,7 @@ let chart = null, chartData = null, playerNames = [], playerColors = {}, selecte
 let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedDates = null;
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
+let maxPlayerDisplayName = '';
 let storedHighlightTooltips = {}, storedRenderOrder = [];
 let sliderIdx = -1;
 const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 1800000;
@@ -91,6 +92,7 @@ function processAndRender() {
     const filteredColumns = validColumns.filter((col, i) => appearances[i] >= PLAYER_MIN_SESSIONS || presentInLast(col));
     playerNames = filteredColumns.map(x => x.h);
     playerNames.forEach((name, i) => { playerColors[name] = COLORS[i % COLORS.length]; });
+    maxPlayerDisplayName = playerNames.reduce((max, n) => { const d = n.split('/')[0].trim(); return d.length > max.length ? d : max; }, '');
 
     const allWinnings = allRowsWithDate.map(x => filteredColumns.map(col => x.row[col.i] === '' ? 0 : Number(x.row[col.i])));
     const allOriginalCells = allRowsWithDate.map(x => filteredColumns.map(col => x.row[col.i]));
@@ -175,15 +177,22 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     const sign = v => v > 0 ? '+' + v : String(v);
     const deltaClass = v => v > 0 ? 'tt-delta-pos' : v < 0 ? 'tt-delta-neg' : 'tt-delta-zero';
 
+    const sizer = `<tr aria-hidden="true" style="visibility:hidden;line-height:0;">` +
+        `<td style="padding:0;"></td>` +
+        `<td style="padding:0;white-space:nowrap;">${maxPlayerDisplayName}</td>` +
+        `<td style="padding:0;text-align:right;">-99999</td>` +
+        `<td style="padding:0;text-align:right;">-99999</td>` +
+        `<td style="padding:0;text-align:right;">-99999</td>` +
+        `</tr>`;
     let html = `<div class="tt"><table class="tt-table">`;
-    html += `<thead><tr><th colspan="2">${date}</th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>`;
+    html += `<thead><tr><th colspan="2">${date}</th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
     entries.forEach(e => {
         const isFocus = e.fullName === hoveredPlayer;
         const bld = isFocus ? 'font-weight:bold;' : '';
         const bg = isFocus ? 'background:rgba(255,255,255,0.06);' : '';
         html += `<tr style="${bg}">` +
             `<td><span class="tt-dot" style="background:${e.color}"></span></td>` +
-            `<td style="${bld}">${e.name}</td>` +
+            `<td style="text-align:left;${bld}">${e.name}</td>` +
             `<td class="tt-pred" style="${bld}">${e.pred != null ? e.pred : '—'}</td>` +
             `<td class="${deltaClass(e.delta)}" style="${bld}">${sign(e.delta)}</td>` +
             `<td class="tt-po" style="${bld}">${e.po != null ? e.po : '—'}</td>` +
