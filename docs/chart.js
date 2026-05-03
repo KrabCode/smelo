@@ -1,6 +1,6 @@
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv';
 const PLAYER_MIN_SESSIONS = 2;
-const PLAYER_RECENT_SESSION_COUNT = 3;
+const PLAYER_RECENT_SESSION_COUNT = 5;
 const COLORS = [
     "#E15759","#4E79A7","#F28E2B","#76B7B2","#59A14F","#EDC948",
     "#B07AA1","#FF9DA7","#9C755F","#BAB0AC","#1F77B4","#AEC7E8",
