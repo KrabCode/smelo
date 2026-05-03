@@ -12,6 +12,7 @@ const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
 const playerChips = document.getElementById('playerChips');
 const playerSearch = document.getElementById('playerSearch');
+const searchSuggestion = document.getElementById('searchSuggestion');
 const sumDisplay = document.getElementById('sumDisplay');
 
 let knownPlayers = [];
@@ -113,6 +114,8 @@ function filterChips() {
     playerChips.querySelectorAll('.player-chip').forEach(chip => {
         chip.style.display = (!q || chip.textContent.toLowerCase().includes(q)) ? '' : 'none';
     });
+    const first = Array.from(playerChips.querySelectorAll('.player-chip')).find(c => c.style.display !== 'none');
+    searchSuggestion.textContent = (q && first) ? first.textContent : '';
 }
 
 playerSearch.addEventListener('input', filterChips);

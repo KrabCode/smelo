@@ -194,11 +194,7 @@
   <div class="tab-panel" data-tab="input">
     <div class="input-panel">
       <h3 style="text-align:center; color:#888; font-family:inherit;">Přidat záznam</h3>
-      <div class="player-section">
-        <label class="player-section-label">Hráči</label>
-        <div id="playerChips" class="player-chips"></div>
-        <input type="text" id="playerSearch" class="player-search" placeholder="Hledat…">
-      </div>
+      <div id="playerChips" style="display:none"></div>
       <form id="inputForm" autocomplete="off">
         <div style="margin-bottom:12px;">
           <label for="sessionDate">Datum (YYYY-MM-DD)</label>
@@ -206,6 +202,10 @@
         </div>
         <div id="entriesContainer"></div>
         <div id="sumDisplay" class="sum-display"></div>
+        <div class="player-search-section">
+          <input type="text" id="playerSearch" class="player-search" placeholder="Hledat hráče…" autocomplete="off">
+          <div id="searchSuggestion" class="search-suggestion"></div>
+        </div>
         <button type="button" id="addEntryBtn" class="btn" style="width:100%; border-style:dashed; color:#888;">+ Jiný hráč</button>
         <button type="submit" class="btn btn-submit" id="submitBtn" disabled>Odeslat</button>
         <div id="status"></div>
