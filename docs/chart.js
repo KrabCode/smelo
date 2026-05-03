@@ -252,6 +252,13 @@ function drawChart() {
         const mix = (c) => Math.round(bg + (c - bg) * 0.45);
         return '#' + [r,g,b].map(c => mix(c).toString(16).padStart(2,'0')).join('');
     };
+    let yMin = 0, yMax = 0;
+    cumulative.forEach(arr => arr.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }));
+    const yRange = yMax - yMin;
+    const step = yRange <= 2000 ? 500 : yRange <= 5000 ? 1000 : yRange <= 15000 ? 2500 : 5000;
+    const axisTicks = [];
+    for (let t = Math.floor(yMin / step) * step; t <= Math.ceil(yMax / step) * step; t += step) axisTicks.push(t);
+
     const series = {};
     playerNames.forEach((name, i) => {
         const color = playerColors[name];
@@ -260,7 +267,7 @@ function drawChart() {
         else series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
     });
     series[playerNames.length] = { targetAxisIndex: 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
-    const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short' };
+    const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short', ticks: axisTicks };
     const options = {
         title: 'Kumulativní šmelo', titleTextStyle: { fontSize: 14, color: '#eee' },
         legend: 'none', interpolateNulls: false, dataOpacity: 1.0, curveType: 'function', series,
