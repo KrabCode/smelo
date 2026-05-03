@@ -124,8 +124,24 @@ img { border-radius: 16px; }
     margin: 4px auto 0;
     padding: 0 12px;
 }
-#sessionDetails > summary { color: #888; font-size: 0.85em; margin-bottom: 6px; }
+#sessionDetails > summary {
+    color: #aaa;
+    font-size: 0.9em;
+    margin-bottom: 6px;
+    list-style: none;
+}
 #sessionDetails > summary::-webkit-details-marker { display: none; }
+#sessionDetails > summary::before {
+    content: '▶';
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 0.75em;
+    transition: transform 0.15s;
+    vertical-align: middle;
+}
+#sessionDetails[open] > summary::before {
+    transform: rotate(90deg);
+}
 #sessionSliderControls {
     display: flex;
     align-items: center;

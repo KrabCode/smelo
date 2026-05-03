@@ -298,8 +298,10 @@ function drawChart() {
                 sliderIdx = sel[0].row;
                 const sliderEl = document.getElementById('sliderInput');
                 if (sliderEl) sliderEl.value = sliderIdx;
+                const details = document.getElementById('sessionDetails');
+                details.open = true;
                 updateSliderInfo();
-                document.getElementById('sessionDetails').open = true;
+                details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         });
     }
@@ -405,7 +407,7 @@ function updateSliderInfo() {
     sliderIdx = parseInt(slider.value);
     if (!storedSessionLabels || sliderIdx < 0) return;
     const label = storedSessionLabels[sliderIdx];
-    document.getElementById('sessionSummary').textContent = 'Relace: ' + label;
+    document.getElementById('sessionSummary').textContent = label;
     document.getElementById('sessionSliderInfo').innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
     if (chart) chart.setSelection([{row: sliderIdx}]);
 }
