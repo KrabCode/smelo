@@ -35,11 +35,15 @@
     <details id="sessionDetails" open style="display:none;">
       <summary id="sessionSummary" style="cursor:pointer; user-select:none;">…</summary>
       <div id="sessionSliderControls">
-        <button id="sliderPrev" class="range-btn">←</button>
+        <div class="range-btn slider-spacer" aria-hidden="true">←</div>
         <input type="range" id="sliderInput" min="0" value="0">
+        <div class="range-btn slider-spacer" aria-hidden="true">→</div>
+      </div>
+      <div id="sessionCardRow">
+        <button id="sliderPrev" class="range-btn">←</button>
+        <div id="sessionSliderInfo"></div>
         <button id="sliderNext" class="range-btn">→</button>
       </div>
-      <div id="sessionSliderInfo"></div>
     </details>
     <div id="statsTableDiv"></div>
   </div>

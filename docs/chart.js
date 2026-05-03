@@ -422,7 +422,6 @@ function updateSliderInfo() {
     const label = storedSessionLabels[sliderIdx];
     document.getElementById('sessionSummary').textContent = label;
     document.getElementById('sessionSliderInfo').innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
-    if (chart) chart.setSelection([{row: sliderIdx}]);
 }
 
 document.getElementById('sliderInput').addEventListener('input', updateSliderInfo);
