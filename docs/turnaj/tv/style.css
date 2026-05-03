@@ -144,13 +144,6 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     letter-spacing: 2px;
 }
 
-.next-level {
-    margin-top: 16px;
-    font-size: 1.2em;
-    color: var(--text-muted);
-}
-.next-level span { color: var(--text-secondary); }
-
 /* Blind structure table */
 .structure-wrap {
     max-width: 100%;

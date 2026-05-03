@@ -455,6 +455,22 @@ function recalcTotalChips() {
     return stats.totalBuys * c.startingStack + stats.bonuses * c.bonusAmount + stats.addons * (c.addonChips || 0);
 }
 
+function calculatePrizePool(stats, config) {
+    const buyInAmount = config.buyInAmount || 400;
+    const addonPrice = config.addonAmount || 0;
+    const organizerFee = config.organizerFee || 0;
+    return Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
+}
+
+function getRunningMinutes(state, config) {
+    if (state.startedAt) {
+        const d = new Date(state.startedAt);
+        return d.getHours() * 60 + d.getMinutes();
+    }
+    const parts = (config.startTime || '19:00').split(':');
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
 // ─── Derived State ─────────────────────────────────────────
 function getCurrentLevel(startedAt, blindStructure, now) {
     const struct = blindStructure || [];
@@ -518,10 +534,7 @@ function renderPayout() {
     const list = players.list || [];
     const stats = derivePlayerStats(list);
     const buyIns = stats.buyIns;
-    const buyInAmount = config.buyInAmount || 400;
-    const addonPrice = config.addonAmount || 0;
-    const organizerFee = config.organizerFee || 0;
-    const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
+    const prizePool = calculatePrizePool(stats, config);
     const paidPlaces = getPaidPlaces();
     const dist = getPayoutDistribution(paidPlaces);
 
@@ -595,8 +608,7 @@ function setLastPlaced(tableId, seat) {
     lastPlacedTimer = setTimeout(() => { lastPlacedSeat = null; }, 4000);
 }
 
-function buildTableVisualHTML(table, opts) {
-    opts = opts || {};
+function buildTableVisualHTML(table) {
     const list = T.players.list || [];
     const positions = SEAT_POSITIONS[getShape(table)];
     const seatMap = {};
@@ -615,14 +627,8 @@ function buildTableVisualHTML(table, opts) {
     let html = '<div class="seating-table-surface ' + getShape(table) + '" style="border-color:' + table.color + ';background:' + table.color + '22">' +
         '<span class="seating-table-name" style="color:' + table.color + ';transform:' + nameTransform + '">' + table.name + '</span></div>';
 
-    // Wall indicators (clickable in admin)
-    ['top', 'bottom', 'left', 'right'].forEach(side => {
-        const active = walls.includes(side);
-        if (opts.wallToggles) {
-            html += '<div class="seating-wall seating-wall-' + side + ' wall-clickable' + (active ? ' active' : '') + '" data-table="' + table.id + '" data-wall="' + side + '"></div>';
-        } else if (active) {
-            html += '<div class="seating-wall seating-wall-' + side + '"></div>';
-        }
+    walls.forEach(side => {
+        html += '<div class="seating-wall seating-wall-' + side + '"></div>';
     });
 
     for (let s = 1; s <= getSeats(table); s++) {
@@ -720,10 +726,7 @@ function render() {
     if (allDeclared) {
         const wasShowing = winnerBanner.style.display === 'flex';
         winnerBanner.style.display = 'flex';
-        const buyInAmount = config.buyInAmount || 400;
-        const addonPrice = config.addonAmount || 0;
-        const organizerFee = config.organizerFee || 0;
-        const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
+        const prizePool = calculatePrizePool(stats, config);
         const dist = getPayoutDistribution(paidPlaces);
         const winAmounts = roundPayouts(dist, prizePool);
         const listEl = document.getElementById('winner-list');
@@ -830,21 +833,10 @@ function render() {
     updateFishVisibility();
     fitBlindsText();
 
-    // Next level preview — hidden from main display, kept in DOM for potential sidebar use
-    document.getElementById('next-level').textContent = '';
-
     // Structure table
     const tbody = document.getElementById('structure-body');
     tbody.innerHTML = '';
-    // Use actual startedAt timestamp when tournament has started, otherwise config startTime
-    let runningMinutes;
-    if (state.startedAt) {
-        const d = new Date(state.startedAt);
-        runningMinutes = d.getHours() * 60 + d.getMinutes();
-    } else {
-        const startTimeParts = (config.startTime || '19:00').split(':');
-        runningMinutes = parseInt(startTimeParts[0]) * 60 + parseInt(startTimeParts[1]);
-    }
+    let runningMinutes = getRunningMinutes(state, config);
 
     const thAnte = document.getElementById('th-ante');
     if (thAnte) thAnte.style.display = anteOn ? '' : 'none';
@@ -1181,11 +1173,8 @@ tournamentRef.on('value', (snap) => {
     if (prevPlayerList !== null) {
         const paidPlaces = getPaidPlaces();
         const dist = getPayoutDistribution(paidPlaces);
-        const buyInAmount = T.config.buyInAmount || 400;
-        const addonPrice = T.config.addonAmount || 0;
-        const organizerFee = T.config.organizerFee || 0;
         const stats = derivePlayerStats(newList);
-        const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
+        const prizePool = calculatePrizePool(stats, T.config);
         const amounts = roundPayouts(dist, prizePool);
         const activePlayers = newList.filter(p => p.active).length;
         let batchElimCount = 0;
@@ -1245,10 +1234,6 @@ tournamentRef.on('value', (snap) => {
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
     T.breakMessages = data.breakMessages || {};
-    // Migrate old single breakMessage to first break
-    if (!data.breakMessages && data.breakMessage) {
-        T.breakMessages = { 0: data.breakMessage };
-    }
     T.breakLabels = data.breakLabels || {};
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;

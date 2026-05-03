@@ -193,6 +193,22 @@ function recalcTotalChips() {
     return stats.totalBuys * c.startingStack + stats.bonuses * c.bonusAmount + stats.addons * (c.addonChips || 0);
 }
 
+function calculatePrizePool(stats, config) {
+    const buyInAmount = config.buyInAmount || 400;
+    const addonPrice = config.addonAmount || 0;
+    const organizerFee = config.organizerFee || 0;
+    return Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
+}
+
+function getRunningMinutes(state, config) {
+    if (state.startedAt) {
+        const d = new Date(state.startedAt);
+        return d.getHours() * 60 + d.getMinutes();
+    }
+    const parts = (config.startTime || '19:00').split(':');
+    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+}
+
 function getCurrentLevel(startedAt, blindStructure, now) {
     const struct = blindStructure || [];
     if (!struct.length) return { levelIndex: 0, remaining: 0 };
@@ -483,11 +499,8 @@ function render() {
     if (sumEl) sumEl.textContent = '';
 
     // Payout
-    const buyInAmount = config.buyInAmount || 400;
-    const addonPrice = config.addonAmount || 0;
+    const prizePool = calculatePrizePool(stats, config);
     const organizerFee = config.organizerFee || 0;
-    const grossPool = stats.totalBuys * buyInAmount + stats.addons * addonPrice;
-    const prizePool = Math.max(0, grossPool - organizerFee);
     document.getElementById('pool-display').textContent =
         'Prize pool: ' + prizePool.toLocaleString('cs') + ' Kč (' + paidPlaces + ' míst)' +
         (organizerFee ? ' · Poplatek: ' + organizerFee.toLocaleString('cs') + ' Kč' : '');
@@ -605,11 +618,8 @@ function renderPayoutConfig() {
     const container = document.getElementById('payout-config-rows');
     if (!container) return;
     const values = getPayoutConfigValues();
-    const buyInAmount = T.config.buyInAmount || 400;
-    const addonPrice = T.config.addonAmount || 0;
-    const organizerFee = T.config.organizerFee || 0;
     const stats = derivePlayerStats(T.players.list || []);
-    const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
+    const prizePool = calculatePrizePool(stats, T.config);
     const cfgAmounts = roundPayouts(values, prizePool);
 
     container.innerHTML = values.map((pct, i) =>
@@ -646,21 +656,17 @@ function applyPayoutChange(place, newVal) {
     }
 
     // Update in-place
-    const buyInAmount = T.config.buyInAmount || 400;
-    const addonPrice = T.config.addonAmount || 0;
-    const organizerFee = T.config.organizerFee || 0;
     const stats = derivePlayerStats(T.players.list || []);
-    const prizePool = Math.max(0, stats.totalBuys * buyInAmount + stats.addons * addonPrice - organizerFee);
-    document.querySelectorAll('.payout-config-slider').forEach(sl => {
-        sl.value = values[parseInt(sl.dataset.place)];
-    });
-    document.querySelectorAll('.payout-config-pct').forEach(el => {
-        const i = parseInt(el.dataset.place);
-        if (document.activeElement !== el) el.value = values[i];
-    });
+    const prizePool = calculatePrizePool(stats, T.config);
     const dragAmounts = roundPayouts(values, prizePool);
-    document.querySelectorAll('.payout-config-amount').forEach((el, i) => {
-        el.textContent = dragAmounts[i].toLocaleString('cs') + ' Kč';
+    const rows = document.querySelectorAll('#payout-config-rows .payout-config-row');
+    rows.forEach((row, i) => {
+        const slider = row.querySelector('.payout-config-slider');
+        const pct = row.querySelector('.payout-config-pct');
+        const amount = row.querySelector('.payout-config-amount');
+        if (slider) slider.value = values[i];
+        if (pct && document.activeElement !== pct) pct.value = values[i];
+        if (amount) amount.textContent = dragAmounts[i].toLocaleString('cs') + ' Kč';
     });
     const newTotal = values.reduce((s, v) => s + v, 0);
     const totalEl = document.getElementById('payout-config-total');
@@ -978,14 +984,7 @@ function renderBlindStructure() {
         : { levelIndex: -1, remaining: 0 };
     const lvl = derived.levelIndex;
 
-    let runningMinutes;
-    if (state.startedAt) {
-        const d = new Date(state.startedAt);
-        runningMinutes = d.getHours() * 60 + d.getMinutes();
-    } else {
-        const parts = (config.startTime || '19:00').split(':');
-        runningMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    }
+    let runningMinutes = getRunningMinutes(state, config);
 
     const tbody = document.getElementById('structure-body');
     tbody.innerHTML = '';
@@ -1034,15 +1033,7 @@ function renderBreakMessages() {
     const struct = T.blindStructure || [];
     const config = T.config;
 
-    // Calculate start times for each entry
-    let runningMinutes;
-    if (T.state.startedAt) {
-        const d = new Date(T.state.startedAt);
-        runningMinutes = d.getHours() * 60 + d.getMinutes();
-    } else {
-        const parts = (config.startTime || '19:00').split(':');
-        runningMinutes = parseInt(parts[0]) * 60 + parseInt(parts[1]);
-    }
+    let runningMinutes = getRunningMinutes(T.state, config);
 
     // Collect breaks with their info
     const breaks = [];
@@ -1175,10 +1166,6 @@ tournamentRef.on('value', (snap) => {
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
     T.breakMessages = data.breakMessages || {};
-    // Migrate old single breakMessage to first break
-    if (!data.breakMessages && data.breakMessage) {
-        T.breakMessages = { 0: data.breakMessage };
-    }
     T.breakLabels = data.breakLabels || {};
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
@@ -1847,30 +1834,19 @@ function testSound(selectId) {
     new Audio('../../assets/sfx/' + file).play().catch(() => {});
 }
 
-document.getElementById('cfg-level-sound').addEventListener('change', (e) => {
-    tournamentRef.child('levelSound').set(e.target.value);
+const SOUND_BINDINGS = [
+    { selectId: 'cfg-level-sound',        testBtnId: 'btn-test-sound',              ref: 'levelSound' },
+    { selectId: 'cfg-knockout-sound',     testBtnId: 'btn-test-knockout-sound',     ref: 'knockoutSound' },
+    { selectId: 'cfg-knockout-win-sound', testBtnId: 'btn-test-knockout-win-sound', ref: 'knockoutWinSound' },
+    { selectId: 'cfg-buy-sound',          testBtnId: 'btn-test-buy-sound',          ref: 'buySound' },
+    { selectId: 'cfg-end-sound',          testBtnId: 'btn-test-end-sound',          ref: 'endSound' }
+];
+SOUND_BINDINGS.forEach(({ selectId, testBtnId, ref }) => {
+    document.getElementById(selectId).addEventListener('change', (e) => {
+        tournamentRef.child(ref).set(e.target.value);
+    });
+    document.getElementById(testBtnId).addEventListener('click', () => testSound(selectId));
 });
-document.getElementById('btn-test-sound').addEventListener('click', () => testSound('cfg-level-sound'));
-
-document.getElementById('cfg-knockout-sound').addEventListener('change', (e) => {
-    tournamentRef.child('knockoutSound').set(e.target.value);
-});
-document.getElementById('btn-test-knockout-sound').addEventListener('click', () => testSound('cfg-knockout-sound'));
-
-document.getElementById('cfg-knockout-win-sound').addEventListener('change', (e) => {
-    tournamentRef.child('knockoutWinSound').set(e.target.value);
-});
-document.getElementById('btn-test-knockout-win-sound').addEventListener('click', () => testSound('cfg-knockout-win-sound'));
-
-document.getElementById('cfg-buy-sound').addEventListener('change', (e) => {
-    tournamentRef.child('buySound').set(e.target.value);
-});
-document.getElementById('btn-test-buy-sound').addEventListener('click', () => testSound('cfg-buy-sound'));
-
-document.getElementById('cfg-end-sound').addEventListener('change', (e) => {
-    tournamentRef.child('endSound').set(e.target.value);
-});
-document.getElementById('btn-test-end-sound').addEventListener('click', () => testSound('cfg-end-sound'));
 
 // Clear event log
 document.getElementById('btn-clear-event-log').addEventListener('click', () => {
