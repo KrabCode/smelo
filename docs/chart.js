@@ -190,7 +190,7 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         const isFocus = e.fullName === hoveredPlayer;
         const bld = isFocus ? 'font-weight:bold;' : '';
         const bg = isFocus ? 'background:rgba(255,255,255,0.06);' : '';
-        html += `<tr style="${bg}">` +
+        html += `<tr data-player="${e.fullName}" style="cursor:pointer;${bg}">` +
             `<td><span class="tt-dot" style="background:${e.color}"></span></td>` +
             `<td style="text-align:left;${bld}">${e.name}</td>` +
             `<td class="tt-pred" style="${bld}">${e.pred != null ? e.pred : '—'}</td>` +
@@ -431,7 +431,16 @@ function updateSliderInfo() {
     sliderIdx = parseInt(slider.value);
     if (!storedSessionLabels || sliderIdx < 0) return;
     document.getElementById('sessionSummary').textContent = storedSessionLabels[sliderIdx];
-    document.getElementById('sessionSliderInfo').innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
+    const infoEl = document.getElementById('sessionSliderInfo');
+    infoEl.innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
+    infoEl.querySelectorAll('tr[data-player]').forEach(tr => {
+        tr.addEventListener('click', () => {
+            selectedPlayer = selectedPlayer === tr.dataset.player ? '' : tr.dataset.player;
+            localStorage.setItem('smelo_player', selectedPlayer);
+            drawChart();
+            renderStatsTable();
+        });
+    });
 }
 
 function setChartHighlight(rowIdx) {
