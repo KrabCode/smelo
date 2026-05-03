@@ -31,7 +31,10 @@
       <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
     </div>
     <div id="graphSpinner"><div class="spinner"></div></div>
-    <div id="chartDiv" style="visibility:hidden;"></div>
+    <div id="chartContainer">
+      <div id="chartDiv" style="visibility:hidden;"></div>
+      <div id="chartVerticalLine"></div>
+    </div>
     <details id="sessionDetails" open style="display:none;">
       <summary id="sessionSummary" style="cursor:pointer; user-select:none;">…</summary>
       <div id="sessionSliderControls">

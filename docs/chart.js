@@ -422,6 +422,21 @@ function updateSliderInfo() {
     const label = storedSessionLabels[sliderIdx];
     document.getElementById('sessionSummary').textContent = label;
     document.getElementById('sessionSliderInfo').innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
+    updateVerticalLine();
+}
+
+function updateVerticalLine() {
+    if (!chart || !storedSessionLabels) return;
+    const layout = chart.getChartLayoutInterface();
+    if (!layout) return;
+    const area = layout.getChartAreaBoundingBox();
+    const n = storedSessionLabels.length;
+    const x = n > 1 ? area.left + (sliderIdx / (n - 1)) * area.width : area.left + area.width / 2;
+    const line = document.getElementById('chartVerticalLine');
+    line.style.left = Math.round(x) + 'px';
+    line.style.top = area.top + 'px';
+    line.style.height = area.height + 'px';
+    line.style.display = '';
 }
 
 document.getElementById('sliderInput').addEventListener('input', updateSliderInfo);
