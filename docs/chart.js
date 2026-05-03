@@ -213,10 +213,15 @@ function drawChart() {
         }
     }
 
+    // Render selected player last so it paints on top
+    const selectedIdx = selectedPlayer ? playerNames.indexOf(selectedPlayer) : -1;
+    const renderOrder = playerNames.map((_, i) => i);
+    if (selectedIdx >= 0) { renderOrder.splice(selectedIdx, 1); renderOrder.push(selectedIdx); }
+
     chartData = new google.visualization.DataTable();
     chartData.addColumn('string', 'Datum');
-    playerNames.forEach(name => {
-        chartData.addColumn('number', name);
+    renderOrder.forEach(ci => {
+        chartData.addColumn('number', playerNames[ci]);
         chartData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
         chartData.addColumn({ type: 'string', role: 'style' });
     });
@@ -224,7 +229,8 @@ function drawChart() {
     for (let i = 0; i < sessionLabels.length; i++) {
         const row = [sessionLabels[i]];
         let rowMax = null;
-        playerNames.forEach((name, ci) => {
+        renderOrder.forEach((ci, j) => {
+            const name = playerNames[ci];
             const v = cumulative[ci][i];
             row.push(v);
             if (v != null && (rowMax == null || Math.abs(v) > Math.abs(rowMax))) rowMax = v;
@@ -260,11 +266,12 @@ function drawChart() {
     for (let t = Math.floor(yMin / step) * step; t <= Math.ceil(yMax / step) * step; t += step) axisTicks.push(t);
 
     const series = {};
-    playerNames.forEach((name, i) => {
+    renderOrder.forEach((ci, j) => {
+        const name = playerNames[ci];
         const color = playerColors[name];
-        if (selectedPlayer && name === selectedPlayer) series[i] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
-        else if (selectedPlayer) series[i] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
-        else series[i] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+        if (selectedPlayer && name === selectedPlayer) series[j] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+        else if (selectedPlayer) series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
+        else series[j] = { color, lineWidth: 2, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
     });
     series[playerNames.length] = { targetAxisIndex: 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
     const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short', ticks: axisTicks };
