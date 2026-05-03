@@ -91,14 +91,6 @@ img { border-radius: 16px; }
     margin: 0 auto;
     user-select: none;
 }
-#chartVerticalLine {
-    display: none;
-    position: absolute;
-    width: 1px;
-    background: rgba(255, 179, 0, 0.45);
-    pointer-events: none;
-    z-index: 1;
-}
 
 #graphSpinner {
     display: flex;
@@ -164,6 +156,9 @@ img { border-radius: 16px; }
     accent-color: #ffb300;
     cursor: pointer;
     background: transparent;
+}
+#sessionPanel {
+    min-height: 230px;
 }
 #sessionCardRow {
     display: flex;

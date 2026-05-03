@@ -320,9 +320,10 @@ function drawChart() {
                 sliderIdx = sel[0].row;
                 const sliderEl = document.getElementById('sliderInput');
                 if (sliderEl) sliderEl.value = sliderIdx;
+                updateSliderInfo();
+                setChartHighlight(sliderIdx);
                 const details = document.getElementById('sessionDetails');
                 details.open = true;
-                updateSliderInfo();
                 details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         });
@@ -422,37 +423,35 @@ function initSlider() {
     if (sliderIdx < 0 || sliderIdx >= n) sliderIdx = n - 1;
     slider.value = sliderIdx;
     updateSliderInfo();
+    setChartHighlight(sliderIdx);
 }
 
 function updateSliderInfo() {
     const slider = document.getElementById('sliderInput');
     sliderIdx = parseInt(slider.value);
     if (!storedSessionLabels || sliderIdx < 0) return;
-    const label = storedSessionLabels[sliderIdx];
-    document.getElementById('sessionSummary').textContent = label;
+    document.getElementById('sessionSummary').textContent = storedSessionLabels[sliderIdx];
     document.getElementById('sessionSliderInfo').innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
-    updateVerticalLine();
 }
 
-function updateVerticalLine() {
-    if (!chart || !storedSessionLabels) return;
-    const layout = chart.getChartLayoutInterface();
-    if (!layout) return;
-    const area = layout.getChartAreaBoundingBox();
-    const n = storedSessionLabels.length;
-    const x = n > 1 ? area.left + (sliderIdx / (n - 1)) * area.width : area.left + area.width / 2;
-    const line = document.getElementById('chartVerticalLine');
-    line.style.left = Math.round(x) + 'px';
-    line.style.top = area.top + 'px';
-    line.style.height = area.height + 'px';
-    line.style.display = '';
+function setChartHighlight(rowIdx) {
+    if (!chart || !storedOriginalCells || !storedRenderOrder.length) return;
+    const selections = [];
+    storedRenderOrder.forEach((ci, j) => {
+        const cell = storedOriginalCells[rowIdx][ci];
+        if (cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0) {
+            selections.push({ row: rowIdx, column: 1 + j * 3 });
+        }
+    });
+    chart.setSelection(selections);
 }
 
 document.getElementById('sliderInput').addEventListener('input', updateSliderInfo);
+document.getElementById('sliderInput').addEventListener('change', () => setChartHighlight(sliderIdx));
 document.getElementById('sliderPrev').addEventListener('click', () => {
-    if (sliderIdx > 0) { sliderIdx--; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); }
+    if (sliderIdx > 0) { sliderIdx--; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); setChartHighlight(sliderIdx); }
 });
 document.getElementById('sliderNext').addEventListener('click', () => {
     const n = storedSessionLabels ? storedSessionLabels.length : 0;
-    if (sliderIdx < n - 1) { sliderIdx++; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); }
+    if (sliderIdx < n - 1) { sliderIdx++; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); setChartHighlight(sliderIdx); }
 });
