@@ -15,6 +15,7 @@ let chart = null, chartData = null, playerNames = [], playerColors = {}, selecte
 let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedDates = null;
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
+let storedHighlightTooltips = {}, storedRenderOrder = [];
 const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 1800000;
 
 function fetchCSV() {
@@ -213,10 +214,13 @@ function drawChart() {
         }
     }
 
+    storedHighlightTooltips = highlightTooltips;
+
     // Render selected player last so it paints on top
     const selectedIdx = selectedPlayer ? playerNames.indexOf(selectedPlayer) : -1;
     const renderOrder = playerNames.map((_, i) => i);
     if (selectedIdx >= 0) { renderOrder.splice(selectedIdx, 1); renderOrder.push(selectedIdx); }
+    storedRenderOrder = renderOrder;
 
     chartData = new google.visualization.DataTable();
     chartData.addColumn('string', 'Datum');
@@ -234,7 +238,7 @@ function drawChart() {
             const v = cumulative[ci][i];
             row.push(v);
             if (v != null && (rowMax == null || Math.abs(v) > Math.abs(rowMax))) rowMax = v;
-            row.push(buildTooltip(i, highlightTooltips, name));
+            row.push(null);
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
             if (selectedPlayer && name === selectedPlayer) {
@@ -280,7 +284,7 @@ function drawChart() {
         hAxis: { textStyle: { fontSize: 10, color: '#aaa' }, slantedText: true, slantedTextAngle: 45, gridlines: { color: '#333' }, baselineColor: '#444' },
         vAxes: { 0: vAxisShared, 1: { ...vAxisShared, gridlines: { color: 'transparent' } } },
         chartArea: { left: 60, top: 40, right: 60, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
-        tooltip: { isHtml: true, trigger: 'both' },
+        tooltip: { trigger: 'none' },
         explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
     };
@@ -289,6 +293,17 @@ function drawChart() {
         google.visualization.events.addListener(chart, 'select', function() {
             var sel = chart.getSelection();
             if (sel.length) chart.setSelection(sel);
+        });
+        const fixedTt = document.getElementById('chartTooltipFixed');
+        google.visualization.events.addListener(chart, 'onmouseover', function(e) {
+            if (e.row == null) return;
+            const playerIdx = (e.column != null && e.column > 0) ? Math.floor((e.column - 1) / 3) : -1;
+            const hoveredPlayer = playerIdx >= 0 ? playerNames[storedRenderOrder[playerIdx]] : selectedPlayer;
+            fixedTt.innerHTML = buildTooltip(e.row, storedHighlightTooltips, hoveredPlayer);
+            fixedTt.style.display = '';
+        });
+        google.visualization.events.addListener(chart, 'onmouseout', function() {
+            fixedTt.style.display = 'none';
         });
     }
     chart.draw(chartData, options);

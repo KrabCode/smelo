@@ -31,7 +31,10 @@
       <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
     </div>
     <div id="graphSpinner"><div class="spinner"></div></div>
-    <div id="chartDiv" style="visibility:hidden;"></div>
+    <div style="position:relative;">
+      <div id="chartDiv" style="visibility:hidden;"></div>
+      <div id="chartTooltipFixed"></div>
+    </div>
     <div id="statsTableDiv"></div>
   </div>
   <div class="tab-panel" data-tab="pravidla">
