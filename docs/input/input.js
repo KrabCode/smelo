@@ -14,8 +14,11 @@ const playerChips = document.getElementById('playerChips');
 const playerSearch = document.getElementById('playerSearch');
 const searchSuggestion = document.getElementById('searchSuggestion');
 const sumDisplay = document.getElementById('sumDisplay');
+const playerListEl = document.getElementById('playerList');
+const playerListCount = document.getElementById('playerListCount');
 
 let knownPlayers = [];
+let playerTotals = {};
 
 // --- Settings persistence ---
 function loadSettings() {
@@ -78,16 +81,30 @@ function clearDraft() {
     try { localStorage.removeItem(DRAFT_KEY); } catch(e) {}
 }
 
-// --- Fetch player names from the published CSV ---
+// --- Fetch player names and lifetime totals from the published CSV ---
 function fetchPlayers() {
     return fetch(SHEET_CSV_URL)
         .then(r => r.text())
         .then(csv => {
-            const headers = csv.split('\n')[0].split(',');
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',');
             // Skip col 0 (index) and col 1 (date), rest are player names
             knownPlayers = headers.slice(2).map(h => h.trim()).filter(Boolean);
             knownPlayers.sort((a, b) => a.localeCompare(b, 'cs'));
+
+            playerTotals = {};
+            knownPlayers.forEach(n => playerTotals[n] = 0);
+            lines.slice(1).forEach(line => {
+                if (!line.trim()) return;
+                const cols = line.split(',');
+                knownPlayers.forEach((name, i) => {
+                    const val = parseFloat(cols[i + 2]);
+                    if (!isNaN(val)) playerTotals[name] += val;
+                });
+            });
+
             populateChips();
+            populatePlayerList();
         })
         .catch(() => {});
 }
@@ -106,6 +123,28 @@ function populateChips() {
             filterChips();
         });
         playerChips.appendChild(chip);
+    });
+}
+
+function populatePlayerList() {
+    playerListEl.innerHTML = '';
+    const sorted = [...knownPlayers].sort((a, b) => (playerTotals[b] || 0) - (playerTotals[a] || 0));
+    playerListCount.textContent = '(' + sorted.length + ')';
+    sorted.forEach(name => {
+        const total = playerTotals[name] || 0;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'player-list-item';
+        btn.dataset.name = name;
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = name;
+        const totalSpan = document.createElement('span');
+        totalSpan.className = 'player-list-total ' + (total > 0 ? 'pos' : total < 0 ? 'neg' : 'zero');
+        totalSpan.textContent = total > 0 ? '+' + total : String(total);
+        btn.appendChild(nameSpan);
+        btn.appendChild(totalSpan);
+        btn.addEventListener('click', () => { addEntry(name); updateChipStates(); });
+        playerListEl.appendChild(btn);
     });
 }
 
@@ -140,6 +179,9 @@ function updateChipStates() {
     });
     playerChips.querySelectorAll('.player-chip').forEach(chip => {
         chip.classList.toggle('used', usedNames.has(chip.textContent));
+    });
+    playerListEl.querySelectorAll('.player-list-item').forEach(item => {
+        item.classList.toggle('used', usedNames.has(item.dataset.name));
     });
 }
 
