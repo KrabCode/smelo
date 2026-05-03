@@ -168,7 +168,7 @@ function filterChips() {
 
 playerSearch.addEventListener('input', filterChips);
 playerSearch.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
+    if (e.key !== 'Enter' && !(e.key === 'Tab' && ghostMatch)) return;
     e.preventDefault();
     const chips = Array.from(playerChips.querySelectorAll('.player-chip'));
     const firstChip = chips.find(c => c.style.display !== 'none');
