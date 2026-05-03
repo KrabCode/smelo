@@ -89,17 +89,22 @@ function fetchPlayers() {
         .then(csv => {
             const lines = csv.split('\n');
             const headers = lines[0].split(',');
-            // Skip col 0 (index) and col 1 (date), rest are player names
-            knownPlayers = headers.slice(2).map(h => h.trim()).filter(Boolean);
-            knownPlayers.sort((a, b) => a.localeCompare(b, 'cs'));
+            // Build name→column map from raw headers (skip col 0 index, col 1 date)
+            const colIndex = {};
+            headers.slice(2).forEach((h, i) => {
+                const name = h.trim();
+                if (name) colIndex[name] = i + 2;
+            });
+
+            knownPlayers = Object.keys(colIndex).sort((a, b) => a.localeCompare(b, 'cs'));
 
             playerTotals = {};
             knownPlayers.forEach(n => playerTotals[n] = 0);
             lines.slice(1).forEach(line => {
                 if (!line.trim()) return;
                 const cols = line.split(',');
-                knownPlayers.forEach((name, i) => {
-                    const val = parseFloat(cols[i + 2]);
+                knownPlayers.forEach(name => {
+                    const val = parseFloat(cols[colIndex[name]]);
                     if (!isNaN(val)) playerTotals[name] += val;
                 });
             });
