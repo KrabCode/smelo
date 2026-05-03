@@ -245,10 +245,12 @@ a.card { color: var(--text); text-decoration: none; }
 .player-chip.used { opacity: 0.35; pointer-events: none; }
 .sum-display { text-align: right; font-size: 0.9em; color: #888; min-height: 1.4em; margin-bottom: 4px; }
 .sum-display.sum-nonzero { color: #f87171; }
-.entry { display: flex; gap: 8px; align-items: end; margin-bottom: 8px; }
-.entry .name-col { flex: 1; }
-.entry .amount-col { flex: 0 0 110px; }
-.entry .remove-col { flex: 0 0 36px; }
+.entry { display: flex; gap: 6px; align-items: end; margin-bottom: 8px; }
+.entry .name-col { flex: 2; min-width: 0; }
+.entry .invest-col, .entry .withdraw-col { flex: 1; min-width: 0; }
+.entry .result-col { flex: 0 0 56px; }
+.entry .remove-col { flex: 0 0 28px; }
+.entry-result { display: block; background: #1a1a1a; color: #777; border: 1px solid #2e2e2e; padding: 6px 4px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: inherit; min-height: 33px; text-align: center; }
 .input-panel .btn {
     padding: 8px 14px; border-radius: 6px; background: #333;
     color: #eee; border: 1px solid #555; cursor: pointer; font-size: 0.9em;

@@ -52,7 +52,8 @@ function saveDraft() {
     try {
         const entries = Array.from(entriesContainer.querySelectorAll('.entry')).map(row => ({
             name: row.querySelector('.entry-name').value,
-            amount: row.querySelector('.entry-amount').value
+            invest: row.querySelector('.entry-invest').value,
+            withdraw: row.querySelector('.entry-withdraw').value
         }));
         localStorage.setItem(DRAFT_KEY, JSON.stringify({ date: sessionDate.value, entries }));
     } catch(e) {}
@@ -65,7 +66,7 @@ function loadDraft() {
         if (d.date) sessionDate.value = d.date;
         if (d.entries && d.entries.length > 0) {
             entriesContainer.innerHTML = '';
-            d.entries.forEach(({ name, amount }) => createEntry(name, amount || ''));
+            d.entries.forEach(({ name, invest, withdraw }) => createEntry(name, invest || '', withdraw || ''));
             return true;
         }
     } catch(e) {}
@@ -139,12 +140,33 @@ function updateChipStates() {
     });
 }
 
+// Sums a "x+y+z" expression; non-numeric parts are treated as 0.
+function evalExpr(str) {
+    if (!str || !str.trim()) return 0;
+    return str.split('+').reduce((sum, part) => {
+        const n = parseFloat(part.trim());
+        return sum + (isNaN(n) ? 0 : n);
+    }, 0);
+}
+
+function updateRowResult(div) {
+    const investStr = div.querySelector('.entry-invest').value.trim();
+    const withdrawStr = div.querySelector('.entry-withdraw').value.trim();
+    const span = div.querySelector('.entry-result');
+    span.textContent = investStr ? evalExpr(withdrawStr) - evalExpr(investStr) : '';
+}
+
 function updateSum() {
     let sum = 0;
     let count = 0;
-    entriesContainer.querySelectorAll('.entry-amount').forEach(input => {
-        const v = Number(input.value);
-        if (input.value !== '' && !isNaN(v)) { sum += v; count++; }
+    entriesContainer.querySelectorAll('.entry').forEach(div => {
+        updateRowResult(div);
+        const investStr = div.querySelector('.entry-invest').value.trim();
+        const withdrawStr = div.querySelector('.entry-withdraw').value.trim();
+        if (investStr || withdrawStr) {
+            sum += evalExpr(withdrawStr) - evalExpr(investStr);
+            count++;
+        }
     });
     if (count === 0) {
         sumDisplay.textContent = '';
@@ -157,7 +179,7 @@ function updateSum() {
 }
 
 // --- Entry rows ---
-function createEntry(name, amount) {
+function createEntry(name, invest, withdraw) {
     const div = document.createElement('div');
     div.className = 'entry';
     div.innerHTML =
@@ -165,13 +187,22 @@ function createEntry(name, amount) {
             '<label>Hráč</label>' +
             '<input type="text" class="entry-name" placeholder="Jméno hráče" value="' + (name || '') + '">' +
         '</div>' +
-        '<div class="amount-col">' +
+        '<div class="invest-col">' +
+            '<label>Vklad</label>' +
+            '<input type="text" class="entry-invest" placeholder="0" value="' + (invest != null ? invest : '') + '">' +
+        '</div>' +
+        '<div class="withdraw-col">' +
+            '<label>Výběr</label>' +
+            '<input type="text" class="entry-withdraw" placeholder="0" value="' + (withdraw != null ? withdraw : '') + '">' +
+        '</div>' +
+        '<div class="result-col">' +
             '<label>Výsledek</label>' +
-            '<input type="number" class="entry-amount" step="1" placeholder="0" value="' + (amount != null ? amount : '') + '">' +
+            '<span class="entry-result"></span>' +
         '</div>' +
         '<div class="remove-col">' +
             '<button type="button" class="btn-remove" title="Odebrat">&times;</button>' +
         '</div>';
+
     div.querySelector('.btn-remove').addEventListener('click', () => {
         div.remove();
         updateChipStates();
@@ -180,9 +211,19 @@ function createEntry(name, amount) {
         if (entriesContainer.children.length === 0) addEntry();
     });
     div.querySelector('.entry-name').addEventListener('input', () => { updateChipStates(); saveDraft(); });
-    const amountInput = div.querySelector('.entry-amount');
-    amountInput.addEventListener('keydown', (e) => {
-        if (e.key === '+') { e.preventDefault(); return; }
+
+    const investInput = div.querySelector('.entry-invest');
+    const withdrawInput = div.querySelector('.entry-withdraw');
+
+    investInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            withdrawInput.focus();
+        }
+    });
+    investInput.addEventListener('input', () => { updateRowResult(div); updateSum(); saveDraft(); });
+
+    withdrawInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             const entries = Array.from(entriesContainer.children);
@@ -194,15 +235,17 @@ function createEntry(name, amount) {
             }
         }
     });
-    amountInput.addEventListener('input', () => { updateSum(); saveDraft(); });
+    withdrawInput.addEventListener('input', () => { updateRowResult(div); updateSum(); saveDraft(); });
+
+    updateRowResult(div);
     entriesContainer.appendChild(div);
     return div;
 }
 
-function addEntry(name, amount) {
-    const entry = createEntry(name, amount);
+function addEntry(name, invest, withdraw) {
+    const entry = createEntry(name, invest, withdraw);
     if (name) {
-        entry.querySelector('.entry-amount').focus();
+        entry.querySelector('.entry-invest').focus();
     } else {
         entry.querySelector('.entry-name').focus();
     }
@@ -218,9 +261,10 @@ form.addEventListener('submit', async (e) => {
     const entries = [];
     entriesContainer.querySelectorAll('.entry').forEach(row => {
         const name = row.querySelector('.entry-name').value.trim();
-        const amountStr = row.querySelector('.entry-amount').value;
-        if (name && amountStr !== '') {
-            entries.push({ name, amount: Number(amountStr) });
+        const investStr = row.querySelector('.entry-invest').value.trim();
+        const withdrawStr = row.querySelector('.entry-withdraw').value.trim();
+        if (name && (investStr || withdrawStr)) {
+            entries.push({ name, amount: evalExpr(withdrawStr) - evalExpr(investStr) });
         }
     });
 
