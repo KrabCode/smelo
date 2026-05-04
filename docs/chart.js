@@ -179,7 +179,6 @@ document.getElementById('btnRefreshChart').addEventListener('click', () => {
 });
 
 function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
-    const date = storedSessionLabels[rowIdx];
     const entries = playerNames.map((name, ci) => {
         const cell = storedOriginalCells[rowIdx][ci];
         const delta = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
@@ -200,7 +199,7 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         `<td>-99999</td>` +
         `</tr>`;
     let html = `<div class="tt"><table class="tt-table">`;
-    html += `<thead><tr><th colspan="2">${date}</th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
+    html += `<thead><tr><th></th><th></th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
     entries.forEach(e => {
         const isFocus = e.fullName === hoveredPlayer;
         const bld = isFocus ? 'font-weight:bold;' : '';
@@ -448,6 +447,7 @@ function updateSliderInfo() {
     sliderIdx = parseInt(slider.value);
     if (!storedSessionLabels || sliderIdx < 0) return;
     document.getElementById('sessionSummary').textContent = 'Detail';
+    document.getElementById('sessionCardTitle').textContent = storedSessionLabels[sliderIdx];
     const infoEl = document.getElementById('sessionSliderInfo');
     infoEl.innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
     infoEl.querySelectorAll('tr[data-player]').forEach(tr => {
