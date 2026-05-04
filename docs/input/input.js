@@ -232,7 +232,7 @@ function createEntry(name, invest, withdraw) {
             '<span class="entry-result"></span>' +
         '</div>' +
         '<div class="remove-col">' +
-            '<button type="button" class="btn-remove" title="Odebrat">&times;</button>' +
+            '<button type="button" class="btn-remove" title="Odebrat" tabindex="-1">&times;</button>' +
         '</div>';
 
     div.querySelector('.btn-remove').addEventListener('click', () => {
