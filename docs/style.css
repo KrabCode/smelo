@@ -148,7 +148,8 @@ img { border-radius: 16px; }
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 6px;
+    margin: 0 auto 6px;
+    width: 80%;
 }
 #sliderInput {
     min-width: 0;
