@@ -191,7 +191,7 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     const sign = v => v > 0 ? '+' + v : String(v);
     const deltaClass = v => v > 0 ? 'tt-delta-pos' : v < 0 ? 'tt-delta-neg' : 'tt-delta-zero';
 
-    const sizer = `<tr aria-hidden="true" style="visibility:hidden;">` +
+    const sizer = `<tr aria-hidden="true" style="visibility:collapse;">` +
         `<td></td>` +
         `<td style="white-space:nowrap;">${maxPlayerDisplayName}</td>` +
         `<td>-99999</td>` +
@@ -448,6 +448,9 @@ function updateSliderInfo() {
     if (!storedSessionLabels || sliderIdx < 0) return;
     document.getElementById('sessionSummary').textContent = 'Detail';
     document.getElementById('sessionCardTitle').textContent = storedSessionLabels[sliderIdx];
+    const n = storedSessionLabels.length;
+    document.getElementById('sliderPrev').style.visibility = sliderIdx <= 0 ? 'hidden' : '';
+    document.getElementById('sliderNext').style.visibility = sliderIdx >= n - 1 ? 'hidden' : '';
     const infoEl = document.getElementById('sessionSliderInfo');
     infoEl.innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
     infoEl.querySelectorAll('tr[data-player]').forEach(tr => {
