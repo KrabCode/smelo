@@ -215,11 +215,13 @@ img { border-radius: 16px; }
 }
 #statsTableDiv table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-size: 0.95em;
     color: #ccc;
     margin: 0;
 }
+#statsTableDiv th, #statsTableDiv td { overflow-wrap: anywhere; }
 #statsTableDiv th {
     color: #888;
     font-weight: normal;
