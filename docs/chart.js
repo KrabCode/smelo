@@ -394,7 +394,7 @@ function renderStatsTable() {
 
     const arrow = col => statsSortCol === col ? (statsSortAsc ? ' ▲' : ' ▼') : '';
     const c = v => v > 0 ? 'val-pos' : v < 0 ? 'val-neg' : '';
-    const f = v => v > 0 ? `+${v}` : `${v}`;
+    const f = v => `${v}`;
     let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th></tr>`;
     sorted.forEach(s => {
         const sel = selectedPlayer === s.fullName ? ' class="selected"' : '';
