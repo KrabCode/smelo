@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POKER TURNAJ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&family=Cormorant+Garamond:ital,wght@0,300..700;1,300..700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep:   #2e2e30;
+    --bg-mid:    #3a3a3c;
+    --bg-edge:   #232325;
+    --gold:      #e0b870;
+    --gold-pale: #fde7b8;
+    --cream:     #efe3cb;
+    --oxblood:   #8a2426;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    background-color: #000;
+    background-image: url("bg-collapsar.jpg");
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    font-family: 'DM Mono', ui-monospace, monospace;
+    color: var(--cream);
+    position: relative;
+    cursor: default;
+  }
+
+  /* Subtle fine grain on top */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 50;
+    opacity: 0.08; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+
+  #three-canvas {
+    position: fixed; inset: 0; z-index: 2;
+    display: block;
+  }
+
+  .corner-mark {
+    position: fixed; z-index: 6;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold); opacity: 0.85;
+    pointer-events: none;
+  }
+  .corner-mark.tl { top: 3rem; left: 3rem; }
+  .corner-mark.tr { top: 3rem; right: 3rem; text-align: right; }
+  .corner-mark.bl { bottom: 3rem; left: 3rem; }
+  .corner-mark.br { bottom: 3rem; right: 3rem; text-align: right; }
+
+  .corner-mark .dot {
+    display: inline-block;
+    width: 4px; height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+    vertical-align: middle;
+    margin: 0 0.6em;
+    box-shadow: 0 0 8px var(--gold);
+  }
+
+  .stage {
+    position: relative; z-index: 10;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 4rem; pointer-events: none;
+  }
+
+  .preamble {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.55em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 2.5rem;
+    display: flex; align-items: center; gap: 1.2rem;
+  }
+  .preamble .rule {
+    width: 60px; height: 1px;
+    background: var(--gold); opacity: 0.6;
+  }
+
+  .title-card {
+    position: relative;
+    background: rgba(12, 12, 14, 0.62);
+    border: 2px solid rgba(224, 184, 112, 0.85);
+    padding: 2.4rem 4rem;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .title-card::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid rgba(224, 184, 112, 0.28);
+    pointer-events: none;
+  }
+
+  .title {
+    line-height: 0.88;
+    text-align: center;
+    color: var(--cream);
+    position: relative;
+  }
+  .title .line { display: block; position: relative; }
+
+  .title .poker {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(5rem, 16vw, 13.5rem);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    color: var(--cream);
+  }
+
+  .title .turnaj {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4.5rem, 15vw, 13rem);
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    color: var(--gold);
+    margin-top: 0.02em;
+  }
+
+  .crest {
+    font-family: serif;
+    font-size: 1.1rem; letter-spacing: 1.4em;
+    color: var(--gold);
+    margin-bottom: 1.4rem;
+    text-indent: 1.4em;
+  }
+  .crest .red { color: var(--oxblood); }
+
+  .footer {
+    margin-top: 3rem;
+    display: flex; align-items: center; gap: 2rem;
+  }
+  .footer .date {
+    font-family: 'Fraunces', serif;
+    font-style: italic; font-weight: 300;
+    font-size: 1.1rem; letter-spacing: 0.06em;
+    color: var(--cream);
+  }
+  .footer .divider {
+    width: 1px; height: 24px;
+    background: var(--gold); opacity: 0.5;
+  }
+  .footer .meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; letter-spacing: 0.35em;
+    text-transform: uppercase; color: var(--gold); opacity: 0.85;
+  }
+
+  .buyin {
+    position: fixed;
+    bottom: 5rem; left: 50%;
+    transform: translateX(-50%);
+    z-index: 11;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem; letter-spacing: 0.4em;
+    text-transform: uppercase; color: var(--gold);
+    text-align: center;
+  }
+  .buyin .price {
+    display: block;
+    font-family: 'Fraunces', serif;
+    font-style: italic; font-weight: 300;
+    font-size: 1.6rem; letter-spacing: 0.02em;
+    color: var(--cream); margin-top: 0.4rem;
+    text-transform: none;
+  }
+
+  /* Record button (lives inside the lighting panel) */
+  .rec-btn {
+    grid-column: 1 / -1;
+    background: rgba(6, 22, 19, 0.65);
+    border: 1px solid rgba(224, 184, 112, 0.45);
+    color: var(--gold-pale);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    padding: 0.7rem 1.4rem 0.65rem;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+  .reset-btn {
+    grid-column: 1 / -1;
+    background: transparent;
+    border: 1px solid rgba(224, 184, 112, 0.25);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .reset-btn:hover {
+    background: rgba(224, 184, 112, 0.08);
+    color: var(--cream);
+    border-color: rgba(224, 184, 112, 0.55);
+  }
+  .rec-btn::before {
+    content: '';
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--oxblood);
+    box-shadow: 0 0 8px rgba(180, 50, 55, 0.8);
+    margin-right: 0.8em;
+    vertical-align: middle;
+    transform: translateY(-1px);
+  }
+  .rec-btn:hover {
+    background: rgba(224, 184, 112, 0.12);
+    border-color: var(--gold);
+    color: var(--cream);
+    box-shadow: 0 0 30px rgba(224, 184, 112, 0.25);
+  }
+  .rec-btn[disabled] {
+    opacity: 0.6;
+    cursor: progress;
+  }
+  .rec-btn.recording::before {
+    animation: blink 0.9s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.2; } }
+  .rec-status {
+    grid-column: 1 / -1;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    min-height: 1em;
+    opacity: 0.8;
+    text-align: center;
+  }
+
+  .panel-sep {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: rgba(224, 184, 112, 0.2);
+    margin: 0.25rem 0;
+  }
+
+  /* Lighting controls — bottom-left dev panel */
+  .lighting-panel {
+    position: fixed;
+    bottom: 1.5rem; left: 1.5rem;
+    z-index: 28;
+    background: rgba(6, 22, 19, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(224, 184, 112, 0.25);
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: 5.5em 180px 3.5em;
+    gap: 0.55rem 0.9rem;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    pointer-events: auto;
+  }
+  .lighting-panel input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    background: transparent;
+    width: 180px;
+    height: 14px;
+    cursor: pointer;
+    margin: 0;
+  }
+  .lighting-panel input[type="range"]::-webkit-slider-runnable-track {
+    height: 1px; background: rgba(224, 184, 112, 0.45);
+  }
+  .lighting-panel input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px; height: 10px;
+    background: var(--gold-pale);
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    margin-top: -4.5px;
+    cursor: pointer;
+  }
+  .lighting-panel input[type="range"]::-moz-range-track {
+    height: 1px; background: rgba(224, 184, 112, 0.45);
+  }
+  .lighting-panel input[type="range"]::-moz-range-thumb {
+    width: 10px; height: 10px;
+    background: var(--gold-pale);
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+  .lighting-panel .val {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--cream);
+    letter-spacing: 0;
+    text-transform: none;
+    text-align: right;
+  }
+
+  /* Frozen state for recording — hide UI overlays from frames */
+  body.recording .recorder { display: none !important; }
+  body.recording .lighting-panel { display: none !important; }
+
+  @media (max-width: 720px) {
+    .corner-mark { font-size: 0.55rem; letter-spacing: 0.25em; }
+    .corner-mark.tl { top: 1.5rem; left: 1.5rem; }
+    .corner-mark.tr { top: 1.5rem; right: 1.5rem; }
+    .corner-mark.bl { bottom: 1.5rem; left: 1.5rem; }
+    .corner-mark.br { bottom: 1.5rem; right: 1.5rem; }
+    .frame { inset: 1rem; }
+    .footer { flex-direction: column; gap: 0.8rem; }
+    .footer .divider { width: 24px; height: 1px; }
+    .recorder { top: 1rem; }
+  }
+</style>
+</head>
+<body>
+  <canvas id="three-canvas"></canvas>
+
+  <div class="lighting-panel" id="lighting-panel">
+    <label>Period</label>
+    <input type="range" id="sl-period" min="1" max="60" step="1" value="30">
+    <span class="val" id="vl-period">30</span>
+
+    <label>Fall Speed</label>
+    <input type="range" id="sl-speed" min="0" max="40" step="0.1" value="1.0">
+    <span class="val" id="vl-speed">1.0</span>
+
+    <label>Layers</label>
+    <input type="range" id="sl-layers" min="1" max="8" step="1" value="4">
+    <span class="val" id="vl-layers">4</span>
+
+    <label>Scale</label>
+    <input type="range" id="sl-scale" min="0.05" max="3.0" step="0.01" value="0.15">
+    <span class="val" id="vl-scale">0.15</span>
+
+    <label>Density</label>
+    <input type="range" id="sl-density" min="0.05" max="3.0" step="0.01" value="3.0">
+    <span class="val" id="vl-density">3.00</span>
+
+    <div class="panel-sep"></div>
+
+    <label>Exposure</label>
+    <input type="range" id="sl-exposure" min="0" max="3" step="0.01" value="1.12">
+    <span class="val" id="vl-exposure">1.12</span>
+
+    <label>Env</label>
+    <input type="range" id="sl-env" min="0" max="3" step="0.01" value="1.50">
+    <span class="val" id="vl-env">1.50</span>
+
+    <label>Ambient</label>
+    <input type="range" id="sl-ambient" min="0" max="3" step="0.01" value="0">
+    <span class="val" id="vl-ambient">0.00</span>
+
+    <label>Key</label>
+    <input type="range" id="sl-key" min="0" max="5" step="0.01" value="0">
+    <span class="val" id="vl-key">0.00</span>
+
+    <label>Rim</label>
+    <input type="range" id="sl-rim" min="0" max="3" step="0.01" value="3">
+    <span class="val" id="vl-rim">3.00</span>
+
+    <div class="panel-sep"></div>
+
+    <button id="rec-btn" type="button" class="rec-btn">REC</button>
+    <button id="reset-btn" type="button" class="reset-btn">Reset&nbsp;Defaults</button>
+    <div id="rec-status" class="rec-status"></div>
+  </div>
+
+  <main class="stage">
+    <div class="title-card">
+      <h1 class="title">
+        <span class="line poker">POKER</span>
+        <span class="line turnaj">TURNAJ</span>
+      </h1>
+    </div>
+  </main>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
+
+// ---------- Config ----------
+let   PERIOD = 6;     // seconds — the exact loop length (slider-controlled)
+const FPS    = 60;    // record frame rate
+
+// ---------- Renderer ----------
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  alpha: true,
+  premultipliedAlpha: false,
+  preserveDrawingBuffer: true
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000, 0);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.85;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
+camera.position.set(0, 0, 50);
+camera.lookAt(0, 0, 0);
+
+function getViewSize(z = 0) {
+  const dist = camera.position.z - z;
+  const vH = 2 * Math.tan((camera.fov * Math.PI / 180) / 2) * dist;
+  const vW = vH * camera.aspect;
+  return { vW, vH };
+}
+
+// ---------- Environment (PBR reflections) ----------
+const pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+const envScene = new RoomEnvironment();
+const envMap = pmrem.fromScene(envScene, 0.04).texture;
+scene.environment = envMap;
+
+// ---------- Direct lights for glints ----------
+const keyLight = new THREE.DirectionalLight(0xfff0c4, 0.8);
+keyLight.position.set(-6, 9, 7);
+scene.add(keyLight);
+
+const rimLight = new THREE.DirectionalLight(0xa8c8ff, 0.15);
+rimLight.position.set(7, -3, 4);
+scene.add(rimLight);
+
+const ambient = new THREE.AmbientLight(0x6a7270, 0.9);
+scene.add(ambient);
+
+// ---------- Coin model (GLB) ----------
+const gltfLoader = new GLTFLoader();
+const gltf = await gltfLoader.loadAsync('low-poly_gold_coin.glb');
+
+gltf.scene.updateMatrixWorld(true);
+
+let coinSrc = null;
+gltf.scene.traverse((o) => { if (o.isMesh && !coinSrc) coinSrc = o; });
+if (!coinSrc) throw new Error('No mesh in roman_coin.glb');
+
+// Clone + bake the source mesh's world transform into the geometry
+const coinGeo = coinSrc.geometry.clone();
+coinGeo.applyMatrix4(coinSrc.matrixWorld);
+
+// Orient: the thinnest axis becomes Z so the coin's face points toward the camera
+coinGeo.computeBoundingBox();
+{
+  const s = new THREE.Vector3().subVectors(coinGeo.boundingBox.max, coinGeo.boundingBox.min);
+  const minDim = Math.min(s.x, s.y, s.z);
+  if      (s.x === minDim) coinGeo.rotateY(Math.PI / 2);
+  else if (s.y === minDim) coinGeo.rotateX(Math.PI / 2);
+}
+
+// Center + normalize so bounding sphere radius = 1 (matches per-instance r scale)
+coinGeo.computeBoundingSphere();
+const c0 = coinGeo.boundingSphere.center.clone();
+const r0 = coinGeo.boundingSphere.radius;
+coinGeo.translate(-c0.x, -c0.y, -c0.z);
+coinGeo.scale(1 / r0, 1 / r0, 1 / r0);
+
+// Ensure aoMap UV set exists (GLB usually sets this up; this is a safety net)
+if (!coinGeo.attributes.uv1 && coinGeo.attributes.uv) {
+  coinGeo.setAttribute('uv1', new THREE.BufferAttribute(coinGeo.attributes.uv.array, 2));
+}
+
+const coinMat = coinSrc.material.clone();
+
+// Inject per-instance alpha into the material (for fade-in/out at loop edges)
+function injectInstanceAlpha(mat) {
+  mat.transparent = true;
+  mat.onBeforeCompile = (shader) => {
+    shader.vertexShader =
+      `attribute float aAlpha;\nvarying float vAlpha;\n` +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>\nvAlpha = aAlpha;`
+      );
+    shader.fragmentShader =
+      `varying float vAlpha;\n` +
+      shader.fragmentShader.replace(
+        '#include <opaque_fragment>',
+        `#include <opaque_fragment>\ngl_FragColor.a *= vAlpha;`
+      );
+  };
+}
+injectInstanceAlpha(coinMat);
+
+// ---------- Scene params (live-controlled) ----------
+const params = {
+  vWorld:     16,    // world-space fall velocity (units/sec)
+  layerCount: 4,     // distinct depth layers
+  coinScale:  1.0,
+  density:    1.0    // multiplier on viewport-derived count
+};
+
+const COUNT_BASE = () =>
+  Math.min(160, Math.max(40, Math.round((window.innerWidth * window.innerHeight) / 16000)));
+const COUNT_TARGET = () => Math.max(4, Math.round(COUNT_BASE() * params.density));
+
+let COUNT = COUNT_TARGET();
+
+let mesh = new THREE.InstancedMesh(coinGeo, coinMat, COUNT);
+mesh.frustumCulled = false;
+scene.add(mesh);
+
+let alphaAttr = new THREE.InstancedBufferAttribute(new Float32Array(COUNT), 1);
+alphaAttr.setUsage(THREE.DynamicDrawUsage);
+coinGeo.setAttribute('aAlpha', alphaAttr);
+
+let currentLayers = [];
+
+function rebuildMesh() {
+  if (mesh) { scene.remove(mesh); mesh.dispose(); }
+  COUNT = COUNT_TARGET();
+  mesh = new THREE.InstancedMesh(coinGeo, coinMat, COUNT);
+  mesh.frustumCulled = false;
+  scene.add(mesh);
+  coinGeo.deleteAttribute('aAlpha');
+  alphaAttr = new THREE.InstancedBufferAttribute(new Float32Array(COUNT), 1);
+  alphaAttr.setUsage(THREE.DynamicDrawUsage);
+  coinGeo.setAttribute('aAlpha', alphaAttr);
+  state = makeState(COUNT);
+  rebuildLayers();
+}
+
+// ---------- Per-instance state (pure function of time) ----------
+function makeState(n) {
+  return {
+    baseX:       new Float32Array(n),
+    z:           new Float32Array(n),
+    r:           new Float32Array(n),
+    baseA:       new Float32Array(n),
+    topY:        new Float32Array(n),  // per-coin (depends on z)
+    span:        new Float32Array(n),
+    vPhase:      new Float32Array(n),
+    spinKX:      new Float32Array(n),
+    spinPhaseX:  new Float32Array(n),
+    spinKY:      new Float32Array(n),
+    spinPhaseY:  new Float32Array(n),
+    spinKZ:      new Float32Array(n),
+    spinPhaseZ:  new Float32Array(n),
+    tiltX:       new Float32Array(n),
+    tiltZ:       new Float32Array(n)
+  };
+}
+let state = makeState(COUNT);
+
+// Layers: each k value gives one cycle (top->bottom traversal) per PERIOD/k.
+// Same world fall speed → closer coins (smaller distance) move faster on screen → parallax.
+function computeLayers() {
+  const halfFov = (camera.fov * Math.PI / 180) * 0.5;
+  const tanHalf = Math.tan(halfFov);
+  const layers  = [];
+  const margin  = params.coinScale + 0.6;
+
+  for (let k = 1; k <= params.layerCount; k++) {
+    const span = (params.vWorld * PERIOD) / k;
+    const vH   = span - margin * 2;
+    if (vH < 2) continue;                              // span too small to fit a coin
+    const distance = vH / (2 * tanHalf);
+    const z = camera.position.z - distance;
+    if (distance < 6 || distance > 180) continue;      // out of useful range
+    const topY = vH * 0.5 + margin;
+    layers.push({ z, span, topY, vH });
+  }
+  if (layers.length === 0) layers.push({ z: 0, span: 30, topY: 16, vH: 27 });
+  return layers;
+}
+
+function initAll() {
+  // Per-layer placed coins, used for non-overlap checks.
+  // Same-layer coins fall in lockstep, so vertical separation is a fixed
+  // function of |Δ vPhase| (with wrap-around) and the layer's span.
+  const placed = currentLayers.map(() => []);
+  const minSep = 2.0 * params.coinScale;          // ≥ one coin diameter
+  const minSepSq = minSep * minSep;
+  const MAX_TRIES = 100;
+
+  for (let i = 0; i < COUNT; i++) {
+    const layerIdx = i % currentLayers.length;
+    const layer = currentLayers[layerIdx];
+    const halfVW = layer.vH * camera.aspect * 0.525;
+    const peers  = placed[layerIdx];
+
+    let baseX = 0, vPhase = 0, ok = false;
+    for (let a = 0; a < MAX_TRIES; a++) {
+      baseX  = (Math.random() - 0.5) * 2 * halfVW;
+      vPhase = Math.random();
+
+      ok = true;
+      for (const p of peers) {
+        const dx = baseX - p.baseX;
+        let du = vPhase - p.vPhase;
+        if (du >  0.5) du -= 1;             // toroidal distance
+        if (du < -0.5) du += 1;
+        const dy = du * layer.span;
+        if (dx * dx + dy * dy < minSepSq) { ok = false; break; }
+      }
+      if (ok) break;
+    }
+    peers.push({ baseX, vPhase });
+
+    state.z[i]      = layer.z;
+    state.span[i]   = layer.span;
+    state.topY[i]   = layer.topY;
+    state.baseX[i]  = baseX;
+    state.vPhase[i] = vPhase;
+    state.r[i]      = 1.0;
+    state.baseA[i]  = 1.0;
+
+    state.spinKX[i]     = Math.random() < 0.6 ? 1 : 0;
+    state.spinPhaseX[i] = Math.random() * Math.PI * 2;
+    state.spinKY[i]     = Math.random() < 0.4 ? 1 : 0;
+    state.spinPhaseY[i] = Math.random() * Math.PI * 2;
+    state.spinKZ[i]     = 0;
+    state.spinPhaseZ[i] = 0;
+
+    state.tiltX[i]      = 0;
+    state.tiltZ[i]      = (Math.random() - 0.5) * 0.4;
+  }
+}
+
+function rebuildLayers() {
+  currentLayers = computeLayers();
+  initAll();
+}
+rebuildLayers();
+
+// ---------- Scene update ----------
+const dummy = new THREE.Object3D();
+const HERO_MAX_R = 1.65;
+
+function smoothstep(edge0, edge1, x) {
+  const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+function updateScene(t) {
+  const twoPiTau = 2 * Math.PI * (t / PERIOD);
+  const v = params.vWorld;
+
+  for (let i = 0; i < COUNT; i++) {
+    // Cycle progress: constant world fall speed, modulo per-layer span
+    const cycle = v * t + state.vPhase[i] * state.span[i];
+    const u_raw = cycle / state.span[i];
+    const u = u_raw - Math.floor(u_raw);
+
+    const y = state.topY[i] - u * state.span[i];
+    const x = state.baseX[i];
+
+    const fadeIn  = smoothstep(0,    0.10, u);
+    const fadeOut = 1 - smoothstep(0.90, 1.0, u);
+    const a = state.baseA[i] * fadeIn * fadeOut;
+
+    const rotX = state.tiltX[i] + twoPiTau * state.spinKX[i] + state.spinPhaseX[i];
+    const rotY =                  twoPiTau * state.spinKY[i] + state.spinPhaseY[i];
+    const rotZ = state.tiltZ[i] + twoPiTau * state.spinKZ[i] + state.spinPhaseZ[i];
+
+    dummy.position.set(x, y, state.z[i]);
+    dummy.rotation.set(rotX, rotY, rotZ);
+    dummy.scale.setScalar(state.r[i] * params.coinScale);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+
+    alphaAttr.array[i] = a;
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  alphaAttr.needsUpdate = true;
+}
+
+// ---------- Resize ----------
+function resize() {
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w, h);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+
+  if (COUNT_TARGET() !== COUNT) rebuildMesh();
+  else rebuildLayers();
+}
+window.addEventListener('resize', resize);
+
+// ---------- Live render loop ----------
+const startWall = performance.now();
+let recording = false;
+
+function tick() {
+  if (!recording) {
+    const t = ((performance.now() - startWall) / 1000) % PERIOD;
+    updateScene(t);
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+// ---------- Lighting sliders ----------
+const STORAGE_KEY = 'poker-turnaj.sliders.v2';
+const stored = (() => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+})();
+const sliderDefaults = {};   // id -> HTML default value (string)
+const sliderApplyFns = {};   // id -> apply()
+function saveStored() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(stored)); } catch {}
+}
+
+function wireSlider(id, valId, onChange) {
+  const sl = document.getElementById(id);
+  const vl = document.getElementById(valId);
+  const min  = parseFloat(sl.min);
+  const max  = parseFloat(sl.max);
+  const step = parseFloat(sl.step) || 1;
+  const decimals = (sl.step.indexOf('.') >= 0) ? sl.step.split('.')[1].length : 0;
+
+  sliderDefaults[id] = sl.value;
+  if (stored[id] != null) sl.value = stored[id];
+
+  const apply = () => {
+    const v = parseFloat(sl.value);
+    vl.textContent = decimals ? v.toFixed(decimals) : String(v | 0);
+    onChange(v);
+    stored[id] = sl.value;
+    saveStored();
+  };
+  sliderApplyFns[id] = apply;
+
+  sl.addEventListener('input', apply);
+  sl.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const dir = e.deltaY < 0 ? 1 : -1;
+    const next = Math.min(max, Math.max(min, parseFloat(sl.value) + dir * step));
+    sl.value = next;
+    apply();
+  }, { passive: false });
+  apply();
+}
+
+function resetSlidersToDefaults() {
+  for (const id in sliderDefaults) {
+    const sl = document.getElementById(id);
+    sl.value = sliderDefaults[id];
+    sliderApplyFns[id]();
+  }
+  try { localStorage.removeItem(STORAGE_KEY); } catch {}
+}
+// Scene
+wireSlider('sl-period',   'vl-period',   (v) => { PERIOD = v | 0; rebuildLayers(); });
+wireSlider('sl-speed',    'vl-speed',    (v) => { params.vWorld = v; rebuildLayers(); });
+wireSlider('sl-layers',   'vl-layers',   (v) => { params.layerCount = v | 0; rebuildLayers(); });
+wireSlider('sl-scale',    'vl-scale',    (v) => { params.coinScale = v; rebuildLayers(); });
+wireSlider('sl-density',  'vl-density',  (v) => { params.density   = v; rebuildMesh();   });
+
+// Lighting
+wireSlider('sl-exposure', 'vl-exposure', (v) => { renderer.toneMappingExposure = v; });
+wireSlider('sl-env',      'vl-env',      (v) => { coinMat.envMapIntensity = v; });
+wireSlider('sl-ambient',  'vl-ambient',  (v) => { ambient.intensity = v; });
+wireSlider('sl-key',      'vl-key',      (v) => { keyLight.intensity = v; });
+wireSlider('sl-rim',      'vl-rim',      (v) => { rimLight.intensity = v; });
+
+// F9 toggles the entire control panel (sliders + record button)
+const panel = document.getElementById('lighting-panel');
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'F9') {
+    e.preventDefault();
+    panel.style.display = (panel.style.display === 'none') ? 'grid' : 'none';
+  }
+});
+
+document.getElementById('reset-btn').addEventListener('click', resetSlidersToDefaults);
+
+// ---------- Recorder ----------
+const recBtn    = document.getElementById('rec-btn');
+const recStatus = document.getElementById('rec-status');
+
+// Preload bg image so it can be composited into each recorded frame
+const bgImage = new Image();
+bgImage.src = 'bg-collapsar.jpg';
+let bgReady = false;
+bgImage.onload  = () => { bgReady = true; };
+bgImage.onerror = () => { recStatus.textContent = 'bg image failed to load'; };
+
+const REC_W = 1920;
+const REC_H = 1080;
+
+function drawBgCover(ctx, img, w, h) {
+  const ia = img.naturalWidth / img.naturalHeight;
+  const ta = w / h;
+  let dw, dh, dx, dy;
+  if (ia > ta) { dh = h; dw = h * ia; dx = (w - dw) * 0.5; dy = 0; }
+  else         { dw = w; dh = w / ia; dx = 0; dy = (h - dh) * 0.5; }
+  ctx.drawImage(img, dx, dy, dw, dh);
+}
+
+function drawTitle(ctx, w, h) {
+  // Match the CSS clamp logic at the target render size (1rem = 16px, vw = w/100)
+  const pokerSize  = Math.min(0.16 * w, 13.5 * 16);
+  const turnajSize = Math.min(0.15 * w, 13   * 16);
+  const lineH      = 0.88;
+  const blockH     = (pokerSize + turnajSize) * lineH;
+  const topY       = (h - blockH) * 0.5;
+
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+
+  // Measure widest line for card sizing
+  ctx.font = `500 ${pokerSize}px "Playfair Display", serif`;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = `${pokerSize * 0.03}px`;
+  const pokerW = ctx.measureText('POKER').width;
+  ctx.font = `italic 300 ${turnajSize}px "Cormorant Garamond", serif`;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = `${turnajSize * 0.01}px`;
+  const turnajW = ctx.measureText('TURNAJ').width;
+  const maxW = Math.max(pokerW, turnajW);
+
+  // Card geometry
+  const padX  = pokerSize * 0.55;
+  const padY  = pokerSize * 0.32;
+  const cardW = maxW   + padX * 2;
+  const cardH = blockH + padY * 2;
+  const cardX = (w - cardW) * 0.5;
+  const cardY = topY - padY;
+
+  // Dark fill
+  ctx.fillStyle = 'rgba(12, 12, 14, 0.62)';
+  ctx.fillRect(cardX, cardY, cardW, cardH);
+
+  // Outer gold border (2px equivalent, scaled to render width)
+  const outerLW = Math.max(2, w / 960);
+  ctx.strokeStyle = 'rgba(224, 184, 112, 0.85)';
+  ctx.lineWidth = outerLW;
+  ctx.strokeRect(cardX + outerLW * 0.5, cardY + outerLW * 0.5,
+                 cardW - outerLW,       cardH - outerLW);
+
+  // Inner thin gold line
+  const inset = Math.max(8, w / 240);
+  ctx.strokeStyle = 'rgba(224, 184, 112, 0.30)';
+  ctx.lineWidth = Math.max(1, w / 1900);
+  ctx.strokeRect(cardX + inset, cardY + inset,
+                 cardW - inset * 2, cardH - inset * 2);
+
+  // POKER — Playfair Display 500, cream
+  ctx.fillStyle = '#efe3cb';
+  ctx.font = `500 ${pokerSize}px "Playfair Display", serif`;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = `${pokerSize * 0.03}px`;
+  ctx.fillText('POKER', w * 0.5, topY);
+
+  // TURNAJ — Cormorant Garamond italic 300, gold
+  ctx.fillStyle = '#e0b870';
+  ctx.font = `italic 300 ${turnajSize}px "Cormorant Garamond", serif`;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = `${turnajSize * 0.01}px`;
+  ctx.fillText('TURNAJ', w * 0.5, topY + pokerSize * lineH);
+
+  ctx.restore();
+}
+
+recBtn.addEventListener('click', async () => {
+  if (recording) return;
+  if (!bgReady) {
+    recStatus.textContent = 'bg image still loading — try again';
+    return;
+  }
+  if (typeof window.showDirectoryPicker !== 'function') {
+    recStatus.textContent = 'Need Chrome/Edge (no directory API)';
+    return;
+  }
+
+  // Pick output folder before doing any rendering work
+  let dirHandle;
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+  } catch {
+    recStatus.textContent = 'cancelled';
+    return;
+  }
+
+  recording = true;
+  document.body.classList.add('recording');
+  recBtn.disabled = true;
+  recBtn.classList.add('recording');
+
+  // ---- Force renderer + camera to Full HD ----
+  const origW = window.innerWidth, origH = window.innerHeight;
+  const origDPR = renderer.getPixelRatio();
+  renderer.setPixelRatio(1);
+  renderer.setSize(REC_W, REC_H, false);
+  camera.aspect = REC_W / REC_H;
+  camera.updateProjectionMatrix();
+  rebuildLayers();
+
+  const composite = document.createElement('canvas');
+  composite.width = REC_W;
+  composite.height = REC_H;
+  const cctx = composite.getContext('2d');
+
+  // Make sure web fonts are decoded before canvas tries to render them
+  try { await document.fonts.ready; } catch {}
+
+  const totalFrames = Math.round(PERIOD * FPS);
+
+  try {
+    for (let f = 0; f < totalFrames; f++) {
+      const t = f / FPS;
+      updateScene(t);
+      renderer.render(scene, camera);
+
+      drawBgCover(cctx, bgImage, REC_W, REC_H);
+      cctx.drawImage(canvas, 0, 0, REC_W, REC_H);
+      drawTitle(cctx, REC_W, REC_H);
+
+      const blob = await new Promise(res => composite.toBlob(res, 'image/png'));
+      if (!blob) throw new Error(`toBlob failed at frame ${f}`);
+
+      const name = `frame_${String(f).padStart(4, '0')}.png`;
+      const fh = await dirHandle.getFileHandle(name, { create: true });
+      const w  = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+
+      recStatus.textContent = `Saving  ${f + 1} / ${totalFrames}`;
+      if ((f & 3) === 0) await new Promise(r => setTimeout(r, 0));
+    }
+
+    recStatus.textContent = `Done  ·  ${totalFrames} frames  ·  ${REC_W}×${REC_H}`;
+  } catch (err) {
+    console.error(err);
+    recStatus.textContent = `Error: ${err.message || err}`;
+  } finally {
+    renderer.setPixelRatio(origDPR);
+    renderer.setSize(origW, origH, true);
+    camera.aspect = origW / origH;
+    camera.updateProjectionMatrix();
+    rebuildLayers();
+
+    recording = false;
+    document.body.classList.remove('recording');
+    recBtn.disabled = false;
+    recBtn.classList.remove('recording');
+  }
+});
+</script>
+</body>
+</html>
