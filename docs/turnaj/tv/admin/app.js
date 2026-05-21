@@ -7,23 +7,26 @@ firebase.initializeApp({
 });
 
 // ─── Auth Gate ──────────────────────────────────────────────
-const ADMIN_EMAIL = 'krabcode@gmail.com';
-
 async function ensureSignedIn() {
     const auth = firebase.auth();
     await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    if (auth.currentUser && auth.currentUser.email === ADMIN_EMAIL) return;
+    if (auth.currentUser) return;
     for (;;) {
-        const pwd = prompt('Heslo pro ' + ADMIN_EMAIL + ':');
+        const email = prompt('Email:');
+        if (email === null) {
+            document.body.innerHTML = '';
+            throw new Error('Auth cancelled');
+        }
+        const pwd = prompt('Heslo:');
         if (pwd === null) {
             document.body.innerHTML = '';
             throw new Error('Auth cancelled');
         }
         try {
-            await auth.signInWithEmailAndPassword(ADMIN_EMAIL, pwd);
+            await auth.signInWithEmailAndPassword(email, pwd);
             return;
         } catch (err) {
-            alert('Špatné heslo: ' + err.message);
+            alert('Přihlášení selhalo: ' + err.message);
         }
     }
 }
