@@ -6,6 +6,10 @@ firebase.initializeApp({
     projectId: "smelo-turnaj"
 });
 
+firebase.auth().signInAnonymously().catch(err => {
+    console.error('Anonymous sign-in failed:', err);
+});
+
 const db = firebase.database();
 const tournamentRef = db.ref('tournament');
 document.body.classList.add('wide');

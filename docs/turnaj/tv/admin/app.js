@@ -1,23 +1,3 @@
-// ─── Password Gate ──────────────────────────────────────────
-const ADMIN_HASH = '04114e775c39003d71c9825add2ee4cfd472c2980936def742daa2072353ecd3';
-
-async function sha256(text) {
-    const data = new TextEncoder().encode(text);
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function checkGate() {
-    if (sessionStorage.getItem('adminAuth') === '1') return;
-    const input = prompt('Heslo:');
-    if (input && await sha256(input) === ADMIN_HASH) {
-        sessionStorage.setItem('adminAuth', '1');
-    } else {
-        document.body.innerHTML = '';
-    }
-}
-await checkGate();
-
 // ─── Firebase Init ──────────────────────────────────────────
 firebase.initializeApp({
     apiKey: "AIzaSyAfQqQYYn8pId99FbqIqX72LH6kOlosunQ",
@@ -25,6 +5,29 @@ firebase.initializeApp({
     databaseURL: "https://smelo-turnaj-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "smelo-turnaj"
 });
+
+// ─── Auth Gate ──────────────────────────────────────────────
+const ADMIN_EMAIL = 'krabcode@gmail.com';
+
+async function ensureSignedIn() {
+    const auth = firebase.auth();
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    if (auth.currentUser && auth.currentUser.email === ADMIN_EMAIL) return;
+    for (;;) {
+        const pwd = prompt('Heslo pro ' + ADMIN_EMAIL + ':');
+        if (pwd === null) {
+            document.body.innerHTML = '';
+            throw new Error('Auth cancelled');
+        }
+        try {
+            await auth.signInWithEmailAndPassword(ADMIN_EMAIL, pwd);
+            return;
+        } catch (err) {
+            alert('Špatné heslo: ' + err.message);
+        }
+    }
+}
+await ensureSignedIn();
 
 const db = firebase.database();
 const tournamentRef = db.ref('tournament');
