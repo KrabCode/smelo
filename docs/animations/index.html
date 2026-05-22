@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animace — ŠMELO.CZ</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="../base.css">
+  <link rel="stylesheet" href="../style.css">
+  <script data-goatcounter="https://smelo.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+  <style>
+    .anim-header {
+      text-align: center;
+      padding: 48px 16px 16px;
+    }
+    .anim-header h1 {
+      font-family: 'Staatliches', sans-serif;
+      letter-spacing: 6px;
+      font-size: 2.2em;
+      color: var(--text);
+    }
+    .anim-header h1 a { color: var(--text); text-decoration: none; }
+    .anim-header h1 a:hover { color: var(--accent); }
+    .anim-header .crumb {
+      color: var(--text-muted);
+      font-size: 0.85em;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+    .anim-header .crumb a { color: var(--accent); text-decoration: none; }
+    .anim-header .crumb a:hover { text-decoration: underline; }
+
+    .anim-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 18px;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 24px 20px 80px;
+    }
+
+    .anim-card {
+      display: block;
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: var(--shadow);
+      border-radius: 10px;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text);
+      transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .anim-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+    }
+
+    .anim-thumb {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: #0a0a0c;
+    }
+    .anim-thumb iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none; /* clicks pass through to the card link */
+      display: block;
+    }
+
+    .anim-meta {
+      padding: 14px 18px 16px;
+    }
+    .anim-title {
+      font-family: 'Staatliches', sans-serif;
+      letter-spacing: 2px;
+      font-size: 1.2em;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .anim-desc { color: #999; font-size: 0.9em; }
+    .anim-tag {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 0.7em;
+      color: #777;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 2px 8px;
+      letter-spacing: 0.5px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="anim-header">
+    <h1><a href="../">ŠMELO.CZ</a> &middot; ANIMACE</h1>
+    <div class="crumb"><a href="../">&larr; zpět</a></div>
+  </div>
+
+  <div class="anim-list">
+
+    <a class="anim-card" href="falling-coins/">
+      <div class="anim-thumb" aria-hidden="true">
+        <iframe src="falling-coins/?embed" loading="lazy" title="Falling Coins preview"></iframe>
+      </div>
+      <div class="anim-meta">
+        <div class="anim-title">Falling Coins</div>
+        <div class="anim-desc">Padající zlaté mince ve více vrstvách s paralaxním efektem. Plnohodnotný PBR rendering s nahráváním smyčky.</div>
+        <span class="anim-tag">three.js · 3D</span>
+      </div>
+    </a>
+
+  </div>
+</body>
+</html>

@@ -316,9 +316,32 @@
     text-align: right;
   }
 
+  /* Back link */
+  .back-link {
+    position: fixed;
+    top: 1.5rem; left: 1.5rem;
+    z-index: 28;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .back-link:hover { opacity: 1; }
+
   /* Frozen state for recording — hide UI overlays from frames */
   body.recording .recorder { display: none !important; }
   body.recording .lighting-panel { display: none !important; }
+  body.recording .back-link { display: none !important; }
+
+  /* Embedded thumbnail mode (?embed in URL) — hide all UI chrome including title card */
+  body.embed .lighting-panel,
+  body.embed .back-link,
+  body.embed .stage,
+  body.embed .buyin { display: none !important; }
 
   @media (max-width: 720px) {
     .corner-mark { font-size: 0.55rem; letter-spacing: 0.25em; }
@@ -334,7 +357,15 @@
 </style>
 </head>
 <body>
+  <script>
+    // Strip UI chrome when embedded as a thumbnail iframe (?embed in URL).
+    if (new URLSearchParams(location.search).has('embed')) {
+      document.body.classList.add('embed');
+    }
+  </script>
   <canvas id="three-canvas"></canvas>
+
+  <a href="../" class="back-link">&larr; Animations</a>
 
   <div class="lighting-panel" id="lighting-panel">
     <label>Period</label>
@@ -381,8 +412,14 @@
 
     <div class="panel-sep"></div>
 
+    <label>Rec Seconds</label>
+    <input type="range" id="sl-recsec" min="1" max="60" step="1" value="6">
+    <span class="val" id="vl-recsec">6</span>
+
+    <button id="text-btn" type="button" class="reset-btn">Text:&nbsp;ON</button>
     <button id="rec-btn" type="button" class="rec-btn">REC</button>
     <button id="reset-btn" type="button" class="reset-btn">Reset&nbsp;Defaults</button>
+    <button id="hide-btn" type="button" class="reset-btn">Hide&nbsp;UI&nbsp;(F9)</button>
     <div id="rec-status" class="rec-status"></div>
   </div>
 
@@ -791,16 +828,35 @@ wireSlider('sl-ambient',  'vl-ambient',  (v) => { ambient.intensity = v; });
 wireSlider('sl-key',      'vl-key',      (v) => { keyLight.intensity = v; });
 wireSlider('sl-rim',      'vl-rim',      (v) => { rimLight.intensity = v; });
 
-// F9 toggles the entire control panel (sliders + record button)
-const panel = document.getElementById('lighting-panel');
+// Recording length (decoupled from PERIOD — you can record N loops by setting RecSeconds > PERIOD)
+let recSeconds = 6;
+wireSlider('sl-recsec',   'vl-recsec',   (v) => { recSeconds = v | 0; });
+
+// F9 (and the Hide button) toggle the panel + the back link together.
+const panel    = document.getElementById('lighting-panel');
+const backLink = document.querySelector('.back-link');
+function toggleUI() {
+  const hide = panel.style.display !== 'none';
+  panel.style.display    = hide ? 'none' : 'grid';
+  backLink.style.display = hide ? 'none' : 'block';
+}
+document.getElementById('hide-btn').addEventListener('click', toggleUI);
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'F9') {
-    e.preventDefault();
-    panel.style.display = (panel.style.display === 'none') ? 'grid' : 'none';
-  }
+  if (e.key === 'F9') { e.preventDefault(); toggleUI(); }
 });
 
 document.getElementById('reset-btn').addEventListener('click', resetSlidersToDefaults);
+
+// Title text toggle — controls both the live .stage overlay and what the recorder bakes in.
+const stageEl = document.querySelector('.stage');
+const textBtn = document.getElementById('text-btn');
+let textOn = true;
+function applyTextToggle() {
+  stageEl.style.display = textOn ? 'flex' : 'none';
+  textBtn.innerHTML = textOn ? 'Text:&nbsp;ON' : 'Text:&nbsp;OFF';
+}
+textBtn.addEventListener('click', () => { textOn = !textOn; applyTextToggle(); });
+applyTextToggle();
 
 // ---------- Recorder ----------
 const recBtn    = document.getElementById('rec-btn');
@@ -929,7 +985,7 @@ recBtn.addEventListener('click', async () => {
   // Make sure web fonts are decoded before canvas tries to render them
   try { await document.fonts.ready; } catch {}
 
-  const totalFrames = Math.round(PERIOD * FPS);
+  const totalFrames = Math.round(recSeconds * FPS);
 
   try {
     for (let f = 0; f < totalFrames; f++) {
@@ -939,7 +995,7 @@ recBtn.addEventListener('click', async () => {
 
       drawBgCover(cctx, bgImage, REC_W, REC_H);
       cctx.drawImage(canvas, 0, 0, REC_W, REC_H);
-      drawTitle(cctx, REC_W, REC_H);
+      if (textOn) drawTitle(cctx, REC_W, REC_H);
 
       const blob = await new Promise(res => composite.toBlob(res, 'image/png'));
       if (!blob) throw new Error(`toBlob failed at frame ${f}`);
