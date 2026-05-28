@@ -14,15 +14,31 @@ function cardStr(c) {
 }
 
 // === State ===
-const state = {
-  stage: 0,                     // 0=preflop, 3=flop, 4=turn, 5=river
-  board: [null, null, null, null, null], // up to 5 board card ints (or null)
+const STORAGE_KEY = 'equity.state.v1';
+const DEFAULT_STATE = {
+  board: [null, null, null, null, null], // 5 board card ints (or null) — flop:0-2, turn:3, river:4
   players: [
     { name: 'A', cards: [null, null] },
     { name: 'B', cards: [null, null] },
     { name: 'C', cards: [null, null] },
   ],
 };
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    const s = JSON.parse(raw);
+    if (!Array.isArray(s.board) || s.board.length !== 5) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    if (!Array.isArray(s.players) || s.players.length < 2 || s.players.length > 9) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return s;
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+const state = loadState();
 
 // === Worker ===
 let worker = null;
@@ -40,9 +56,7 @@ function cancelWorker() {
 // === DOM refs ===
 const playersList = document.getElementById('playersList');
 const boardRow = document.getElementById('boardRow');
-const boardHint = document.getElementById('boardHint');
 const playerCountEl = document.getElementById('playerCount');
-const resultsEl = document.getElementById('results');
 const statusEl = document.getElementById('statusBadge');
 const progressBar = document.getElementById('progressBar');
 const progressFill = document.getElementById('progressFill');
@@ -61,7 +75,7 @@ function usedCards(excludeSlot) {
       }
     }
   }
-  for (let i = 0; i < state.stage; i++) {
+  for (let i = 0; i < 5; i++) {
     const c = state.board[i];
     if (c !== null && !(excludeSlot && excludeSlot.kind === 'board' && excludeSlot.i === i)) {
       set.add(c);
@@ -72,18 +86,15 @@ function usedCards(excludeSlot) {
 
 // === Render ===
 function renderBoard() {
-  boardRow.innerHTML = '';
-  if (state.stage === 0) {
-    boardRow.innerHTML = '<span style="color:#666;font-style:italic;">žádné karty na stole</span>';
-    boardHint.textContent = '';
-    return;
-  }
-  const labels = ['F1','F2','F3','Turn','River'];
-  boardHint.textContent = '(' + state.stage + ' karet)';
-  for (let i = 0; i < state.stage; i++) {
-    const slot = makeSlot(state.board[i], { kind: 'board', i });
-    boardRow.appendChild(slot);
-  }
+  const groups = boardRow.querySelectorAll('.board-group');
+  groups.forEach(g => g.innerHTML = '');
+  const layout = [[0, 1, 2], [3], [4]]; // flop, turn, river
+  layout.forEach((idxs, gi) => {
+    idxs.forEach((i) => {
+      const slot = makeSlot(state.board[i], { kind: 'board', i });
+      groups[gi].appendChild(slot);
+    });
+  });
 }
 
 function renderPlayers() {
@@ -173,6 +184,7 @@ function setCard(card) {
   }
   closePicker();
   renderAll();
+  saveState();
   recompute();
 }
 function clearPickerSlot() {
@@ -184,25 +196,13 @@ function clearPickerSlot() {
   }
   closePicker();
   renderAll();
+  saveState();
   recompute();
 }
 
 document.getElementById('pickerClose').addEventListener('click', closePicker);
 document.getElementById('pickerClear').addEventListener('click', clearPickerSlot);
 picker.addEventListener('click', (e) => { if (e.target === picker) closePicker(); });
-
-// === Stage buttons ===
-document.querySelectorAll('.stage-btn').forEach((b) => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.stage-btn').forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    state.stage = parseInt(b.dataset.stage, 10);
-    // Trim board cards beyond new stage
-    for (let i = state.stage; i < 5; i++) state.board[i] = null;
-    renderAll();
-    recompute();
-  });
-});
 
 // === Add / Remove player ===
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -224,6 +224,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
   state.players.forEach(p => { p.cards = [null, null]; });
   state.board = [null, null, null, null, null];
   renderAll();
+  saveState();
   recompute();
 });
 
@@ -231,7 +232,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 function recompute() {
   // Need every player to have both cards
   const allHandsReady = state.players.every(p => p.cards[0] !== null && p.cards[1] !== null);
-  const boardReady = state.board.slice(0, state.stage).every(c => c !== null);
+  const board = state.board.filter(c => c !== null);
   // Clear progress UI
   progressBar.classList.remove('visible');
   progressFill.style.width = '0';
@@ -241,15 +242,8 @@ function recompute() {
   });
 
   if (!allHandsReady) {
-    statusEl.textContent = 'Doplň karty hráčů';
+    statusEl.textContent = '';
     statusEl.className = 'status-badge';
-    resultsEl.innerHTML = '';
-    return;
-  }
-  if (!boardReady) {
-    statusEl.textContent = 'Doplň board';
-    statusEl.className = 'status-badge';
-    resultsEl.innerHTML = '';
     return;
   }
 
@@ -259,7 +253,6 @@ function recompute() {
   currentJob++;
   const jobId = currentJob;
   const hands = state.players.map(p => [p.cards[0], p.cards[1]]);
-  const board = state.board.slice(0, state.stage);
 
   statusEl.textContent = 'počítám…';
   statusEl.className = 'status-badge busy';
@@ -278,35 +271,13 @@ function onWorkerMessage(msg) {
   }
   if (msg.type === 'done') {
     progressBar.classList.remove('visible');
-    statusEl.textContent = msg.totalBoards.toLocaleString('cs-CZ') + ' boardů';
+    statusEl.innerHTML = '<span class="check">✓</span>';
     statusEl.className = 'status-badge';
-    renderResults(msg.results);
-    return;
+    msg.results.forEach((r, i) => {
+      const eq = document.getElementById('eq-' + i);
+      if (eq) eq.textContent = (r.equity * 100).toFixed(1) + '%';
+    });
   }
-}
-
-function renderResults(results) {
-  resultsEl.innerHTML = '';
-  const header = document.createElement('div');
-  header.className = 'result-row header';
-  header.innerHTML = '<div></div><div>Hráč</div><div class="equity">Equity</div><div></div><div></div>';
-  resultsEl.appendChild(header);
-  results.forEach((r, i) => {
-    const row = document.createElement('div');
-    row.className = 'result-row';
-    const p = state.players[i];
-    const handStr = p.cards.map(cardStr).join(' ');
-    row.innerHTML = `
-      <div class="player-label">${p.name}</div>
-      <div>${handStr}</div>
-      <div class="equity">${(r.equity * 100).toFixed(2)}%</div>
-      <div></div>
-      <div></div>
-    `;
-    resultsEl.appendChild(row);
-    const eq = document.getElementById('eq-' + i);
-    if (eq) eq.textContent = (r.equity * 100).toFixed(1) + '%';
-  });
 }
 
 // === Init ===

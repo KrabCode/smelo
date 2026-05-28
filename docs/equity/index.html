@@ -15,47 +15,38 @@
     <a href="../" style="color:#888;text-decoration:none;">←</a>
     EQUITY
   </h1>
-  <p style="text-align:center;color:#888;margin-bottom:24px;">
-    Přesný výpočet equity (enumerace všech boardů).
-  </p>
-
   <div class="section">
-    <div class="section-label">Fáze</div>
-    <div class="stage-row">
-      <button class="stage-btn active" data-stage="0">Preflop</button>
-      <button class="stage-btn" data-stage="3">Flop</button>
-      <button class="stage-btn" data-stage="4">Turn</button>
-      <button class="stage-btn" data-stage="5">River</button>
+    <div class="section-label">Board</div>
+    <div id="boardRow" class="board-row">
+      <div class="board-group" data-group="flop"></div>
+      <div class="board-group" data-group="turn"></div>
+      <div class="board-group" data-group="river"></div>
     </div>
-  </div>
-
-  <div class="section">
-    <div class="section-label">
-      Board <span id="boardHint" style="color:#666;font-size:0.85em;"></span>
-    </div>
-    <div id="boardRow" class="board-row"></div>
   </div>
 
   <div class="section">
     <div class="section-label">
       Hráči
       <span style="margin-left:auto;display:inline-flex;gap:6px;align-items:center;">
-        <button id="removePlayer" class="round-btn">−</button>
+        <button id="removePlayer" class="round-btn" aria-label="Méně hráčů">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
         <span id="playerCount" style="min-width:1.5em;text-align:center;">3</span>
-        <button id="addPlayer" class="round-btn">+</button>
+        <button id="addPlayer" class="round-btn" aria-label="Více hráčů">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
       </span>
     </div>
     <div id="playersList"></div>
   </div>
 
-  <div class="section">
-    <div class="section-label">Výsledky <span id="statusBadge" class="status-badge"></span></div>
-    <div id="results" class="results-table"></div>
+  <div class="status-row">
+    <span id="statusBadge" class="status-badge"></span>
     <div id="progressBar" class="progress-bar"><div id="progressFill"></div></div>
   </div>
 
   <div class="section" style="text-align:center;">
-    <button id="resetBtn" class="reset-btn">Vymazat karty</button>
+    <button id="resetBtn" class="reset-btn">Vymazat</button>
   </div>
 </div>
 
