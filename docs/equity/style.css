@@ -219,8 +219,22 @@
 .picker-clear:hover { border-color: var(--red); color: var(--red); }
 
 @media (max-width: 560px) {
+  .section { padding: 12px 14px; }
+  .board-row { gap: 14px; }
+  .picker-overlay { padding: 8px; }
+  .picker-modal { padding: 12px; }
   .picker-grid { grid-template-columns: repeat(13, 1fr); gap: 2px; }
-  .picker-grid .pcard { font-size: 0.75em; padding: 3px 0; }
-  .card-slot { width: 44px; height: 60px; font-size: 1.2em; }
-  .board-row .card-slot { width: 48px; height: 66px; }
+  .picker-grid .pcard { font-size: 0.75em; padding: 4px 0; }
+  .card-slot { width: 40px; height: 56px; font-size: 1.1em; }
+  .board-row .card-slot { width: 44px; height: 62px; }
+  .player-row { gap: 8px; }
+  .player-cards { gap: 6px; }
+  .player-equity { font-size: 1.4em; min-width: 70px; }
+}
+@media (max-width: 380px) {
+  .board-row { gap: 10px; }
+  .board-group { gap: 6px; }
+  .card-slot { width: 36px; height: 50px; font-size: 1em; }
+  .board-row .card-slot { width: 40px; height: 56px; }
+  .player-equity { font-size: 1.25em; min-width: 60px; }
 }
