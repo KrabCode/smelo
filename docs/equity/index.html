@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Equity Kalkulačka — ŠMELO.CZ</title>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="stylesheet" href="../base.css">
+<link rel="stylesheet" href="style.css">
+<script data-goatcounter="https://smelo.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div class="container">
+  <h1 style="text-align:center;font-family:'Staatliches',sans-serif;letter-spacing:4px;margin:24px 0 16px;">
+    <a href="../" style="color:#888;text-decoration:none;">←</a>
+    EQUITY
+  </h1>
+  <p style="text-align:center;color:#888;margin-bottom:24px;">
+    Přesný výpočet equity (enumerace všech boardů).
+  </p>
+
+  <div class="section">
+    <div class="section-label">Fáze</div>
+    <div class="stage-row">
+      <button class="stage-btn active" data-stage="0">Preflop</button>
+      <button class="stage-btn" data-stage="3">Flop</button>
+      <button class="stage-btn" data-stage="4">Turn</button>
+      <button class="stage-btn" data-stage="5">River</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      Board <span id="boardHint" style="color:#666;font-size:0.85em;"></span>
+    </div>
+    <div id="boardRow" class="board-row"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">
+      Hráči
+      <span style="margin-left:auto;display:inline-flex;gap:6px;align-items:center;">
+        <button id="removePlayer" class="round-btn">−</button>
+        <span id="playerCount" style="min-width:1.5em;text-align:center;">3</span>
+        <button id="addPlayer" class="round-btn">+</button>
+      </span>
+    </div>
+    <div id="playersList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Výsledky <span id="statusBadge" class="status-badge"></span></div>
+    <div id="results" class="results-table"></div>
+    <div id="progressBar" class="progress-bar"><div id="progressFill"></div></div>
+  </div>
+
+  <div class="section" style="text-align:center;">
+    <button id="resetBtn" class="reset-btn">Vymazat karty</button>
+  </div>
+</div>
+
+<div id="cardPicker" class="picker-overlay" hidden>
+  <div class="picker-modal">
+    <div class="picker-header">
+      <div id="pickerTitle">Vyber kartu</div>
+      <button id="pickerClose" class="picker-close">✕</button>
+    </div>
+    <div id="pickerGrid" class="picker-grid"></div>
+    <button id="pickerClear" class="picker-clear">Smazat kartu</button>
+  </div>
+</div>
+
+<footer style="margin-top:48px;padding:16px 20px 0;color:#555;font-size:0.85em;text-align:center;">
+  <a href="../" style="color:#555;text-decoration:none;">← šmelo.cz</a>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

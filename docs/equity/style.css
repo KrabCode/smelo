@@ -1,0 +1,256 @@
+.section {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: var(--shadow);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin: 16px 0;
+}
+.section-label {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.stage-row, .board-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.stage-btn {
+  flex: 1;
+  min-width: 70px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.95em;
+  transition: all 0.15s;
+}
+.stage-btn:hover { border-color: var(--accent); }
+.stage-btn.active {
+  background: var(--accent);
+  color: #111;
+  border-color: var(--accent);
+  font-weight: bold;
+}
+
+.round-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.round-btn:hover { border-color: var(--accent); color: var(--accent); }
+.round-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.card-slot {
+  width: 52px;
+  height: 72px;
+  background: var(--bg-input);
+  border: 2px dashed var(--border-light);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.4em;
+  font-weight: bold;
+  user-select: none;
+  transition: all 0.15s;
+  padding: 0;
+}
+.card-slot:hover { border-color: var(--accent); }
+.card-slot.filled {
+  background: #fafafa;
+  border: 1px solid #333;
+  border-style: solid;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.card-slot.filled.suit-h, .card-slot.filled.suit-d { color: #c0392b; }
+.card-slot.filled.suit-s, .card-slot.filled.suit-c { color: #111; }
+
+.board-row .card-slot { width: 56px; height: 78px; }
+
+.player-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 8px 0;
+}
+.player-label {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  min-width: 24px;
+}
+.player-cards { display: flex; gap: 8px; }
+.player-equity {
+  margin-left: auto;
+  font-family: monospace;
+  color: var(--accent);
+  font-weight: bold;
+  font-size: 1.1em;
+  min-width: 60px;
+  text-align: right;
+}
+
+.results-table { font-family: monospace; }
+.result-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 70px 70px 70px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95em;
+}
+.result-row:last-child { border-bottom: none; }
+.result-row.header {
+  color: var(--text-muted);
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid var(--border-light);
+}
+.result-row .equity { color: var(--accent); font-weight: bold; text-align: right; }
+.result-row .win { color: var(--text-secondary); text-align: right; }
+.result-row .tie { color: var(--text-muted); text-align: right; }
+
+.status-badge {
+  margin-left: auto;
+  font-size: 0.75em;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.status-badge.busy { color: var(--accent); }
+.status-badge.error { color: var(--red); }
+
+.progress-bar {
+  margin-top: 12px;
+  height: 4px;
+  background: var(--bg-input);
+  border-radius: 2px;
+  overflow: hidden;
+  display: none;
+}
+.progress-bar.visible { display: block; }
+#progressFill {
+  height: 100%;
+  width: 0;
+  background: var(--accent);
+  transition: width 0.1s linear;
+}
+
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.reset-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* === Picker modal === */
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+.picker-modal {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+#pickerTitle { color: var(--text-muted); font-size: 0.9em; }
+.picker-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.4em;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.picker-close:hover { color: var(--text); }
+.picker-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 4px;
+}
+.picker-grid .pcard {
+  background: #fafafa;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 4px 0;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: bold;
+  font-size: 0.95em;
+  text-align: center;
+  user-select: none;
+  transition: transform 0.1s;
+}
+.picker-grid .pcard:hover { transform: scale(1.08); }
+.picker-grid .pcard.suit-h, .picker-grid .pcard.suit-d { color: #c0392b; }
+.picker-grid .pcard.suit-s, .picker-grid .pcard.suit-c { color: #111; }
+.picker-grid .pcard.disabled {
+  opacity: 0.15;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+.picker-grid .pcard.current {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+.picker-clear {
+  margin-top: 12px;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.picker-clear:hover { border-color: var(--red); color: var(--red); }
+
+@media (max-width: 560px) {
+  .picker-grid { grid-template-columns: repeat(13, 1fr); gap: 2px; }
+  .picker-grid .pcard { font-size: 0.75em; padding: 3px 0; }
+  .card-slot { width: 44px; height: 60px; font-size: 1.2em; }
+  .board-row .card-slot { width: 48px; height: 66px; }
+}
