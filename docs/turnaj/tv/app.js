@@ -744,10 +744,6 @@ function render() {
                 '<span class="payout"> — ' + amount.toLocaleString('cs') + ' Kč</span></div>';
         }).join('');
         if (!wasShowing) playEndSound();
-        // Stop tournament when all winners declared
-        if (state.status === 'running') {
-            tournamentRef.child('state/status').set('finished');
-        }
     } else {
         winnerBanner.style.display = 'none';
     }

@@ -1423,7 +1423,13 @@ document.getElementById('btn-save-winners').addEventListener('click', () => {
         const name = el ? el.value.trim() : '';
         if (name) winners[i] = name;
     }
-    tournamentRef.child('state/winners').set(winners).then(() => {
+    const declared = Object.keys(winners).length;
+    const allDeclared = declared >= paidPlaces && paidPlaces > 0;
+    const updates = { 'state/winners': winners };
+    if (allDeclared && T.state.status === 'running') {
+        updates['state/status'] = 'finished';
+    }
+    tournamentRef.update(updates).then(() => {
         const btn = document.getElementById('btn-save-winners');
         btn.textContent = 'Vítězové vyhlášeni \u2713';
         setTimeout(() => { btn.textContent = 'Vyhlásit vítěze'; }, 2000);
