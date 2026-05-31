@@ -350,6 +350,17 @@ a.card { color: var(--text); text-decoration: none; }
 .sum-display { text-align: right; font-size: 0.9em; color: #888; min-height: 1.4em; margin-bottom: 4px; }
 .sum-display.sum-nonzero { color: #f87171; }
 .entry { display: flex; gap: 6px; align-items: end; margin-bottom: 8px; }
+.entry .drag-handle {
+  flex: 0 0 22px; display: flex; align-items: center; justify-content: center;
+  height: 33px; color: #555; cursor: grab; touch-action: none;
+  user-select: none; -webkit-user-select: none;
+}
+.entry .drag-handle:hover { color: #999; }
+.entry .drag-handle:active { cursor: grabbing; }
+.entry.dragging {
+  opacity: 0.9; background: #1f1f1f; border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
 .entry .name-col { flex: 2; min-width: 0; }
 .entry .invest-col, .entry .withdraw-col { flex: 1; min-width: 0; }
 .entry .result-col { flex: 0 0 56px; }

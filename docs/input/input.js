@@ -281,11 +281,55 @@ function updateSum() {
     document.getElementById('submitBtn').disabled = entriesContainer.children.length === 0;
 }
 
+// --- Drag-to-reorder rows ---
+let dragRow = null;
+
+function startRowDrag(e, row) {
+    dragRow = row;
+    row.classList.add('dragging');
+    e.preventDefault();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+    handle.addEventListener('pointermove', onRowDragMove);
+    handle.addEventListener('pointerup', endRowDrag);
+    handle.addEventListener('pointercancel', endRowDrag);
+}
+
+function onRowDragMove(e) {
+    if (!dragRow) return;
+    const y = e.clientY;
+    const others = Array.from(entriesContainer.querySelectorAll('.entry:not(.dragging)'));
+    const next = others.find(row => {
+        const rect = row.getBoundingClientRect();
+        return y < rect.top + rect.height / 2;
+    });
+    if (next) entriesContainer.insertBefore(dragRow, next);
+    else entriesContainer.appendChild(dragRow);
+}
+
+function endRowDrag(e) {
+    if (!dragRow) return;
+    dragRow.classList.remove('dragging');
+    dragRow = null;
+    const handle = e.currentTarget;
+    handle.removeEventListener('pointermove', onRowDragMove);
+    handle.removeEventListener('pointerup', endRowDrag);
+    handle.removeEventListener('pointercancel', endRowDrag);
+    updateSum();
+    saveDraft();
+}
+
 // --- Entry rows ---
 function createEntry(name, invest, withdraw) {
     const div = document.createElement('div');
     div.className = 'entry';
     div.innerHTML =
+        '<div class="drag-handle" title="Přetáhnout pro změnu pořadí" aria-label="Přetáhnout">' +
+            '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">' +
+            '<circle cx="9" cy="5" r="1.6"/><circle cx="15" cy="5" r="1.6"/>' +
+            '<circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/>' +
+            '<circle cx="9" cy="19" r="1.6"/><circle cx="15" cy="19" r="1.6"/></svg>' +
+        '</div>' +
         '<div class="name-col">' +
             '<label>Hráč</label>' +
             '<input type="text" class="entry-name" placeholder="Jméno hráče" value="' + (name || '') + '">' +
@@ -313,6 +357,7 @@ function createEntry(name, invest, withdraw) {
         saveDraft();
         if (entriesContainer.children.length === 0) addEntry();
     });
+    div.querySelector('.drag-handle').addEventListener('pointerdown', (e) => startRowDrag(e, div));
     div.querySelector('.entry-name').addEventListener('input', () => { updateChipStates(); saveDraft(); });
 
     const investInput = div.querySelector('.entry-invest');
