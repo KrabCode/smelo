@@ -358,8 +358,10 @@ a.card { color: var(--text); text-decoration: none; }
 .entry .drag-handle:hover { color: #999; }
 .entry .drag-handle:active { cursor: grabbing; }
 .entry.dragging {
-  opacity: 0.9; background: #1f1f1f; border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+  opacity: 0.95; background: #232323; border-radius: 8px;
+  outline: 1px solid #3a3a3a; box-shadow: 0 8px 20px rgba(0,0,0,0.55);
+  padding-left: 6px; padding-right: 6px;
+  margin-left: -6px; margin-right: -6px;
 }
 .entry .name-col { flex: 2; min-width: 0; }
 .entry .invest-col, .entry .withdraw-col { flex: 1; min-width: 0; }
