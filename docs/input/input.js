@@ -285,18 +285,20 @@ function updateSum() {
 let dragRow = null;
 
 function startRowDrag(e, row) {
+    if (e.button) return; // ignore non-primary buttons
     dragRow = row;
     row.classList.add('dragging');
     e.preventDefault();
-    const handle = e.currentTarget;
-    handle.setPointerCapture(e.pointerId);
-    handle.addEventListener('pointermove', onRowDragMove);
-    handle.addEventListener('pointerup', endRowDrag);
-    handle.addEventListener('pointercancel', endRowDrag);
+    // Listen on window: reordering re-inserts the row in the DOM, which would
+    // drop pointer capture on the handle and kill handle-bound listeners.
+    window.addEventListener('pointermove', onRowDragMove);
+    window.addEventListener('pointerup', endRowDrag);
+    window.addEventListener('pointercancel', endRowDrag);
 }
 
 function onRowDragMove(e) {
     if (!dragRow) return;
+    e.preventDefault();
     const y = e.clientY;
     const others = Array.from(entriesContainer.querySelectorAll('.entry:not(.dragging)'));
     const next = others.find(row => {
@@ -307,14 +309,13 @@ function onRowDragMove(e) {
     else entriesContainer.appendChild(dragRow);
 }
 
-function endRowDrag(e) {
+function endRowDrag() {
     if (!dragRow) return;
     dragRow.classList.remove('dragging');
     dragRow = null;
-    const handle = e.currentTarget;
-    handle.removeEventListener('pointermove', onRowDragMove);
-    handle.removeEventListener('pointerup', endRowDrag);
-    handle.removeEventListener('pointercancel', endRowDrag);
+    window.removeEventListener('pointermove', onRowDragMove);
+    window.removeEventListener('pointerup', endRowDrag);
+    window.removeEventListener('pointercancel', endRowDrag);
     updateSum();
     saveDraft();
 }
