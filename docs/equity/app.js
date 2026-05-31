@@ -2,6 +2,10 @@
 const RANKS = ['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
 const SUITS = ['s','h','d','c']; // 0..3
 const SUIT_GLYPH = { s: '♠', h: '♥', d: '♦', c: '♣' };
+const CATEGORY_NAMES = [
+  'Hovno', 'Pár', 'Dva páry', 'Trojice', 'Postupka',
+  'Flush', 'Full house', 'Quads', 'Straight flush'
+];
 
 function cardLabel(c) {
   const r = c % 13;
@@ -20,7 +24,6 @@ const DEFAULT_STATE = {
   players: [
     { name: 'A', cards: [null, null] },
     { name: 'B', cards: [null, null] },
-    { name: 'C', cards: [null, null] },
   ],
 };
 function loadState() {
@@ -104,6 +107,9 @@ function renderPlayers() {
   document.getElementById('addPlayer').disabled = state.players.length >= 9;
 
   state.players.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'player-item';
+
     const row = document.createElement('div');
     row.className = 'player-row';
     const label = document.createElement('div');
@@ -124,7 +130,14 @@ function renderPlayers() {
     eq.textContent = '—';
     row.appendChild(eq);
 
-    playersList.appendChild(row);
+    item.appendChild(row);
+
+    const breakdown = document.createElement('div');
+    breakdown.className = 'player-breakdown';
+    breakdown.id = 'bd-' + i;
+    item.appendChild(breakdown);
+
+    playersList.appendChild(item);
   });
 }
 
@@ -239,6 +252,8 @@ function recompute() {
   state.players.forEach((_, i) => {
     const eq = document.getElementById('eq-' + i);
     if (eq) eq.textContent = '—';
+    const bd = document.getElementById('bd-' + i);
+    if (bd) bd.innerHTML = '';
   });
 
   if (!allHandsReady) {
@@ -261,6 +276,26 @@ function recompute() {
   worker.postMessage({ type: 'compute', jobId, hands, board });
 }
 
+function renderBreakdown(el, cats) {
+  el.innerHTML = '';
+  // Weakest first (Hovno → Straight flush), hide <0.1%.
+  for (let k = 0; k <= 8; k++) {
+    const p = cats[k];
+    if (p < 0.001) continue;
+    const pill = document.createElement('span');
+    pill.className = 'cat';
+    const name = document.createElement('span');
+    name.className = 'cat-name';
+    name.textContent = CATEGORY_NAMES[k];
+    const val = document.createElement('span');
+    val.className = 'cat-val';
+    val.textContent = (p * 100).toFixed(p < 0.01 ? 2 : 1) + '%';
+    pill.appendChild(name);
+    pill.appendChild(val);
+    el.appendChild(pill);
+  }
+}
+
 function onWorkerMessage(msg) {
   if (msg.jobId !== currentJob) return;
   if (msg.type === 'progress') {
@@ -271,11 +306,13 @@ function onWorkerMessage(msg) {
   }
   if (msg.type === 'done') {
     progressBar.classList.remove('visible');
-    statusEl.innerHTML = '<span class="check">✓</span>';
+    statusEl.textContent = '';
     statusEl.className = 'status-badge';
     msg.results.forEach((r, i) => {
       const eq = document.getElementById('eq-' + i);
       if (eq) eq.textContent = (r.equity * 100).toFixed(1) + '%';
+      const bd = document.getElementById('bd-' + i);
+      if (bd && r.categories) renderBreakdown(bd, r.categories);
     });
   }
 }

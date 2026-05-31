@@ -73,12 +73,41 @@
 
 .board-row .card-slot { width: 56px; height: 78px; }
 
+.player-item {
+  margin: 8px 0;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.player-item:last-child { border-bottom: none; }
 .player-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 8px 0;
-  padding: 8px 0;
+}
+.player-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  padding-left: 36px;
+}
+.player-breakdown:empty { display: none; }
+.player-breakdown .cat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.78em;
+  color: var(--text-muted);
+  font-family: 'DM Sans', sans-serif;
+}
+.player-breakdown .cat-val {
+  color: var(--text);
+  font-family: monospace;
+  font-weight: bold;
 }
 .player-label {
   color: var(--text-muted);
@@ -230,6 +259,8 @@
   .player-row { gap: 8px; }
   .player-cards { gap: 6px; }
   .player-equity { font-size: 1.4em; min-width: 70px; }
+  .player-breakdown { padding-left: 0; }
+  .player-breakdown .cat { font-size: 0.72em; padding: 2px 5px; }
 }
 @media (max-width: 380px) {
   .board-row { gap: 10px; }

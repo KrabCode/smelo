@@ -123,6 +123,8 @@ self.onmessage = (ev) => {
   // Special case: needed = 0 (river fully specified)
   // General case: enumerate combinations of `needed` from deck
   const wins = new Float64Array(N);
+  const categories = [];
+  for (let p = 0; p < N; p++) categories.push(new Float64Array(9));
   let totalBoards = 0;
   // Compute total board count for progress
   const totalCount = binom(deck.length, needed);
@@ -140,6 +142,7 @@ self.onmessage = (ev) => {
       for (let i = 0; i < board.length; i++) sevenCards[2 + i] = board[i];
       for (let i = 0; i < extras.length; i++) sevenCards[2 + board.length + i] = extras[i];
       const score = evaluate7(sevenCards);
+      categories[p][(score / 1e12) | 0]++;
       if (score > bestScore) {
         bestScore = score;
         bestMask = 1 << p;
@@ -184,9 +187,9 @@ self.onmessage = (ev) => {
         // done
         const results = [];
         for (let p = 0; p < N; p++) {
-          results.push({
-            equity: wins[p] / totalBoards,
-          });
+          const cats = new Array(9);
+          for (let k = 0; k < 9; k++) cats[k] = categories[p][k] / totalBoards;
+          results.push({ equity: wins[p] / totalBoards, categories: cats });
         }
         self.postMessage({ type: 'done', jobId, results, totalBoards });
         return;
@@ -208,7 +211,11 @@ self.onmessage = (ev) => {
     evaluateAll([]);
     totalBoards = 1;
     const results = [];
-    for (let p = 0; p < N; p++) results.push({ equity: wins[p] });
+    for (let p = 0; p < N; p++) {
+      const cats = new Array(9);
+      for (let k = 0; k < 9; k++) cats[k] = categories[p][k];
+      results.push({ equity: wins[p], categories: cats });
+    }
     self.postMessage({ type: 'done', jobId, results, totalBoards });
     return;
   }
