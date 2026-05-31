@@ -210,6 +210,7 @@
   // ── Show results ─────────────────────────────────────────────────────────
   function showResults() {
     let correct = 0;
+    let answered = 0;
     const perCat = {};
     const now = Date.now();
 
@@ -218,11 +219,12 @@
       const checked = card.querySelector(`input[name="q${i}"]:checked`);
       const chosen = checked ? parseInt(checked.value, 10) : -1;
       const isRight = chosen === q.correctIndex;
+      if (chosen !== -1) answered++;
       if (isRight) correct++;
 
       const cat = q.categoryId;
       if (!perCat[cat]) perCat[cat] = { right: 0, total: 0 };
-      perCat[cat].total++;
+      if (chosen !== -1) perCat[cat].total++;
       if (isRight) perCat[cat].right++;
 
       card.querySelectorAll('.q-choice').forEach((ch, j) => {
@@ -266,15 +268,14 @@
     elReveal.textContent = 'Results shown ↓';
     elRevealHint.style.display = 'none';
 
-    const total = currentQuestions.length;
-    const pct = total ? Math.round(correct / total * 100) : 0;
-    const breakdown = Object.keys(perCat).map(cat => {
+    const pct = answered ? Math.round(correct / answered * 100) : 0;
+    const breakdown = Object.keys(perCat).filter(cat => perCat[cat].total > 0).map(cat => {
       const r = perCat[cat];
       return `<span class="sum-cat">${catLabel(cat)}: ${r.right}/${r.total}</span>`;
     }).join('');
     elSummary.innerHTML = `
       <div class="summary">
-        <div class="sum-score">${correct} / ${total} <span class="sum-pct">(${pct}%)</span></div>
+        <div class="sum-score">${correct} / ${answered} <span class="sum-pct">(${pct}%)</span></div>
         <div class="sum-breakdown">${breakdown}</div>
         <button id="again">New quiz</button>
       </div>
