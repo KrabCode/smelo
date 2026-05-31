@@ -12,6 +12,7 @@ const webappUrlInput = document.getElementById('webappUrl');
 const secretInput = document.getElementById('secret');
 const playerSearch = document.getElementById('playerSearch');
 const searchGhost = document.getElementById('searchGhost');
+const searchDropdown = document.getElementById('searchDropdown');
 const sumDisplay = document.getElementById('sumDisplay');
 const playerListEl = document.getElementById('playerList');
 const playerListCount = document.getElementById('playerListCount');
@@ -19,6 +20,8 @@ const playerListCount = document.getElementById('playerListCount');
 let knownPlayers = [];
 let playerTotals = {};
 let ghostMatch = null;
+let matchList = [];
+let matchIndex = 0;
 
 // --- Settings persistence ---
 function loadSettings() {
@@ -133,40 +136,108 @@ function populatePlayerList() {
     });
 }
 
-function filterChips() {
-    const q = playerSearch.value.trim();
-    const ql = q.toLowerCase();
-    ghostMatch = ql ? (knownPlayers.find(n => n.toLowerCase().startsWith(ql)) || null) : null;
-    searchGhost.innerHTML = '';
-    if (ghostMatch) {
-        searchGhost.appendChild(document.createTextNode(ghostMatch.slice(0, q.length)));
-        const suffix = document.createElement('span');
-        suffix.className = 'search-ghost-suffix';
-        suffix.textContent = ghostMatch.slice(q.length);
-        searchGhost.appendChild(suffix);
-    }
+function getUsedNames() {
+    const used = new Set();
+    entriesContainer.querySelectorAll('.entry-name').forEach(input => {
+        const val = input.value.trim();
+        if (val) used.add(val);
+    });
+    return used;
 }
 
-playerSearch.addEventListener('input', filterChips);
-playerSearch.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter' && !(e.key === 'Tab' && ghostMatch)) return;
-    e.preventDefault();
+function filterChips() {
     const ql = playerSearch.value.trim().toLowerCase();
-    const name = ghostMatch || (ql ? knownPlayers.find(n => n.toLowerCase().includes(ql)) : null);
+    if (ql) {
+        matchList = knownPlayers.filter(n => n.toLowerCase().includes(ql));
+        // Names starting with the query come first (stable sort keeps alpha order within groups)
+        matchList.sort((a, b) =>
+            (b.toLowerCase().startsWith(ql) ? 1 : 0) - (a.toLowerCase().startsWith(ql) ? 1 : 0));
+    } else {
+        matchList = [];
+    }
+    matchIndex = 0;
+    renderSuggestions();
+}
+
+function renderSuggestions() {
+    renderGhost();
+    renderDropdown();
+}
+
+function renderGhost() {
+    const q = playerSearch.value;
+    const ql = q.trim().toLowerCase();
+    ghostMatch = matchList[matchIndex] || null;
+    searchGhost.innerHTML = '';
+    // Inline ghost only completes prefix matches
+    if (!ghostMatch || !ghostMatch.toLowerCase().startsWith(ql)) return;
+    searchGhost.appendChild(document.createTextNode(ghostMatch.slice(0, q.length)));
+    const suffix = document.createElement('span');
+    suffix.className = 'search-ghost-suffix';
+    suffix.textContent = ghostMatch.slice(q.length);
+    searchGhost.appendChild(suffix);
+}
+
+function renderDropdown() {
+    if (!searchDropdown) return;
+    if (!matchList.length) {
+        searchDropdown.classList.remove('open');
+        searchDropdown.innerHTML = '';
+        return;
+    }
+    const used = getUsedNames();
+    searchDropdown.innerHTML = matchList.map((name, i) => {
+        const total = playerTotals[name] || 0;
+        const cls = total > 0 ? 'pos' : total < 0 ? 'neg' : 'zero';
+        const totalStr = total > 0 ? '+' + total : String(total);
+        return '<li class="search-dropdown-item' + (i === matchIndex ? ' active' : '') +
+            (used.has(name) ? ' used' : '') + '" data-index="' + i + '">' +
+            '<span>' + name.replace(/</g, '&lt;') + '</span>' +
+            '<span class="player-list-total ' + cls + '">' + totalStr + '</span></li>';
+    }).join('');
+    searchDropdown.classList.add('open');
+    const active = searchDropdown.querySelector('.search-dropdown-item.active');
+    if (active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function selectMatch(name) {
     if (!name) return;
     const entry = createEntry(name);
     updateChipStates();
     playerSearch.value = '';
     filterChips();
     entry.querySelector('.entry-invest').focus();
+}
+
+playerSearch.addEventListener('input', filterChips);
+playerSearch.addEventListener('focus', () => { if (matchList.length) searchDropdown.classList.add('open'); });
+playerSearch.addEventListener('blur', () => { setTimeout(() => searchDropdown.classList.remove('open'), 120); });
+playerSearch.addEventListener('keydown', (e) => {
+    // Leaf through matching suggestions with the arrow keys
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && matchList.length) {
+        e.preventDefault();
+        const dir = e.key === 'ArrowDown' ? 1 : -1;
+        matchIndex = (matchIndex + dir + matchList.length) % matchList.length;
+        renderSuggestions();
+        return;
+    }
+    if (e.key === 'Escape') { searchDropdown.classList.remove('open'); return; }
+    if (e.key !== 'Enter' && !(e.key === 'Tab' && ghostMatch)) return;
+    e.preventDefault();
+    const ql = playerSearch.value.trim().toLowerCase();
+    const name = matchList[matchIndex] || (ql ? knownPlayers.find(n => n.toLowerCase().includes(ql)) : null);
+    selectMatch(name);
+});
+
+searchDropdown.addEventListener('mousedown', (e) => {
+    const li = e.target.closest('.search-dropdown-item');
+    if (!li) return;
+    e.preventDefault(); // keep input focused; prevent blur from closing before the click
+    selectMatch(matchList[parseInt(li.dataset.index, 10)]);
 });
 
 function updateChipStates() {
-    const usedNames = new Set();
-    entriesContainer.querySelectorAll('.entry-name').forEach(input => {
-        const val = input.value.trim();
-        if (val) usedNames.add(val);
-    });
+    const usedNames = getUsedNames();
     playerListEl.querySelectorAll('.player-list-item').forEach(item => {
         item.classList.toggle('used', usedNames.has(item.dataset.name));
     });

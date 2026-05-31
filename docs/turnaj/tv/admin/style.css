@@ -21,6 +21,36 @@ body {
 
 
 /* Sections */
+.section-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 0;
+    margin: 0 0 4px;
+    background: var(--bg);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.section-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    font-size: 0.82em;
+    color: var(--text-muted);
+    text-decoration: none;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.section-nav a:hover, .section-nav a:active {
+    color: var(--text);
+    border-color: rgba(255,255,255,0.25);
+}
+
 .section {
     background: var(--bg-card);
     border: 1px solid rgba(255,255,255,0.06);
@@ -740,6 +770,17 @@ body {
 }
 
 /* Blind structure table */
+.profiles-bar, .profiles-save {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    align-items: stretch;
+}
+.profiles-bar #profile-select { flex: 1; min-width: 0; }
+.profiles-bar .btn, .profiles-save .btn { min-width: auto; white-space: nowrap; }
+.profiles-bar #btn-profile-delete { padding: 8px 12px; }
+.profiles-save #profile-name { flex: 1; min-width: 0; }
+
 .structure-table {
     width: 100%;
     border-collapse: collapse;
@@ -912,7 +953,7 @@ body {
 
 /* Event log */
 #event-log-list {
-    max-height: 400px;
+    max-height: 800px;
     overflow-y: auto;
 }
 .event-log-entry {

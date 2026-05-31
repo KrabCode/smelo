@@ -91,6 +91,7 @@ const DEFAULTS = {
     },
     blindStructure: [],
     blindOverrides: {},
+    profiles: {},
     tableLocks: {},
     payoutConfig: null,
     breakMessages: {},
@@ -536,6 +537,7 @@ function render() {
     renderTableLocks();
 
     // Blind structure table
+    renderProfiles();
     renderBlindStructure();
 
     // Event log
@@ -1168,6 +1170,7 @@ tournamentRef.on('value', (snap) => {
     }
     T.blindStructure = data.blindStructure || [];
     T.blindOverrides = data.blindOverrides || {};
+    T.profiles = data.profiles || {};
     TABLES = data.tables || DEFAULT_TABLES.slice();
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
@@ -1407,9 +1410,7 @@ document.getElementById('btn-reset').addEventListener('click', () => {
     tournamentRef.child('state').set(DEFAULTS.state);
     tournamentRef.child('payoutConfig').set(null);
     tournamentRef.child('eventLog').set(null);
-    tournamentRef.child('blindOverrides').set({});
     T.eventLog = [];
-    T.blindOverrides = {};
     recalcAndSync();
     render();
 });
@@ -1795,6 +1796,80 @@ document.getElementById('structure-body').addEventListener('click', (e) => {
 
 });
 
+// ─── Blind Structure Profiles ───────────────────────────────
+function sanitizeProfileKey(name) {
+    return name.trim().replace(/[.#$/[\]]/g, '_').slice(0, 60) || 'profil';
+}
+
+function renderProfiles() {
+    const sel = document.getElementById('profile-select');
+    if (!sel) return;
+    const prev = sel.value;
+    const keys = Object.keys(T.profiles || {});
+    keys.sort((a, b) => (T.profiles[a].name || a).localeCompare(T.profiles[b].name || b, 'cs'));
+    sel.innerHTML = '<option value="">— Uložené profily —</option>' +
+        keys.map(k => '<option value="' + k.replace(/"/g, '&quot;') + '">' +
+            (T.profiles[k].name || k).replace(/</g, '&lt;') + '</option>').join('');
+    if (T.profiles[prev]) sel.value = prev;
+}
+
+document.getElementById('btn-profile-save').addEventListener('click', () => {
+    const nameEl = document.getElementById('profile-name');
+    const name = (nameEl.value || '').trim();
+    if (!name) { nameEl.focus(); return; }
+    const key = sanitizeProfileKey(name);
+    if (T.profiles[key] && !confirm('Profil „' + name + '" už existuje. Přepsat?')) return;
+    const profile = {
+        name: name,
+        savedAt: serverNow(),
+        config: { ...T.config },
+        blindOverrides: T.blindOverrides || {},
+        breakLabels: T.breakLabels || {}
+    };
+    tournamentRef.child('profiles/' + key).set(profile).then(() => {
+        nameEl.value = '';
+        const sel = document.getElementById('profile-select');
+        if (sel) sel.value = key;
+        const btn = document.getElementById('btn-profile-save');
+        btn.textContent = 'Uloženo ✓';
+        setTimeout(() => { btn.textContent = 'Uložit jako profil'; }, 1500);
+    });
+});
+
+document.getElementById('btn-profile-load').addEventListener('click', () => {
+    const sel = document.getElementById('profile-select');
+    const key = sel.value;
+    if (!key || !T.profiles[key]) return;
+    const profile = T.profiles[key];
+    if (!confirm('Načíst profil „' + (profile.name || key) + '"? Přepíše aktuální strukturu a nastavení turnaje.')) return;
+    const config = { ...DEFAULTS.config, ...(profile.config || {}) };
+    const blindOverrides = profile.blindOverrides || {};
+    const breakLabels = profile.breakLabels || {};
+    T.config = config;
+    T.blindOverrides = blindOverrides;
+    T.breakLabels = breakLabels;
+    const totalChips = recalcTotalChips();
+    const structure = calculateBlinds(config, totalChips, -1);
+    applyOverrides(structure, blindOverrides);
+    tournamentRef.update({
+        'config': config,
+        'blindOverrides': blindOverrides,
+        'breakLabels': breakLabels,
+        'blindStructure': structure,
+        'players/totalChips': totalChips
+    });
+    render();
+});
+
+document.getElementById('btn-profile-delete').addEventListener('click', () => {
+    const sel = document.getElementById('profile-select');
+    const key = sel.value;
+    if (!key || !T.profiles[key]) return;
+    if (!confirm('Smazat profil „' + (T.profiles[key].name || key) + '"?')) return;
+    tournamentRef.child('profiles/' + key).remove();
+    sel.value = '';
+});
+
 // ─── Guard Toggles ──────────────────────────────────────────
 const guardState = JSON.parse(localStorage.getItem('adminGuards') || '{}');
 
@@ -1820,6 +1895,29 @@ document.addEventListener('click', (e) => {
     guardState[id] = !isLocked;
     localStorage.setItem('adminGuards', JSON.stringify(guardState));
 });
+
+// ─── Contents Nav ───────────────────────────────────────────
+function buildSectionNav() {
+    const nav = document.getElementById('section-nav');
+    if (!nav) return;
+    nav.innerHTML = '';
+    document.querySelectorAll('.admin-wrap > .section[id]').forEach(sec => {
+        const h2 = sec.querySelector('h2');
+        if (!h2) return;
+        const clone = h2.cloneNode(true);
+        clone.querySelectorAll('.guard-toggle, .badge').forEach(el => el.remove());
+        const a = document.createElement('a');
+        a.href = '#' + sec.id;
+        a.textContent = clone.textContent.trim();
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const y = sec.getBoundingClientRect().top + window.pageYOffset - nav.offsetHeight - 8;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        });
+        nav.appendChild(a);
+    });
+}
+buildSectionNav();
 
 // ─── Sound Selection ────────────────────────────────────────
 const ALL_SOUND_FILES = [

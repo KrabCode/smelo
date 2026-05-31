@@ -16,6 +16,9 @@
 <body>
     <div class="admin-wrap">
 
+        <!-- Contents / quick nav -->
+        <nav id="section-nav" class="section-nav" aria-label="Obsah"></nav>
+
         <!-- Timer controls -->
         <div class="section" id="section-timer">
             <h2>&#x23F1;&#xFE0F; Timer <button type="button" class="guard-toggle" data-target="section-timer">&#x1F512;</button></h2>
@@ -228,6 +231,23 @@
 
                 </div>
                 <div class="save-status" id="config-save-status"></div>
+            </div>
+        </div>
+
+        <!-- Tournament profiles -->
+        <div class="section" id="section-profiles">
+            <h2>&#x1F4BE; Profily turnaje <button type="button" class="guard-toggle" data-target="section-profiles">&#x1F512;</button></h2>
+            <div class="section-body">
+                <small class="hint">Uloží i načte celé nastavení turnaje — strukturu blindů, přestávky, žetony, buy-in i poplatky.</small>
+                <div class="profiles-bar">
+                    <select id="profile-select"><option value="">— Uložené profily —</option></select>
+                    <button class="btn" id="btn-profile-load">Načíst</button>
+                    <button class="btn danger" id="btn-profile-delete" title="Smazat profil">&times;</button>
+                </div>
+                <div class="profiles-save">
+                    <input type="text" id="profile-name" placeholder="Název profilu…" maxlength="40">
+                    <button class="btn" id="btn-profile-save">Uložit jako profil</button>
+                </div>
             </div>
         </div>
 
