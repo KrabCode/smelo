@@ -770,16 +770,42 @@ body {
 }
 
 /* Blind structure table */
+#section-profiles .hint { margin-bottom: 12px; }
 .profiles-bar, .profiles-save {
     display: flex;
     gap: 8px;
     margin-bottom: 10px;
     align-items: stretch;
 }
-.profiles-bar #profile-select { flex: 1; min-width: 0; }
+#profile-select, #profile-name {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 12px 14px;
+    font-size: 1em;
+}
+#profile-select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 38px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+}
+#profile-select option { background: var(--bg-card); color: var(--text); }
+#profile-select:focus, #profile-name:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255,179,0,0.15);
+}
+#profile-name::placeholder { color: var(--text-muted); }
 .profiles-bar .btn, .profiles-save .btn { min-width: auto; white-space: nowrap; }
-.profiles-bar #btn-profile-delete { padding: 8px 12px; }
-.profiles-save #profile-name { flex: 1; min-width: 0; }
+.profiles-bar #btn-profile-delete { min-width: 48px; padding: 12px 14px; }
 
 .structure-table {
     width: 100%;
