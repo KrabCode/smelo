@@ -79,11 +79,14 @@ function fetchAndRender() {
             });
         syncRangeUI();
         syncOverlayUI();
-        processAndRender();
+        // Reveal the chart area and drop the spinner BEFORE the first draw: the spinner's
+        // fixed 400px height otherwise collapses #chartContainer, so the chart would draw
+        // into a near-zero box and stay broken until the next redraw (e.g. clicking a pill).
         document.getElementById('rangeToggle').style.display = '';
         document.getElementById('sessionDetails').style.display = '';
         document.getElementById('graphSpinner').style.display = 'none';
         document.getElementById('chartDiv').style.visibility = 'visible';
+        processAndRender();
     });
 }
 
