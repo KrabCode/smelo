@@ -704,6 +704,45 @@ window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
     });
 })();
 
+// Drag the whole chart window by its title bar, like a desktop window. Uses a CSS
+// transform so the document flow (and the slot the window occupies) stays put, and
+// persists the offset. Transform is dropped in fullscreen — it would shift the
+// viewport-sized fullscreen element off-screen.
+(function initChartDrag() {
+    const win = document.getElementById('chartWindow');
+    const bar = document.getElementById('chartTitleBar');
+    if (!win || !bar) return;
+    let offX = Number(localStorage.getItem('smelo_chart_x')) || 0;
+    let offY = Number(localStorage.getItem('smelo_chart_y')) || 0;
+    const apply = () => { win.style.transform = document.fullscreenElement ? '' : `translate(${offX}px, ${offY}px)`; };
+    apply();
+    let startX = 0, startY = 0, baseX = 0, baseY = 0, dragging = false;
+    bar.addEventListener('pointerdown', e => {
+        // Left button only; ignore the window buttons and never drag in fullscreen.
+        if (e.button !== 0 || e.target.closest('.win-btn') || document.fullscreenElement) return;
+        dragging = true;
+        startX = e.clientX; startY = e.clientY; baseX = offX; baseY = offY;
+        bar.setPointerCapture(e.pointerId);
+    });
+    bar.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        offX = baseX + (e.clientX - startX);
+        offY = baseY + (e.clientY - startY);
+        apply();
+    });
+    const end = () => {
+        if (!dragging) return;
+        dragging = false;
+        try {
+            localStorage.setItem('smelo_chart_x', String(Math.round(offX)));
+            localStorage.setItem('smelo_chart_y', String(Math.round(offY)));
+        } catch (e) {}
+    };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+    document.addEventListener('fullscreenchange', apply);
+})();
+
 function initSlider() {
     const slider = document.getElementById('sliderInput');
     const n = storedSessionLabels ? storedSessionLabels.length : 0;

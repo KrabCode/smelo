@@ -105,7 +105,10 @@ img { border-radius: 16px; }
     background: transparent;
     border-bottom: 1px solid #333;
     user-select: none;
+    cursor: move;
+    touch-action: none;
 }
+#chartWindow:fullscreen #chartTitleBar { cursor: default; }
 #chartTitleText {
     font-size: 12px;
     color: #bbb;
