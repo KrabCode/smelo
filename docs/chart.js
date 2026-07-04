@@ -12,8 +12,22 @@ const COLORS = [
     "#843c39","#ad494a","#d6616b","#e7969c","#7b4173","#a55194",
     "#ce6dbd","#de9ed6","#1b9e77","#d95f02"
 ];
+const TURNOVER_BAR = '#33504c';
+const TURNOVER_LINE = '#6fd0c2';
+const TURNOVER_TEXT = '#7fc6bd';
+const PLAYERS_LINE = '#d9a441';
+const PLAYERS_TEXT = '#e0b45c';
+const ZTRACENO_LINE = '#f87171';
+const ZTRACENO_TEXT = '#f4a0a0';
+const OVERLAY_NOTES = {
+    turnover: { html: '<b>Obrat</b> — součet všech výher v dané hře.', color: TURNOVER_TEXT },
+    players: { html: '<b>Počet hráčů</b>', color: PLAYERS_TEXT },
+    ztraceno: { html: '<b>Ztraceno</b> — neplánovaná nesrovnalost v záznamu.', color: ZTRACENO_TEXT }
+};
 let chart = null, chartData = null, playerNames = [], playerColors = {}, selectedPlayer = localStorage.getItem('smelo_player') || '';
-let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedDates = null;
+let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedAxisLabels = null, storedDates = null, storedTurnover = null, storedPlayerCount = null, storedZtraceno = null;
+// Mutually-exclusive aux overlay on the right axis: '' | 'turnover' | 'players'
+let activeOverlay = localStorage.getItem('smelo_overlay') || (localStorage.getItem('smelo_turnover') === '1' ? 'turnover' : '');
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
 let rawAllRowsWithDate = null, rawHeaders = null;
 let maxPlayerDisplayName = '';
@@ -62,6 +76,7 @@ function fetchAndRender() {
             document.getElementById('btnAll').classList.add('active');
             document.getElementById('btnHalf').classList.remove('active');
         }
+        syncOverlayUI();
         processAndRender();
         document.getElementById('rangeToggle').style.display = '';
         document.getElementById('sessionDetails').style.display = '';
@@ -131,10 +146,40 @@ function processAndRender() {
         return x.row[1];
     });
 
+    // Sparse, scannable x-axis labels: a year at each year's first session, a month number
+    // at each new month, blank otherwise. Full dates stay on the detail panel.
+    let prevYear = null, prevMonth = null;
+    const axisLabels = rows.map(x => {
+        if (!x.date) return x.row[1];
+        const y = x.date.getFullYear(), m = x.date.getMonth() + 1;
+        let label = '';
+        if (y !== prevYear) label = String(y);
+        else if (m !== prevMonth) label = m + '.';
+        prevYear = y; prevMonth = m;
+        return label;
+    });
+
+    const turnover = rows.map(x => {
+        let t = 0;
+        for (const col of validColumns) { const v = Number(x.row[col.i]); if (v > 0) t += v; }
+        return t;
+    });
+    const playerCount = rows.map(x => {
+        let n = 0;
+        for (const col of validColumns) { const c = x.row[col.i]; if (c !== undefined && c !== '' && c !== '0' && Number(c) !== 0) n++; }
+        return n;
+    });
+    // Column 0 holds "Ztraceno / nezaznamenaný hráč" — the unrecorded amount per session.
+    const ztraceno = rows.map(x => { const v = Number(x.row[0]); return isNaN(v) ? 0 : v; });
+
     storedCumulative = cumulative;
     storedOriginalCells = originalCells;
     storedSessionLabels = sessionLabels;
+    storedAxisLabels = axisLabels;
     storedDates = rows.map(x => x.date);
+    storedTurnover = turnover;
+    storedPlayerCount = playerCount;
+    storedZtraceno = ztraceno;
 
     if (!selectedPlayer) {
         const lastIdx = originalCells.length - 1;
@@ -171,6 +216,24 @@ document.getElementById('btnAll').addEventListener('click', () => {
     document.getElementById('btnHalf').classList.remove('active');
     processAndRender();
 });
+function syncOverlayUI() {
+    document.getElementById('btnTurnover').classList.toggle('active', activeOverlay === 'turnover');
+    document.getElementById('btnPlayers').classList.toggle('active', activeOverlay === 'players');
+    document.getElementById('btnZtraceno').classList.toggle('active', activeOverlay === 'ztraceno');
+    const note = document.getElementById('overlayNote');
+    const cfg = OVERLAY_NOTES[activeOverlay];
+    if (cfg) { note.innerHTML = cfg.html; note.style.color = cfg.color; note.style.display = ''; }
+    else { note.style.display = 'none'; }
+}
+function setOverlay(name) {
+    activeOverlay = activeOverlay === name ? '' : name;
+    localStorage.setItem('smelo_overlay', activeOverlay);
+    syncOverlayUI();
+    drawChart();
+}
+document.getElementById('btnTurnover').addEventListener('click', () => setOverlay('turnover'));
+document.getElementById('btnPlayers').addEventListener('click', () => setOverlay('players'));
+document.getElementById('btnZtraceno').addEventListener('click', () => setOverlay('ztraceno'));
 document.getElementById('btnRefreshChart').addEventListener('click', () => {
     try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TS_KEY); } catch(e) {}
     document.getElementById('graphSpinner').style.display = '';
@@ -226,6 +289,7 @@ function drawChart() {
     const cumulative = storedCumulative;
     const originalCells = storedOriginalCells;
     const sessionLabels = storedSessionLabels;
+    const axisLabels = storedAxisLabels || storedSessionLabels;
 
     // Find highlight indices for selected player
     let highlightTooltips = {}, highlightTypes = {};
@@ -260,22 +324,40 @@ function drawChart() {
     if (selectedIdx >= 0) { renderOrder.splice(selectedIdx, 1); renderOrder.push(selectedIdx); }
     storedRenderOrder = renderOrder;
 
+    // Numeric x-axis (row index) with explicit sparse ticks — a string axis would merge
+    // the repeated blank labels into one category and pile all points together.
+    const hTicks = [];
+    axisLabels.forEach((lab, i) => { if (lab) hTicks.push({ v: i, f: lab }); });
+
     chartData = new google.visualization.DataTable();
-    chartData.addColumn('string', 'Datum');
+    chartData.addColumn('number', 'Datum');
     renderOrder.forEach(ci => {
         chartData.addColumn('number', playerNames[ci]);
         chartData.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
         chartData.addColumn({ type: 'string', role: 'style' });
     });
     chartData.addColumn('number', '_mirror');
+    if (activeOverlay === 'turnover') { chartData.addColumn('number', 'Obrat'); chartData.addColumn('number', 'ObratLine'); }
+    else if (activeOverlay === 'players') { chartData.addColumn('number', 'Hráči'); }
+    else if (activeOverlay === 'ztraceno') { chartData.addColumn('number', 'Ztraceno'); }
+
+    let yMin = 0, yMax = 0;
+    cumulative.forEach(arr => arr.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }));
+    const yRange = yMax - yMin;
+    const step = yRange <= 2000 ? 500 : yRange <= 5000 ? 1000 : yRange <= 15000 ? 2500 : 5000;
+    const axisTicks = [];
+    for (let t = Math.floor(yMin / step) * step; t <= Math.ceil(yMax / step) * step; t += step) axisTicks.push(t);
+    // Right-axis driver: a flat, invisible line pinned to the top tick. It only exists so
+    // axis 1 renders; keeping it in the empty top margin stops it overlapping — and blocking
+    // clicks on — the leader's line (which is what a per-row max would trace).
+    const mirrorTop = axisTicks.length ? axisTicks[axisTicks.length - 1] : yMax;
+
     for (let i = 0; i < sessionLabels.length; i++) {
-        const row = [sessionLabels[i]];
-        let rowMax = null;
+        const row = [i];
         renderOrder.forEach((ci, j) => {
             const name = playerNames[ci];
             const v = cumulative[ci][i];
             row.push(v);
-            if (v != null && (rowMax == null || Math.abs(v) > Math.abs(rowMax))) rowMax = v;
             row.push(null);
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
@@ -290,7 +372,10 @@ function drawChart() {
                 row.push(null);
             }
         });
-        row.push(rowMax);
+        row.push(mirrorTop);
+        if (activeOverlay === 'turnover') { row.push(storedTurnover[i]); row.push(storedTurnover[i]); }
+        else if (activeOverlay === 'players') { row.push(storedPlayerCount[i]); }
+        else if (activeOverlay === 'ztraceno') { row.push(storedZtraceno[i]); }
         chartData.addRow(row);
     }
 
@@ -300,12 +385,6 @@ function drawChart() {
         const mix = (c) => Math.round(bg + (c - bg) * 0.45);
         return '#' + [r,g,b].map(c => mix(c).toString(16).padStart(2,'0')).join('');
     };
-    let yMin = 0, yMax = 0;
-    cumulative.forEach(arr => arr.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }));
-    const yRange = yMax - yMin;
-    const step = yRange <= 2000 ? 500 : yRange <= 5000 ? 1000 : yRange <= 15000 ? 2500 : 5000;
-    const axisTicks = [];
-    for (let t = Math.floor(yMin / step) * step; t <= Math.ceil(yMax / step) * step; t += step) axisTicks.push(t);
 
     const series = {};
     renderOrder.forEach((ci, j) => {
@@ -314,36 +393,127 @@ function drawChart() {
         if (selectedPlayer && name === selectedPlayer) series[j] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
         else series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
     });
-    series[playerNames.length] = { targetAxisIndex: 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
+    // Mirror series drives the right-hand y-axis labels; when an overlay is shown it
+    // yields axis 1 to that overlay, so park it on axis 0 (still invisible).
+    series[playerNames.length] = { targetAxisIndex: activeOverlay ? 0 : 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
+    if (activeOverlay === 'turnover') {
+        series[playerNames.length + 1] = { type: 'bars', targetAxisIndex: 1, color: TURNOVER_BAR, visibleInLegend: false, enableInteractivity: true };
+        series[playerNames.length + 2] = { type: 'line', targetAxisIndex: 1, color: TURNOVER_LINE, lineWidth: 2, pointSize: 4, visibleInLegend: false, enableInteractivity: true };
+    } else if (activeOverlay === 'players') {
+        series[playerNames.length + 1] = { type: 'line', targetAxisIndex: 1, color: PLAYERS_LINE, lineWidth: 2, pointSize: 4, visibleInLegend: false, enableInteractivity: true };
+    } else if (activeOverlay === 'ztraceno') {
+        series[playerNames.length + 1] = { type: 'line', targetAxisIndex: 1, color: ZTRACENO_LINE, lineWidth: 2, pointSize: 4, visibleInLegend: false, enableInteractivity: true };
+    }
     const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short', ticks: axisTicks };
+    let axis1 = { ...vAxisShared, gridlines: { color: 'transparent' } };
+    if (activeOverlay === 'turnover') {
+        const maxT = Math.max(1, ...storedTurnover.filter(v => v != null));
+        // Scale so the tallest bar reaches ~35% of the plot height, keeping bars a low backdrop.
+        axis1 = { textStyle: { color: TURNOVER_TEXT, fontSize: 10 }, gridlines: { color: 'transparent' }, baselineColor: 'transparent', viewWindow: { min: 0, max: maxT / 0.35 }, format: 'short' };
+    } else if (activeOverlay === 'players') {
+        const maxC = Math.max(1, ...storedPlayerCount.filter(v => v != null));
+        // Same low-backdrop scaling; integer counts, no decimals.
+        axis1 = { textStyle: { color: PLAYERS_TEXT, fontSize: 10 }, gridlines: { color: 'transparent' }, baselineColor: 'transparent', viewWindow: { min: 0, max: Math.ceil(maxC / 0.35) }, format: '0' };
+    } else if (activeOverlay === 'ztraceno') {
+        const vals = storedZtraceno.filter(v => v != null);
+        const minZ = Math.min(0, ...vals), maxZ = Math.max(0, ...vals);
+        const span = Math.max(1, maxZ - minZ);
+        // Compress the (possibly negative) range into the bottom band of the plot.
+        axis1 = { textStyle: { color: ZTRACENO_TEXT, fontSize: 10 }, gridlines: { color: 'transparent' }, baselineColor: 'transparent', viewWindow: { min: minZ - span * 0.05, max: minZ + span / 0.35 }, format: 'short' };
+    }
     const options = {
-        title: 'Kumulativní šmelo', titleTextStyle: { fontSize: 14, color: '#eee' },
-        legend: 'none', interpolateNulls: false, dataOpacity: 1.0, curveType: 'function', series,
-        hAxis: { textStyle: { fontSize: 10, color: '#aaa' }, slantedText: true, slantedTextAngle: 45, gridlines: { color: '#333' }, baselineColor: '#444' },
-        vAxes: { 0: vAxisShared, 1: { ...vAxisShared, gridlines: { color: 'transparent' } } },
-        chartArea: { left: 60, top: 40, right: 60, bottom: 80, width: '100%', height: '100%', backgroundColor: 'transparent' },
+        // Title lives in the window title bar now, not inside the chart.
+        legend: 'none', interpolateNulls: false, dataOpacity: 1.0, curveType: 'function', seriesType: 'line', series,
+        bar: { groupWidth: '55%' },
+        hAxis: { textStyle: { fontSize: 11, color: '#aaa' }, ticks: hTicks, viewWindow: { min: -0.5, max: sessionLabels.length - 0.5 }, gridlines: { color: '#333' }, baselineColor: 'transparent' },
+        vAxes: { 0: vAxisShared, 1: axis1 },
+        chartArea: { left: 60, top: 16, right: 60, bottom: 40, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { trigger: 'none' },
         explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
     };
     if (!chart) {
-        chart = new google.visualization.LineChart(document.getElementById('chartDiv'));
+        chart = new google.visualization.ComboChart(document.getElementById('chartDiv'));
         google.visualization.events.addListener(chart, 'select', function() {
             var sel = chart.getSelection();
-            if (sel.length && sel[0].row != null) {
-                sliderIdx = sel[0].row;
+            if (!sel.length) return;
+            var s = sel[0];
+            // Clicking a line: column identifies the player series (1 + j*3 per render slot).
+            var playerChanged = false;
+            if (s.column != null) {
+                var j = Math.round((s.column - 1) / 3);
+                if (storedRenderOrder && j >= 0 && j < storedRenderOrder.length && (s.column - 1) % 3 === 0) {
+                    var player = playerNames[storedRenderOrder[j]];
+                    if (player && player !== selectedPlayer) {
+                        selectedPlayer = player;
+                        localStorage.setItem('smelo_player', selectedPlayer);
+                        playerChanged = true;
+                    }
+                }
+            }
+            if (s.row != null) {
+                sliderIdx = s.row;
                 const sliderEl = document.getElementById('sliderInput');
                 if (sliderEl) sliderEl.value = sliderIdx;
-                updateSliderInfo();
-                setChartHighlight(sliderIdx);
                 const details = document.getElementById('sessionDetails');
                 details.open = true;
                 details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
+            if (playerChanged) { drawChart(); renderStatsTable(); }
+            if (s.row != null) { updateSliderInfo(); setChartHighlight(sliderIdx); }
         });
+        // Lightweight hover tooltip for the overlay nodes (native tooltips are off globally).
+        const chartDiv = document.getElementById('chartDiv');
+        chartDiv.addEventListener('mousemove', e => {
+            const r = document.getElementById('chartContainer').getBoundingClientRect();
+            overlayMouse.x = e.clientX - r.left;
+            overlayMouse.y = e.clientY - r.top;
+        });
+        google.visualization.events.addListener(chart, 'onmouseover', e => showOverlayTip(e.row, e.column));
+        google.visualization.events.addListener(chart, 'onmouseout', hideOverlayTip);
     }
     chart.draw(chartData, options);
     initSlider();
+}
+
+const overlayMouse = { x: 0, y: 0 };
+function overlayTipEl() {
+    let el = document.getElementById('overlayTip');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'overlayTip';
+        document.getElementById('chartContainer').appendChild(el);
+    }
+    return el;
+}
+function showOverlayTip(row, column) {
+    if (!activeOverlay || row == null || column == null) { hideOverlayTip(); return; }
+    const base = 1 + 3 * storedRenderOrder.length; // '_mirror' column index; overlay columns follow
+    let txt = null;
+    if (activeOverlay === 'turnover' && (column === base + 1 || column === base + 2)) {
+        txt = 'Obrat: ' + Number(storedTurnover[row]).toLocaleString('cs-CZ');
+    } else if (activeOverlay === 'players' && column === base + 1) {
+        txt = 'Hráčů: ' + storedPlayerCount[row];
+    } else if (activeOverlay === 'ztraceno' && column === base + 1) {
+        txt = 'Ztraceno: ' + Number(storedZtraceno[row]).toLocaleString('cs-CZ');
+    }
+    if (!txt) { hideOverlayTip(); return; }
+    const el = overlayTipEl();
+    el.textContent = txt;
+    el.style.display = 'block';
+    // Clamp inside the chart container so the tip never bleeds past the edges.
+    const c = document.getElementById('chartContainer');
+    const cw = c.clientWidth, ch = c.clientHeight, tw = el.offsetWidth, th = el.offsetHeight, pad = 4;
+    let left = overlayMouse.x + 12, top = overlayMouse.y - 8;
+    if (left + tw > cw - pad) left = overlayMouse.x - tw - 12; // flip to the cursor's left
+    left = Math.max(pad, Math.min(left, cw - tw - pad));
+    top = Math.max(pad, Math.min(top, ch - th - pad));
+    el.style.left = left + 'px';
+    el.style.top = top + 'px';
+}
+function hideOverlayTip() {
+    const el = document.getElementById('overlayTip');
+    if (el) el.style.display = 'none';
 }
 
 let statsSortCol = 'total', statsSortAsc = false, statsData = null;
@@ -430,6 +600,54 @@ function renderStatsTable() {
 }
 
 window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
+
+// Resizable chart frame: redraw the chart to fit whenever the window is resized,
+// and remember the chosen width/height across visits.
+(function initChartResize() {
+    const win = document.getElementById('chartWindow');
+    if (!win) return;
+    const savedW = localStorage.getItem('smelo_chart_w');
+    const savedH = localStorage.getItem('smelo_chart_h');
+    if (savedW) win.style.width = savedW + 'px';
+    if (savedH) win.style.height = savedH + 'px';
+    if (!window.ResizeObserver) return;
+    let t = null;
+    const ro = new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+            if (storedCumulative) drawChart();
+            // Don't remember the stretched size while in fullscreen.
+            if (!document.fullscreenElement) {
+                try {
+                    localStorage.setItem('smelo_chart_w', String(Math.round(win.clientWidth)));
+                    localStorage.setItem('smelo_chart_h', String(Math.round(win.clientHeight)));
+                } catch (e) {}
+            }
+        }, 60);
+    });
+    ro.observe(win);
+})();
+
+// Window chrome: native fullscreen toggle (browser handles Esc + the top layer).
+(function initChartWindow() {
+    const win = document.getElementById('chartWindow');
+    const btn = document.getElementById('btnFullscreen');
+    if (!win || !btn) return;
+    function toggle() {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else if (win.requestFullscreen) win.requestFullscreen();
+    }
+    btn.addEventListener('click', toggle);
+    document.getElementById('chartTitleBar').addEventListener('dblclick', e => {
+        if (!e.target.closest('.win-btn')) toggle();
+    });
+    document.addEventListener('fullscreenchange', () => {
+        const on = document.fullscreenElement === win;
+        btn.classList.toggle('active', on);
+        btn.title = on ? 'Ukončit celou obrazovku (Esc)' : 'Celá obrazovka';
+        if (storedCumulative) drawChart();
+    });
+})();
 
 function initSlider() {
     const slider = document.getElementById('sliderInput');

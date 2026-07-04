@@ -25,14 +25,27 @@
     <button class="tab-btn" data-tab="input">Záznam</button>
   </div>
   <div class="tab-panel active" data-tab="vysledky">
-    <div id="rangeToggle" style="margin:12px 0 4px;display:none;">
-      <button id="btnHalf" class="range-btn active">Půlrok</button>
-      <button id="btnAll" class="range-btn">Vše</button>
-      <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
-    </div>
-    <div id="graphSpinner"><div class="spinner"></div></div>
-    <div id="chartContainer">
-      <div id="chartDiv" style="visibility:hidden;"></div>
+    <div id="chartWindow">
+      <div id="chartTitleBar">
+        <span id="chartTitleText">Kumulativní šmelo</span>
+        <div class="win-buttons">
+          <button id="btnFullscreen" class="win-btn" title="Celá obrazovka" aria-label="Celá obrazovka">⛶</button>
+        </div>
+      </div>
+      <div id="rangeToggle" class="win-toolbar" style="display:none;">
+        <button id="btnHalf" class="range-btn active">Půlrok</button>
+        <button id="btnAll" class="range-btn">Vše</button>
+        <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
+        <span class="range-sep" aria-hidden="true"></span>
+        <button id="btnTurnover" class="range-btn" title="Zobrazit obrat — součet všech výher v dané hře">Obrat</button>
+        <button id="btnPlayers" class="range-btn" title="Zobrazit počet hráčů v dané hře">Hráčů</button>
+        <button id="btnZtraceno" class="range-btn" title="Zobrazit ztracené / nezaznamenané peníze v dané hře">Ztraceno</button>
+        <div id="overlayNote" style="display:none;"></div>
+      </div>
+      <div id="graphSpinner"><div class="spinner"></div></div>
+      <div id="chartContainer">
+        <div id="chartDiv" style="visibility:hidden;"></div>
+      </div>
     </div>
     <details id="sessionDetails" open style="display:none;">
       <summary id="sessionSummary" style="cursor:pointer; user-select:none;">Detail</summary>

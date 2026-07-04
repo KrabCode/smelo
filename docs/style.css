@@ -80,16 +80,107 @@ img { border-radius: 16px; }
 .tab-panel.active { display: block; margin-top: 24px; }
 
 /* === Chart === */
+/* === Chart "window" chrome (retro, smelo dark) === */
+#chartWindow {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background: transparent;
+    overflow: hidden;
+    margin: 12px 10px 4px;
+    height: 470px;
+    min-width: 300px;
+    min-height: 300px;
+    max-width: calc(100% - 20px);
+    resize: both;
+}
+#chartTitleBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 28px;
+    padding: 0 6px 0 10px;
+    background: transparent;
+    border-bottom: 1px solid #333;
+    user-select: none;
+}
+#chartTitleText {
+    font-size: 12px;
+    color: #bbb;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.win-buttons { display: flex; gap: 4px; flex-shrink: 0; }
+.win-btn {
+    width: 24px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: #bbb;
+    border: 1px solid #555;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.win-btn:hover { background: #333; color: #eee; }
+.win-btn:active { background: #3a3a3a; }
+.win-btn.active { background: #333; color: #eee; border-color: #777; }
+.win-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 6px 8px;
+    background: transparent;
+    border-bottom: 1px solid #333;
+}
 #chartContainer {
     position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    background: transparent;
 }
 #chartDiv {
     width: 100%;
-    max-width: 100%;
-    height: 420px;
+    height: 100%;
     margin: 0 auto;
     user-select: none;
 }
+/* Native resize grip, made visible against the dark theme */
+#chartWindow::after {
+    content: "";
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #666;
+    border-bottom: 2px solid #666;
+    pointer-events: none;
+}
+/* Fullscreen: fill the whole screen (override the inline resize size), chart fills it */
+#chartWindow:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: none;
+    border-radius: 0;
+    resize: none;
+    background: #181818;
+}
+#chartWindow:fullscreen::after { display: none; }
 
 #graphSpinner {
     display: flex;
@@ -268,6 +359,35 @@ img { border-radius: 16px; }
 }
 .range-btn.active { background: #555; color: #eee; border-color: #888; }
 .range-btn:hover { background: #444; }
+.range-sep {
+    display: inline-block;
+    width: 1px;
+    height: 18px;
+    background: #555;
+    margin: 0 10px;
+    vertical-align: middle;
+}
+#overlayTip {
+    position: absolute;
+    display: none;
+    z-index: 5;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 4px;
+    padding: 3px 7px;
+    font-size: 0.78em;
+    color: #eee;
+    white-space: nowrap;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+#overlayNote {
+    margin-left: auto;
+    font-size: 0.8em;
+    line-height: 1.4;
+    padding: 0 4px;
+    white-space: nowrap;
+}
 
 /* === Teorie cards === */
 .card-list {
