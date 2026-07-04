@@ -752,6 +752,7 @@ function initSlider() {
     slider.value = sliderIdx;
     updateSliderInfo();
     setChartHighlight(sliderIdx);
+    updateFsDetail(sliderIdx);
 }
 
 function updateSliderInfo() {
