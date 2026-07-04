@@ -189,7 +189,7 @@ img { border-radius: 16px; }
 #fsDetail {
     display: none;
     position: absolute;
-    left: 10px;
+    left: 68px;
     top: 10px;
     max-width: 360px;
     max-height: calc(100% - 20px);
