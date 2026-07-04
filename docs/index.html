@@ -33,8 +33,12 @@
         </div>
       </div>
       <div id="rangeToggle" class="win-toolbar" style="display:none;">
-        <button id="btnHalf" class="range-btn active">Půlrok</button>
-        <button id="btnAll" class="range-btn">Vše</button>
+        <button id="btnReset" class="range-btn" title="Vynulovat každého na začátku zobrazeného období">Reset</button>
+        <span class="range-sep" aria-hidden="true"></span>
+        <button id="btnQuarter" class="range-btn" data-range="quarter">Čtvrtletí</button>
+        <button id="btnHalf" class="range-btn active" data-range="half">Půlrok</button>
+        <button id="btnYear" class="range-btn" data-range="year">Rok</button>
+        <button id="btnAll" class="range-btn" data-range="all">Vše</button>
         <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
         <span class="range-sep" aria-hidden="true"></span>
         <button id="btnTurnover" class="range-btn" title="Zobrazit obrat — součet všech výher v dané hře">Obrat</button>
@@ -45,6 +49,7 @@
       <div id="graphSpinner"><div class="spinner"></div></div>
       <div id="chartContainer">
         <div id="chartDiv" style="visibility:hidden;"></div>
+        <div id="fsDetail"></div>
       </div>
     </div>
     <details id="sessionDetails" open style="display:none;">

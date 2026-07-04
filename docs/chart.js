@@ -22,13 +22,18 @@ const ZTRACENO_TEXT = '#f4a0a0';
 const OVERLAY_NOTES = {
     turnover: { html: '<b>Obrat</b> — součet všech výher v dané hře.', color: TURNOVER_TEXT },
     players: { html: '<b>Počet hráčů</b>', color: PLAYERS_TEXT },
-    ztraceno: { html: '<b>Ztraceno</b> — neplánovaná nesrovnalost v záznamu.', color: ZTRACENO_TEXT }
+    ztraceno: { html: '<b>Ztraceno</b> — neplánovaná nesrovnalost v záznamu.', color: ZTRACENO_TEXT },
+    reset: { html: '<b>Reset</b> — každý začíná na nule od začátku období.', color: '#c9b3e6' }
 };
 let chart = null, chartData = null, playerNames = [], playerColors = {}, selectedPlayer = localStorage.getItem('smelo_player') || '';
 let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedAxisLabels = null, storedDates = null, storedTurnover = null, storedPlayerCount = null, storedZtraceno = null;
-// Mutually-exclusive aux overlay on the right axis: '' | 'turnover' | 'players'
+// Mutually-exclusive aux overlay on the right axis: '' | 'turnover' | 'players' | 'ztraceno'
 let activeOverlay = localStorage.getItem('smelo_overlay') || (localStorage.getItem('smelo_turnover') === '1' ? 'turnover' : '');
+// Reset is an independent mode (re-bases the main lines), not a right-axis overlay.
+if (activeOverlay === 'reset') activeOverlay = '';
+let resetBaseline = localStorage.getItem('smelo_reset') === '1';
 let rangeMode = localStorage.getItem('smelo_range') || 'half';
+const RANGE_MONTHS = { quarter: 3, half: 6, year: 12 };
 let rawAllRowsWithDate = null, rawHeaders = null;
 let maxPlayerDisplayName = '';
 let storedHighlightTooltips = {}, storedRenderOrder = [];
@@ -72,10 +77,7 @@ function fetchAndRender() {
                 }
                 return { row, date: isNaN(ts) ? null : new Date(ts) };
             });
-        if (rangeMode === 'all') {
-            document.getElementById('btnAll').classList.add('active');
-            document.getElementById('btnHalf').classList.remove('active');
-        }
+        syncRangeUI();
         syncOverlayUI();
         processAndRender();
         document.getElementById('rangeToggle').style.display = '';
@@ -114,9 +116,12 @@ function processAndRender() {
     const allCumulative = playerNames.map((_, ci) => { let s = 0; return allWinnings.map(row => s += (row[ci] || 0)); });
 
     let cutoffIndex = 0;
-    if (rangeMode === 'half') {
+    const rangeMonths = RANGE_MONTHS[rangeMode];
+    if (rangeMonths) {
+        const cutoffDate = new Date();
+        cutoffDate.setMonth(cutoffDate.getMonth() - rangeMonths);
         for (let i = 0; i < allRowsWithDate.length; i++) {
-            if (allRowsWithDate[i].date && allRowsWithDate[i].date >= sixMonthsAgo) { cutoffIndex = i; break; }
+            if (allRowsWithDate[i].date && allRowsWithDate[i].date >= cutoffDate) { cutoffIndex = i; break; }
         }
     }
 
@@ -138,6 +143,16 @@ function processAndRender() {
         if (firstIdx > 0) for (let i = 0; i < firstIdx; i++) arr[i] = null;
     });
 
+    // "Reset" mode: re-base every line to zero at the start of the shown period, so the
+    // chart shows net change within the cycle instead of carried-over all-time totals.
+    if (resetBaseline) {
+        cumulative.forEach(arr => {
+            let base = null;
+            for (let i = 0; i < arr.length; i++) { if (arr[i] != null) { base = arr[i]; break; } }
+            if (base != null) for (let i = 0; i < arr.length; i++) { if (arr[i] != null) arr[i] -= base; }
+        });
+    }
+
     const sessionLabels = rows.map(x => {
         if (x.date) {
             const d = x.date;
@@ -146,16 +161,16 @@ function processAndRender() {
         return x.row[1];
     });
 
-    // Sparse, scannable x-axis labels: a year at each year's first session, a month number
-    // at each new month, blank otherwise. Full dates stay on the detail panel.
-    let prevYear = null, prevMonth = null;
+    // Sparse, scannable x-axis labels: a year when it first advances, a month number at each
+    // new month, blank otherwise. Year tracking is monotonic so stray typo dates (e.g. a lone
+    // 2024 amid 2025) don't flip-flop the year label. Full dates stay on the detail panel.
+    let shownYear = null, prevMonth = null;
     const axisLabels = rows.map(x => {
-        if (!x.date) return x.row[1];
+        if (!x.date) return '';
         const y = x.date.getFullYear(), m = x.date.getMonth() + 1;
         let label = '';
-        if (y !== prevYear) label = String(y);
-        else if (m !== prevMonth) label = m + '.';
-        prevYear = y; prevMonth = m;
+        if (shownYear === null || y > shownYear) { label = String(y); shownYear = y; prevMonth = m; }
+        else if (y === shownYear && m !== prevMonth) { label = m + '.'; prevMonth = m; }
         return label;
     });
 
@@ -200,30 +215,31 @@ function processAndRender() {
     drawStatsChart();
 }
 
-document.getElementById('btnHalf').addEventListener('click', () => {
-    if (rangeMode === 'half') return;
-    rangeMode = 'half';
-    localStorage.setItem('smelo_range', rangeMode);
-    document.getElementById('btnHalf').classList.add('active');
-    document.getElementById('btnAll').classList.remove('active');
-    processAndRender();
+function syncRangeUI() {
+    document.querySelectorAll('#rangeToggle [data-range]').forEach(b => b.classList.toggle('active', b.dataset.range === rangeMode));
+}
+document.querySelectorAll('#rangeToggle [data-range]').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if (rangeMode === btn.dataset.range) return;
+        rangeMode = btn.dataset.range;
+        localStorage.setItem('smelo_range', rangeMode);
+        syncRangeUI();
+        processAndRender();
+    });
 });
-document.getElementById('btnAll').addEventListener('click', () => {
-    if (rangeMode === 'all') return;
-    rangeMode = 'all';
-    localStorage.setItem('smelo_range', rangeMode);
-    document.getElementById('btnAll').classList.add('active');
-    document.getElementById('btnHalf').classList.remove('active');
-    processAndRender();
-});
+function syncOverlayNote() {
+    const note = document.getElementById('overlayNote');
+    // Aux overlay note takes the line; otherwise show the Reset explainer when Reset is on.
+    const cfg = OVERLAY_NOTES[activeOverlay] || (resetBaseline ? OVERLAY_NOTES.reset : null);
+    if (cfg) { note.innerHTML = cfg.html; note.style.color = cfg.color; note.style.display = ''; }
+    else { note.style.display = 'none'; }
+}
 function syncOverlayUI() {
     document.getElementById('btnTurnover').classList.toggle('active', activeOverlay === 'turnover');
     document.getElementById('btnPlayers').classList.toggle('active', activeOverlay === 'players');
     document.getElementById('btnZtraceno').classList.toggle('active', activeOverlay === 'ztraceno');
-    const note = document.getElementById('overlayNote');
-    const cfg = OVERLAY_NOTES[activeOverlay];
-    if (cfg) { note.innerHTML = cfg.html; note.style.color = cfg.color; note.style.display = ''; }
-    else { note.style.display = 'none'; }
+    document.getElementById('btnReset').classList.toggle('active', resetBaseline);
+    syncOverlayNote();
 }
 function setOverlay(name) {
     activeOverlay = activeOverlay === name ? '' : name;
@@ -234,6 +250,13 @@ function setOverlay(name) {
 document.getElementById('btnTurnover').addEventListener('click', () => setOverlay('turnover'));
 document.getElementById('btnPlayers').addEventListener('click', () => setOverlay('players'));
 document.getElementById('btnZtraceno').addEventListener('click', () => setOverlay('ztraceno'));
+document.getElementById('btnReset').addEventListener('click', () => {
+    resetBaseline = !resetBaseline;
+    localStorage.setItem('smelo_reset', resetBaseline ? '1' : '0');
+    document.getElementById('btnReset').classList.toggle('active', resetBaseline);
+    syncOverlayNote();
+    processAndRender();
+});
 document.getElementById('btnRefreshChart').addEventListener('click', () => {
     try { localStorage.removeItem(CACHE_KEY); localStorage.removeItem(CACHE_TS_KEY); } catch(e) {}
     document.getElementById('graphSpinner').style.display = '';
@@ -393,9 +416,11 @@ function drawChart() {
         if (selectedPlayer && name === selectedPlayer) series[j] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
         else series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
     });
-    // Mirror series drives the right-hand y-axis labels; when an overlay is shown it
-    // yields axis 1 to that overlay, so park it on axis 0 (still invisible).
-    series[playerNames.length] = { targetAxisIndex: activeOverlay ? 0 : 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
+    // Mirror series drives the right-hand y-axis labels; when an aux series overlay is shown
+    // it yields axis 1 to that overlay, so park it on axis 0 (still invisible). Reset has no
+    // aux series, so the mirror keeps the right axis.
+    const auxOverlay = activeOverlay === 'turnover' || activeOverlay === 'players' || activeOverlay === 'ztraceno';
+    series[playerNames.length] = { targetAxisIndex: auxOverlay ? 0 : 1, lineWidth: 0, pointSize: 0, visibleInLegend: false, enableInteractivity: false };
     if (activeOverlay === 'turnover') {
         series[playerNames.length + 1] = { type: 'bars', targetAxisIndex: 1, color: TURNOVER_BAR, visibleInLegend: false, enableInteractivity: true };
         series[playerNames.length + 2] = { type: 'line', targetAxisIndex: 1, color: TURNOVER_LINE, lineWidth: 2, pointSize: 4, visibleInLegend: false, enableInteractivity: true };
@@ -425,7 +450,7 @@ function drawChart() {
         // Title lives in the window title bar now, not inside the chart.
         legend: 'none', interpolateNulls: false, dataOpacity: 1.0, curveType: 'function', seriesType: 'line', series,
         bar: { groupWidth: '55%' },
-        hAxis: { textStyle: { fontSize: 11, color: '#aaa' }, ticks: hTicks, viewWindow: { min: -0.5, max: sessionLabels.length - 0.5 }, gridlines: { color: '#333' }, baselineColor: 'transparent' },
+        hAxis: { textStyle: { fontSize: 11, color: '#aaa' }, ticks: hTicks, viewWindow: { min: -0.5, max: sessionLabels.length - 0.5 }, gridlines: { color: 'transparent' }, minorGridlines: { count: 0 }, baselineColor: 'transparent' },
         vAxes: { 0: vAxisShared, 1: axis1 },
         chartArea: { left: 60, top: 16, right: 60, bottom: 40, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { trigger: 'none' },
@@ -460,7 +485,7 @@ function drawChart() {
                 details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
             if (playerChanged) { drawChart(); renderStatsTable(); }
-            if (s.row != null) { updateSliderInfo(); setChartHighlight(sliderIdx); }
+            if (s.row != null) { updateSliderInfo(); setChartHighlight(sliderIdx); updateFsDetail(sliderIdx); }
         });
         // Lightweight hover tooltip for the overlay nodes (native tooltips are off globally).
         const chartDiv = document.getElementById('chartDiv');
@@ -469,8 +494,15 @@ function drawChart() {
             overlayMouse.x = e.clientX - r.left;
             overlayMouse.y = e.clientY - r.top;
         });
-        google.visualization.events.addListener(chart, 'onmouseover', e => showOverlayTip(e.row, e.column));
-        google.visualization.events.addListener(chart, 'onmouseout', hideOverlayTip);
+        google.visualization.events.addListener(chart, 'onmouseover', e => {
+            showOverlayTip(e.row, e.column);
+            if (e.row != null && document.fullscreenElement) updateFsDetail(e.row);
+        });
+        google.visualization.events.addListener(chart, 'onmouseout', () => {
+            hideOverlayTip();
+            // Not hovering any node: fall back to the selected session in the fullscreen readout.
+            if (document.fullscreenElement) updateFsDetail(sliderIdx >= 0 ? sliderIdx : (storedSessionLabels ? storedSessionLabels.length - 1 : 0));
+        });
     }
     chart.draw(chartData, options);
     initSlider();
@@ -515,6 +547,15 @@ function hideOverlayTip() {
     const el = document.getElementById('overlayTip');
     if (el) el.style.display = 'none';
 }
+// Fullscreen-only readout of the per-session detail table, docked top-left.
+let fsDetailDismissed = false;
+function updateFsDetail(rowIdx) {
+    const el = document.getElementById('fsDetail');
+    if (!el || fsDetailDismissed || rowIdx == null || !storedSessionLabels || !storedSessionLabels[rowIdx]) return;
+    el.innerHTML = '<button class="fs-detail-close" title="Skrýt" aria-label="Skrýt">×</button>' +
+        '<div class="fs-detail-title">' + storedSessionLabels[rowIdx] + '</div>' +
+        buildTooltip(rowIdx, storedHighlightTooltips, selectedPlayer || null);
+}
 
 let statsSortCol = 'total', statsSortAsc = false, statsData = null;
 
@@ -529,10 +570,9 @@ function computeStats() {
                 sessions.push(Number(cell));
             }
         }
-        const cum = storedCumulative[ci];
-        let total = 0;
-        for (let j = cum.length - 1; j >= 0; j--) { if (cum[j] != null) { total = cum[j]; break; } }
-        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total, games: 0, color: playerColors[name] };
+        // Net within the shown range, so the time pills (and Reset) drive this column too.
+        const total = sessions.reduce((a, b) => a + b, 0);
+        if (!sessions.length) return { name: name.split('/')[0].trim(), fullName: name, avg: 0, best: 0, worst: 0, total: 0, games: 0, color: playerColors[name] };
         const wins = sessions.filter(s => s > 0);
         const losses = sessions.filter(s => s < 0);
         return {
@@ -641,11 +681,23 @@ window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
     document.getElementById('chartTitleBar').addEventListener('dblclick', e => {
         if (!e.target.closest('.win-btn')) toggle();
     });
+    // X on the fullscreen readout hides it until fullscreen is toggled off and on again.
+    document.getElementById('fsDetail').addEventListener('click', e => {
+        if (!e.target.closest('.fs-detail-close')) return;
+        fsDetailDismissed = true;
+        document.getElementById('fsDetail').style.display = 'none';
+    });
     document.addEventListener('fullscreenchange', () => {
         const on = document.fullscreenElement === win;
         btn.classList.toggle('active', on);
         btn.title = on ? 'Ukončit celou obrazovku (Esc)' : 'Celá obrazovka';
         if (storedCumulative) drawChart();
+        if (on) {
+            // Fresh entry: bring the readout back even if it was dismissed last time.
+            fsDetailDismissed = false;
+            document.getElementById('fsDetail').style.display = '';
+            updateFsDetail(sliderIdx >= 0 ? sliderIdx : (storedSessionLabels ? storedSessionLabels.length - 1 : 0));
+        }
     });
 })();
 
