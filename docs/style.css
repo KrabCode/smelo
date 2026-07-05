@@ -277,18 +277,6 @@ img { border-radius: 16px; }
 #sessionDetails[open] > summary::before {
     transform: rotate(90deg);
 }
-#sessionSliderControls {
-    display: flex;
-    align-items: center;
-    margin: 0 60px 6px;
-}
-#sliderInput {
-    min-width: 0;
-    flex: 1;
-    accent-color: #ffb300;
-    cursor: pointer;
-    background: transparent;
-}
 #sessionPanel {
     min-height: 300px;
 }
@@ -301,6 +289,8 @@ img { border-radius: 16px; }
     border: 1px solid #333;
     border-radius: 8px;
     padding: 8px 12px;
+    position: relative;
+    z-index: 50;
 }
 #sessionCardHeader {
     display: flex;
@@ -308,6 +298,9 @@ img { border-radius: 16px; }
     justify-content: space-between;
     gap: 12px;
     margin-bottom: 8px;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
 }
 #sessionCardTitle {
     margin: 0;

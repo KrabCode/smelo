@@ -481,8 +481,6 @@ function drawChart() {
             }
             if (s.row != null) {
                 sliderIdx = s.row;
-                const sliderEl = document.getElementById('sliderInput');
-                if (sliderEl) sliderEl.value = sliderIdx;
                 const details = document.getElementById('sessionDetails');
                 details.open = true;
                 details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -644,28 +642,20 @@ function renderStatsTable() {
 
 window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
 
-// Resizable chart frame: redraw the chart to fit whenever the window is resized,
-// and remember the chosen width/height across visits.
+// Resizable chart frame: redraw the chart to fit whenever the window is resized.
+// The chosen size is intentionally not persisted — the window always opens at its
+// default size.
 (function initChartResize() {
     const win = document.getElementById('chartWindow');
     if (!win) return;
-    const savedW = localStorage.getItem('smelo_chart_w');
-    const savedH = localStorage.getItem('smelo_chart_h');
-    if (savedW) win.style.width = savedW + 'px';
-    if (savedH) win.style.height = savedH + 'px';
+    // Clear any size saved by older versions so it can't force a small start size.
+    try { localStorage.removeItem('smelo_chart_w'); localStorage.removeItem('smelo_chart_h'); } catch (e) {}
     if (!window.ResizeObserver) return;
     let t = null;
     const ro = new ResizeObserver(() => {
         clearTimeout(t);
         t = setTimeout(() => {
             if (storedCumulative) drawChart();
-            // Don't remember the stretched size while in fullscreen.
-            if (!document.fullscreenElement) {
-                try {
-                    localStorage.setItem('smelo_chart_w', String(Math.round(win.clientWidth)));
-                    localStorage.setItem('smelo_chart_h', String(Math.round(win.clientHeight)));
-                } catch (e) {}
-            }
         }, 60);
     });
     ro.observe(win);
@@ -743,21 +733,42 @@ window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
     document.addEventListener('fullscreenchange', apply);
 })();
 
+// Drag the detail card by its header, like the chart window — but with no maximize
+// button and no persisted position (it always reappears centered).
+(function initDetailDrag() {
+    const card = document.getElementById('sessionCard');
+    const bar = document.getElementById('sessionCardHeader');
+    if (!card || !bar) return;
+    let offX = 0, offY = 0, startX = 0, startY = 0, baseX = 0, baseY = 0, dragging = false;
+    const apply = () => { card.style.transform = `translate(${offX}px, ${offY}px)`; };
+    bar.addEventListener('pointerdown', e => {
+        // Left button only; ignore the prev/next buttons.
+        if (e.button !== 0 || e.target.closest('.range-btn')) return;
+        dragging = true;
+        startX = e.clientX; startY = e.clientY; baseX = offX; baseY = offY;
+        bar.setPointerCapture(e.pointerId);
+    });
+    bar.addEventListener('pointermove', e => {
+        if (!dragging) return;
+        offX = baseX + (e.clientX - startX);
+        offY = baseY + (e.clientY - startY);
+        apply();
+    });
+    const end = () => { dragging = false; };
+    bar.addEventListener('pointerup', end);
+    bar.addEventListener('pointercancel', end);
+})();
+
 function initSlider() {
-    const slider = document.getElementById('sliderInput');
     const n = storedSessionLabels ? storedSessionLabels.length : 0;
     if (!n) return;
-    slider.max = n - 1;
     if (sliderIdx < 0 || sliderIdx >= n) sliderIdx = n - 1;
-    slider.value = sliderIdx;
     updateSliderInfo();
     setChartHighlight(sliderIdx);
     updateFsDetail(sliderIdx);
 }
 
 function updateSliderInfo() {
-    const slider = document.getElementById('sliderInput');
-    sliderIdx = parseInt(slider.value);
     if (!storedSessionLabels || sliderIdx < 0) return;
     document.getElementById('sessionSummary').textContent = 'Detail';
     document.getElementById('sessionCardTitle').textContent = storedSessionLabels[sliderIdx];
@@ -788,11 +799,10 @@ function setChartHighlight(rowIdx) {
     chart.setSelection(selections);
 }
 
-document.getElementById('sliderInput').addEventListener('input', () => { updateSliderInfo(); setChartHighlight(sliderIdx); });
 document.getElementById('sliderPrev').addEventListener('click', () => {
-    if (sliderIdx > 0) { sliderIdx--; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); setChartHighlight(sliderIdx); }
+    if (sliderIdx > 0) { sliderIdx--; updateSliderInfo(); setChartHighlight(sliderIdx); }
 });
 document.getElementById('sliderNext').addEventListener('click', () => {
     const n = storedSessionLabels ? storedSessionLabels.length : 0;
-    if (sliderIdx < n - 1) { sliderIdx++; document.getElementById('sliderInput').value = sliderIdx; updateSliderInfo(); setChartHighlight(sliderIdx); }
+    if (sliderIdx < n - 1) { sliderIdx++; updateSliderInfo(); setChartHighlight(sliderIdx); }
 });
