@@ -481,9 +481,7 @@ function drawChart() {
             }
             if (s.row != null) {
                 sliderIdx = s.row;
-                const details = document.getElementById('sessionDetails');
-                details.open = true;
-                details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                document.getElementById('sessionDetails').open = true;
             }
             if (playerChanged) { drawChart(); renderStatsTable(); }
             if (s.row != null) { updateSliderInfo(); setChartHighlight(sliderIdx); updateFsDetail(sliderIdx); }
