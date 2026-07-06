@@ -458,7 +458,6 @@ function drawChart() {
         vAxes: { 0: vAxisShared, 1: axis1 },
         chartArea: { left: 60, top: 16, right: 60, bottom: 40, width: '100%', height: '100%', backgroundColor: 'transparent' },
         tooltip: { trigger: 'none' },
-        explorer: { actions: ['dragToZoom', 'rightClickToReset'], axis: 'horizontal', keepInBounds: true, maxZoomIn: 0.1 },
         backgroundColor: 'transparent'
     };
     if (!chart) {
