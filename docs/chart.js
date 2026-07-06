@@ -227,6 +227,7 @@ document.querySelectorAll('#rangeToggle [data-range]').forEach(btn => {
         rangeMode = btn.dataset.range;
         localStorage.setItem('smelo_range', rangeMode);
         syncRangeUI();
+        sliderIdx = -1; // auto-select the last shown node for the new range
         processAndRender();
     });
 });
