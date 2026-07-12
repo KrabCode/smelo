@@ -342,7 +342,7 @@ img { border-radius: 16px; }
 }
 @media (orientation: portrait) {
     #statsTableDiv { padding: 0; }
-    #statsTableDiv table { font-size: 0.8em; }
+    #statsTableDiv table { font-size: 0.68em; }
     #statsTableDiv th, #statsTableDiv td { padding-left: 4px; padding-right: 4px; }
 }
 #statsTableDiv table {
