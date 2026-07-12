@@ -340,11 +340,6 @@ img { border-radius: 16px; }
     padding: 0 60px;
     font-family: 'Segoe UI', Arial, sans-serif;
 }
-@media (orientation: portrait) {
-    #statsTableDiv { padding: 0; }
-    #statsTableDiv table { font-size: 0.68em; }
-    #statsTableDiv th, #statsTableDiv td { padding-left: 4px; padding-right: 4px; }
-}
 #statsTableDiv table {
     width: 100%;
     table-layout: fixed;
@@ -379,6 +374,13 @@ img { border-radius: 16px; }
 #statsTableDiv tr[data-player].selected { background: #333; }
 #statsTableDiv .val-pos { color: #4ade80; }
 #statsTableDiv .val-neg { color: #f87171; }
+/* Mobile: shrink font + tighten padding so 5-digit totals fit on one line.
+   Must come after the base rules above to win the cascade (equal specificity). */
+@media (orientation: portrait) {
+    #statsTableDiv { padding: 0; }
+    #statsTableDiv table { font-size: 0.68em; }
+    #statsTableDiv th, #statsTableDiv td { padding-left: 4px; padding-right: 4px; }
+}
 
 /* === Range toggle buttons === */
 .range-btn {
