@@ -78,3 +78,13 @@ The tournament UI is in **Czech**. Use Czech for all user-facing labels and hint
 ## Results chart (`docs/chart.js`)
 
 Reads the results CSV from a published Google Sheet. **Assume CSV rows are in chronological order** (oldest → newest); the last row is the most recent session. Existing logic (cutoff slicing, "present in last session" filter override) relies on this.
+
+The leaderboard is `#statsTableDiv table` (rendered by `renderStatsTable()` in `chart.js`; "Kumulativní šmelo" = cumulative winnings). It uses `table-layout: fixed`, so long values wrap instead of overflowing — watch for this on mobile.
+
+## CSS gotchas (`docs/style.css`)
+
+- **Cascade order matters for mobile overrides.** Media-query rules (e.g. `@media (orientation: portrait)`) must appear **after** the base rules they override when specificity is equal — otherwise the later base rule silently wins and the mobile override does nothing. The `#statsTableDiv` mobile font/padding block lives at the *end* of the stats-table section for exactly this reason.
+
+## Location note
+
+This repo lives at `/opt/projects/smelo` (a standalone git repo → `github.com:KrabCode/smelo.git`). It is **not** related to the sibling `/opt/projects/DailyTarotDiscordBot` repo, despite once being nested inside it.
