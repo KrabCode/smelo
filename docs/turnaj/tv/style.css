@@ -223,6 +223,7 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
 .display.waiting .blinds-current { order: -2; }
 .display.waiting .timer { order: -1; }
 .display.waiting .progress-wrap { display: none; }
+.display.waiting .chip-stats { display: none; }
 
 
 /* Break message */
