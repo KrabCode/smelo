@@ -92,45 +92,6 @@ seatingBtn.addEventListener('click', () => {
     updateSeatingBtn();
 });
 
-// Fish toggle
-let fishHidden = localStorage.getItem('fishHidden') === '1';
-const fishBtn = document.getElementById('btn-toggle-fish');
-function updateFishBtn() {
-    fishBtn.style.opacity = fishHidden ? '0.4' : '';
-    updateFishVisibility();
-}
-function updateFishVisibility() {
-    const mainFish = document.getElementById('fish-container');
-    const winnerFish = document.getElementById('fish-container-winners');
-    const breakMsg = document.getElementById('break-message');
-    const breakVisible = breakMsg && breakMsg.style.display !== 'none';
-    const winnerBanner = document.getElementById('winner-banner');
-    const winnersVisible = winnerBanner && winnerBanner.style.display !== 'none';
-
-    if (fishHidden) {
-        mainFish.style.display = 'none';
-        winnerFish.style.display = 'none';
-    } else if (winnersVisible) {
-        mainFish.style.display = 'none';
-        winnerFish.style.display = '';
-        // Move canvas to winner container if needed
-        const canvas = mainFish.querySelector('canvas');
-        if (canvas) winnerFish.appendChild(canvas);
-    } else {
-        winnerFish.style.display = 'none';
-        mainFish.style.display = breakVisible ? 'none' : '';
-        // Move canvas back to main container if needed
-        const canvas = winnerFish.querySelector('canvas');
-        if (canvas) mainFish.appendChild(canvas);
-    }
-}
-updateFishBtn();
-fishBtn.addEventListener('click', () => {
-    fishHidden = !fishHidden;
-    localStorage.setItem('fishHidden', fishHidden ? '1' : '0');
-    updateFishBtn();
-});
-
 // ─── Rules Overlay ──────────────────────────────────────────
 const DEFAULT_RULES = [
     { title: 'Chování u stolu', items: ['Nezdržuj.', 'Nekřič, nenadávej.', 'Sleduj hru.', 'Hraj jen když jsi na řadě.', 'Neříkej cos měl, dokud se hraje.'] },
@@ -818,7 +779,6 @@ function render() {
     }
     displayEl.classList.remove('waiting');
 
-    updateFishVisibility();
     fitBlindsText();
 
     // Structure table

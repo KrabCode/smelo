@@ -194,27 +194,20 @@ body { min-height: 100vh; min-width: fit-content; padding-bottom: 48px; font-siz
     font-weight: normal;
 }
 
-/* Fish */
-.fish-container {
-    width: 420px;
-    height: 260px;
-    margin: 10px auto 0;
-}
-.fish-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-#fish-container-winners {
-    width: 420px;
-    height: 260px;
+/* Chip stats */
+.chip-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
     margin: 20px auto 0;
+    font-family: 'Oswald', sans-serif;
+    font-size: 1em;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
 }
-#fish-container-winners canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
+.chip-stats b { color: var(--accent); font-weight: bold; }
 
 /* Break state */
 .blinds-current.on-break { color: var(--green); }
