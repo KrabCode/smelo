@@ -731,7 +731,15 @@ function render() {
 
     const breakMsgEl = document.getElementById('break-message');
     const displayEl = document.getElementById('display');
-    if (isPaused) {
+    if (state.status === 'waiting') {
+        blindsCurEl.textContent = config.waitingMessage || 'Orientační začátek';
+        blindsCurEl.classList.remove('on-break');
+        blindsCurEl.classList.remove('on-pause');
+        blindsCurEl.classList.add('on-waiting');
+        progressBarEl.classList.remove('on-break');
+        document.getElementById('blinds-sub').textContent = '';
+        breakMsgEl.style.display = 'none';
+    } else if (isPaused) {
         blindsCurEl.textContent = 'PAUZA';
         blindsCurEl.classList.remove('on-break');
         blindsCurEl.classList.remove('on-waiting');
@@ -777,7 +785,7 @@ function render() {
         document.getElementById('blinds-sub').textContent = '';
         breakMsgEl.style.display = 'none';
     }
-    displayEl.classList.remove('waiting');
+    displayEl.classList.toggle('waiting', state.status === 'waiting');
 
     fitBlindsText();
 
@@ -914,8 +922,16 @@ function tickTimer() {
             render();
         }
         prevLevel = derived.levelIndex;
+    } else if (state.status === 'waiting') {
+        // Show estimated start time
+        timerEl.textContent = T.config.startTime || '19:00';
+        timerEl.classList.remove('warning');
+        timerEl.classList.remove('paused');
+        progressEl.style.width = '0%';
+        document.getElementById('level-countdown').style.display = 'none';
+        lastCountdownSec = -1;
     } else {
-        // Not running (waiting or finished) — show the first level's full time, idle
+        // Finished — show first level's duration as idle timer
         const duration = (struct[0]?.duration || 20) * 60000;
         timerEl.textContent = formatTime(duration);
         timerEl.classList.remove('warning');
