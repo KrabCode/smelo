@@ -10,7 +10,8 @@ firebase.initializeApp({
 async function ensureSignedIn() {
     const auth = firebase.auth();
     await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    if (auth.currentUser) return;
+    if (auth.currentUser && !auth.currentUser.isAnonymous) return;
+    if (auth.currentUser) await auth.signOut();
     for (;;) {
         const email = prompt('Email:');
         if (email === null) {
@@ -31,6 +32,12 @@ async function ensureSignedIn() {
     }
 }
 await ensureSignedIn();
+
+// Surface silent write failures (e.g. permission denied) instead of failing invisibly
+window.addEventListener('unhandledrejection', (e) => {
+    const msg = e.reason && e.reason.message ? e.reason.message : String(e.reason);
+    alert('Uložení selhalo: ' + msg);
+});
 
 const db = firebase.database();
 const tournamentRef = db.ref('tournament');
