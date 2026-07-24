@@ -642,7 +642,8 @@ function fitBlindsText() {
     const maxPx = parseFloat(getComputedStyle(document.getElementById('timer')).fontSize);
     const len = el.textContent.length;
     const scale = len > BLINDS_BASE_CHARS ? BLINDS_BASE_CHARS / len : 1;
-    el.style.fontSize = (maxPx * scale) + 'px';
+    const waitingBoost = T.state.status === 'waiting' ? 1.3 : 1;
+    el.style.fontSize = (maxPx * scale * waitingBoost) + 'px';
 }
 
 function render() {
