@@ -6,14 +6,6 @@ firebase.initializeApp({
     projectId: "smelo-turnaj"
 });
 
-// NONE persistence keeps this tab's anonymous session local — LOCAL persistence
-// would sync across tabs on this origin and clobber an already-signed-in admin tab.
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE)
-    .then(() => firebase.auth().signInAnonymously())
-    .catch(err => {
-        console.error('Anonymous sign-in failed:', err);
-    });
-
 const db = firebase.database();
 const tournamentRef = db.ref('tournament');
 document.body.classList.add('wide');

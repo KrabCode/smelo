@@ -6,32 +6,36 @@ firebase.initializeApp({
     projectId: "smelo-turnaj"
 });
 
-// ─── Auth Gate ──────────────────────────────────────────────
-async function ensureSignedIn() {
-    const auth = firebase.auth();
-    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    if (auth.currentUser && !auth.currentUser.isAnonymous) return;
-    if (auth.currentUser) await auth.signOut();
-    for (;;) {
-        const email = prompt('Email:');
-        if (email === null) {
-            document.body.innerHTML = '';
-            throw new Error('Auth cancelled');
-        }
-        const pwd = prompt('Heslo:');
-        if (pwd === null) {
-            document.body.innerHTML = '';
-            throw new Error('Auth cancelled');
-        }
-        try {
-            await auth.signInWithEmailAndPassword(email, pwd);
-            return;
-        } catch (err) {
-            alert('Přihlášení selhalo: ' + err.message);
-        }
-    }
+// ─── Password Gate ──────────────────────────────────────────
+const ADMIN_HASH = '04114e775c39003d71c9825add2ee4cfd472c2980936def742daa2072353ecd3';
+
+async function sha256(text) {
+    const data = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
-await ensureSignedIn();
+
+async function checkGate() {
+    if (localStorage.getItem('adminAuth') === '1') return;
+    const input = document.getElementById('admin-gate-pwd');
+    const btn = document.getElementById('admin-gate-btn');
+    await new Promise((resolve) => {
+        const tryUnlock = async () => {
+            if (input.value && await sha256(input.value) === ADMIN_HASH) {
+                localStorage.setItem('adminAuth', '1');
+                resolve();
+            } else {
+                input.value = '';
+                input.placeholder = 'Špatné heslo';
+            }
+        };
+        btn.addEventListener('click', tryUnlock);
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
+    });
+}
+await checkGate();
+document.getElementById('admin-gate').remove();
+document.querySelector('.admin-wrap').style.display = '';
 
 // Surface silent write failures (e.g. permission denied) instead of failing invisibly
 window.addEventListener('unhandledrejection', (e) => {
