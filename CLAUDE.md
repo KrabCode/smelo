@@ -10,9 +10,7 @@ docs/
 ├── turnaj/                            # Poker tournament display (Firebase-backed)
 │   ├── tv/app.js, index.html, style.css       # TV/projector display (read-only, shown to players)
 │   ├── tv/admin/app.js, index.html, style.css # Admin console (password-protected)
-│   ├── assets/fish-config.js                  # Animated fish decorations
-│   ├── print.html                             # Printable tournament info
-│   └── index.html                             # Entry point
+│   └── assets/fish-config.js                  # Animated fish decorations
 ├── teorie/                            # Poker theory articles (static HTML pages)
 ├── text/                              # Shareable text page (URL-based via ?t= param)
 ├── hand/                              # Flutter web app (hand-related)

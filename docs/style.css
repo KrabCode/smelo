@@ -453,6 +453,59 @@ a.card { color: var(--text); text-decoration: none; }
     padding: 2px 8px;
 }
 
+/* === Turnaje (tournament results) === */
+.turnaj-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 0 12px;
+}
+.turnaj-card {
+    background: var(--bg-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: var(--shadow);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+.turnaj-title {
+    font-family: 'Staatliches', sans-serif;
+    letter-spacing: 2px;
+    font-size: 1.1em;
+    color: #ffb300;
+    margin-bottom: 10px;
+}
+.turnaj-row {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #262626;
+}
+.turnaj-row:last-child { border-bottom: none; }
+.turnaj-rank {
+    width: 28px;
+    color: #888;
+    font-family: monospace;
+}
+.turnaj-row.rank-1 .turnaj-rank,
+.turnaj-row.rank-2 .turnaj-rank,
+.turnaj-row.rank-3 .turnaj-rank {
+    font-size: 2em;
+    line-height: 1;
+}
+.turnaj-row.rank-1 .turnaj-rank { color: #ffb300; }
+.turnaj-row.rank-2 .turnaj-rank { color: #ccc; }
+.turnaj-row.rank-3 .turnaj-rank { color: #cd7f32; }
+.turnaj-name { flex: 1; color: #eee; }
+.turnaj-points { color: #999; font-family: monospace; }
+.turnaj-card.latest {
+    background: linear-gradient(135deg, #1e1a10, #222);
+    border-color: #ffb300;
+    box-shadow: 0 0 16px rgba(255,179,0,0.25), 0 0 40px rgba(255,179,0,0.08);
+    animation: glow-pulse 2s ease-in-out infinite;
+}
+
 /* === Input panel === */
 .input-panel {
     max-width: 680px;
