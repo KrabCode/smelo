@@ -1,3 +1,5 @@
+import * as i18n from './i18n.js';
+
 // ─── Firebase Init ──────────────────────────────────────────
 firebase.initializeApp({
     apiKey: "AIzaSyAfQqQYYn8pId99FbqIqX72LH6kOlosunQ",
@@ -26,13 +28,14 @@ async function checkGate() {
                 resolve();
             } else {
                 input.value = '';
-                input.placeholder = 'Špatné heslo';
+                input.placeholder = i18n.t('gate.wrong');
             }
         };
         btn.addEventListener('click', tryUnlock);
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
     });
 }
+i18n.applyI18n();
 await checkGate();
 document.getElementById('admin-gate').remove();
 document.querySelector('.admin-wrap').style.display = '';
@@ -40,7 +43,7 @@ document.querySelector('.admin-wrap').style.display = '';
 // Surface silent write failures (e.g. permission denied) instead of failing invisibly
 window.addEventListener('unhandledrejection', (e) => {
     const msg = e.reason && e.reason.message ? e.reason.message : String(e.reason);
-    alert('Uložení selhalo: ' + msg);
+    alert(i18n.t('error.saveFailed') + msg);
 });
 
 const db = firebase.database();
@@ -367,14 +370,14 @@ function formatTime(ms) {
 
 function showSaveStatus(el, promise) {
     if (!el) return;
-    el.textContent = 'Ukládám...';
+    el.textContent = i18n.t('save.saving');
     el.className = 'save-status saving';
     promise.then(() => {
-        el.textContent = 'Uloženo ✓';
+        el.textContent = i18n.t('save.saved');
         el.className = 'save-status saved';
         setTimeout(() => { el.textContent = ''; el.className = 'save-status'; }, 2000);
     }).catch(() => {
-        el.textContent = 'Chyba ✗';
+        el.textContent = i18n.t('save.error');
         el.className = 'save-status error';
     });
 }
@@ -395,15 +398,15 @@ function renderEventLog() {
     if (!container) return;
     const log = T.eventLog || [];
     if (!log.length) {
-        container.innerHTML = '<div style="opacity:0.4;text-align:center">Žádné události</div>';
+        container.innerHTML = '<div style="opacity:0.4;text-align:center">' + i18n.t('log.empty') + '</div>';
         return;
     }
     const labels = {
-        buyin: 'Buy-in',
-        rebuy: 'Re-buy',
-        addon: 'Add-on',
-        knockout: 'Vyřazen',
-        reentry: 'Návrat'
+        buyin: i18n.t('log.buyin'),
+        rebuy: i18n.t('log.rebuy'),
+        addon: i18n.t('log.addon'),
+        knockout: i18n.t('log.knockout'),
+        reentry: i18n.t('log.reentry')
     };
     const colors = {
         buyin: 'var(--green)',
@@ -440,7 +443,7 @@ function render() {
 
     const unseated = list.filter(p => p.active && !p.table).length;
     document.getElementById('player-count').textContent = stats.activePlayers + '/' + stats.buyIns +
-        (unseated > 0 ? ' \u00B7 ' + unseated + ' bez m\u00EDsta' : '');
+        (unseated > 0 ? ' \u00B7 ' + unseated + ' ' + i18n.t('players.noSeat') : '');
 
     // Timer section
     const isPaused = state.status === 'running' && state.pausedAt > 0;
@@ -457,24 +460,24 @@ function render() {
         const pauseDur = serverNow() - state.pausedAt;
         const pauseMin = Math.floor(pauseDur / 60000);
         const pauseSec = Math.floor((pauseDur % 60000) / 1000);
-        timerLevelEl.textContent = 'PAUZA — ' + pauseMin + ':' + String(pauseSec).padStart(2, '0');
+        timerLevelEl.textContent = i18n.t('label.pause') + ' — ' + pauseMin + ':' + String(pauseSec).padStart(2, '0');
         timerLevelEl.style.color = 'var(--accent)';
     } else if (state.status === 'running' && curEntry) {
         if (onBreak) {
-            timerLevelEl.textContent = 'PŘESTÁVKA';
+            timerLevelEl.textContent = i18n.t('label.break');
             timerLevelEl.style.color = 'var(--green)';
         } else {
             let blindNum = 0;
             for (let i = 0; i <= lvl; i++) { if (!struct[i].isBreak) blindNum++; }
-            timerLevelEl.textContent = 'Level ' + blindNum + ' — ' +
+            timerLevelEl.textContent = i18n.t('label.level') + ' ' + blindNum + ' — ' +
                 curEntry.small.toLocaleString('cs') + ' / ' + curEntry.big.toLocaleString('cs');
             timerLevelEl.style.color = '';
         }
     } else if (state.status === 'finished') {
-        timerLevelEl.textContent = 'Turnaj ukončen';
+        timerLevelEl.textContent = i18n.t('status.ended');
         timerLevelEl.style.color = 'var(--green)';
     } else {
-        const statusLabel = { waiting: 'Čeká se', running: 'Běží', finished: 'Ukončen' };
+        const statusLabel = { waiting: i18n.t('status.waiting'), running: i18n.t('status.running'), finished: i18n.t('status.finished') };
         timerLevelEl.textContent = statusLabel[state.status] || '';
         timerLevelEl.style.color = '';
     }
@@ -496,12 +499,12 @@ function render() {
 
     // Start/Pause/Reset button labels
     document.getElementById('btn-start').textContent =
-        state.status === 'running' ? 'Běží...' : 'Start';
+        state.status === 'running' ? i18n.t('timer.running') : i18n.t('timer.start');
     document.getElementById('btn-start').disabled = state.status === 'running';
     const btnPause = document.getElementById('btn-pause');
     if (state.status === 'running') {
         btnPause.style.display = '';
-        btnPause.textContent = isPaused ? 'Pokračovat' : 'Pauza';
+        btnPause.textContent = isPaused ? i18n.t('timer.resume') : i18n.t('timer.pause');
         btnPause.className = isPaused ? 'btn accent big' : 'btn big';
     } else {
         btnPause.style.display = 'none';
@@ -534,8 +537,8 @@ function render() {
     const prizePool = calculatePrizePool(stats, config);
     const organizerFee = config.organizerFee || 0;
     document.getElementById('pool-display').textContent =
-        'Prize pool: ' + prizePool.toLocaleString('cs') + ' Kč (' + paidPlaces + ' míst)' +
-        (organizerFee ? ' · Poplatek: ' + organizerFee.toLocaleString('cs') + ' Kč' : '');
+        i18n.t('payout.pool') + ': ' + prizePool.toLocaleString('cs') + ' Kč (' + paidPlaces + ' ' + i18n.t('payout.places') + ')' +
+        (organizerFee ? ' · ' + i18n.t('payout.fee') + ': ' + organizerFee.toLocaleString('cs') + ' Kč' : '');
 
     const payoutActive = document.activeElement &&
         (document.activeElement.classList.contains('payout-config-slider') ||
@@ -589,12 +592,12 @@ function renderPlayerList() {
         return (pa.seat || 999) - (pb.seat || 999);
     });
 
-    const buyLabel = 'Buys <span class="th-hint">(' + (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs') + ')</span>';
-    const addonLabel = 'Add-on' + (c.addonChips ? ' <span class="th-hint">(' + (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') + ')</span>' : '');
-    const bonusLabel = 'Bonus' + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
+    const buyLabel = i18n.t('th.buys') + ' <span class="th-hint">(' + (c.buyInAmount || 400).toLocaleString('cs') + ' Kč \u2192 ' + (c.startingStack || 5000).toLocaleString('cs') + ')</span>';
+    const addonLabel = i18n.t('th.addon') + (c.addonChips ? ' <span class="th-hint">(' + (c.addonAmount || 0).toLocaleString('cs') + ' Kč \u2192 ' + c.addonChips.toLocaleString('cs') + ')</span>' : '');
+    const bonusLabel = i18n.t('th.bonus') + (c.bonusAmount ? ' <span class="th-hint">(' + c.bonusAmount.toLocaleString('cs') + ')</span>' : '');
 
     let html = '<div class="player-table-wrap"><table class="player-table"><thead><tr>' +
-        '<th>Hráč</th><th>Stůl</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>Aktivní</th><th></th>' +
+        '<th>' + i18n.t('th.player') + '</th><th>' + i18n.t('th.table') + '</th><th>' + buyLabel + '</th><th>' + addonLabel + '</th><th>' + bonusLabel + '</th><th>' + i18n.t('th.active') + '</th><th></th>' +
         '</tr></thead><tbody>';
 
     sorted.forEach(i => {
@@ -604,7 +607,7 @@ function renderPlayerList() {
 
         let seatSelect = '<select class="player-seat-select" data-idx="' + i + '">';
         seatSelect += '<option value=""' + (!curVal ? ' selected' : '') + '>\u2014</option>';
-        seatSelect += '<option value="random">Náhodné</option>';
+        seatSelect += '<option value="random">' + i18n.t('players.random') + '</option>';
         TABLES.forEach(t => {
             const tl = locks[t.id] || {};
             if (tl.locked) return;
@@ -628,7 +631,7 @@ function renderPlayerList() {
             '<td><button class="player-toggle' + (p.addon ? ' on' : '') + '" data-idx="' + i + '" data-field="addon"></button></td>' +
             '<td><button class="player-toggle' + (p.bonus ? ' on' : '') + '" data-idx="' + i + '" data-field="bonus"></button></td>' +
             '<td><button class="player-toggle active-toggle' + (p.active ? ' on' : '') + '" data-idx="' + i + '" data-field="active"></button></td>' +
-            '<td><button class="player-remove" data-idx="' + i + '" title="Odebrat">&times;</button></td>' +
+            '<td><button class="player-remove" data-idx="' + i + '" title="' + i18n.t('players.remove') + '">&times;</button></td>' +
             '</tr>';
     });
     html += '</tbody></table></div>';
@@ -666,7 +669,7 @@ function renderPayoutConfig() {
 
     const total = values.reduce((s, v) => s + v, 0);
     const totalEl = document.getElementById('payout-config-total');
-    totalEl.textContent = 'Celkem: ' + Math.round(total) + '%';
+    totalEl.textContent = i18n.t('payout.total') + ': ' + Math.round(total) + '%';
     totalEl.style.color = Math.abs(total - 100) < 0.5 ? 'var(--green)' : 'var(--red)';
 }
 
@@ -703,7 +706,7 @@ function applyPayoutChange(place, newVal) {
     });
     const newTotal = values.reduce((s, v) => s + v, 0);
     const totalEl = document.getElementById('payout-config-total');
-    totalEl.textContent = 'Celkem: ' + Math.round(newTotal) + '%';
+    totalEl.textContent = i18n.t('payout.total') + ': ' + Math.round(newTotal) + '%';
     totalEl.style.color = Math.abs(newTotal - 100) < 0.5 ? 'var(--green)' : 'var(--red)';
 
     T.payoutConfig = values;
@@ -739,9 +742,9 @@ function renderWinners() {
                     name + ' <span class="knockout-mini-time">' + ts + '</span></button>';
             }
             html += '<div class="winner-field">' +
-                '<label>' + i + '. místo</label>' +
+                '<label>' + i + '. ' + i18n.t('winners.place') + '</label>' +
                 '<div class="winner-row">' +
-                '<input type="text" id="cfg-winner-' + i + '" placeholder="Jméno hráče..." value="' +
+                '<input type="text" id="cfg-winner-' + i + '" placeholder="' + i18n.t('winners.namePlaceholder') + '" value="' +
                 val.replace(/"/g, '&quot;') + '">' +
                 koHtml +
                 '</div>' +
@@ -782,13 +785,13 @@ function renderRulesInputs() {
     const container = document.getElementById('rules-sections-list');
     if (!container) return;
     const sections = getRules();
-    container.innerHTML = '<div class="hint" style="margin-bottom:10px;text-align:left">Text za <b>|</b> se zobraz\u00ed jako \u0161t\u00edtek</div>' +
+    container.innerHTML = '<div class="hint" style="margin-bottom:10px;text-align:left">' + i18n.t('rules.hint') + '</div>' +
     sections.map((sec, si) => {
         const items = sec.items || [];
         return '<div class="rules-admin-section" data-section-idx="' + si + '">' +
             '<div class="rules-admin-header">' +
-            '<input type="text" class="rules-title-input" data-section-idx="' + si + '" value="' + (sec.title || '').replace(/"/g, '&quot;') + '" placeholder="Název sekce...">' +
-            '<button class="note-remove section-remove" data-section-idx="' + si + '" title="Smazat sekci">&times;</button>' +
+            '<input type="text" class="rules-title-input" data-section-idx="' + si + '" value="' + (sec.title || '').replace(/"/g, '&quot;') + '" placeholder="' + i18n.t('rules.sectionName') + '">' +
+            '<button class="note-remove section-remove" data-section-idx="' + si + '" title="' + i18n.t('rules.removeSection') + '">&times;</button>' +
             '</div>' +
             '<div class="rules-admin-items" data-section-idx="' + si + '">' +
             items.map((r, i) => {
@@ -800,10 +803,10 @@ function renderRulesInputs() {
             }
             ).join('') +
             '</div>' +
-            '<button class="btn rule-add" data-section-idx="' + si + '" style="margin-top:4px">+ Pravidlo</button>' +
+            '<button class="btn rule-add" data-section-idx="' + si + '" style="margin-top:4px">' + i18n.t('rules.addRule') + '</button>' +
             '</div>';
     }).join('') +
-    '<button class="btn" id="btn-add-rule-section" style="margin-top:8px">+ Sekce</button>';
+    '<button class="btn" id="btn-add-rule-section" style="margin-top:8px">' + i18n.t('rules.addSection') + '</button>';
     // Autofit all rule textareas
     container.querySelectorAll('textarea').forEach(autofitTextarea);
 }
@@ -871,7 +874,7 @@ function renderTableLocks() {
             const maxP = Math.max(...playerCounts);
             const minP = Math.min(...playerCounts);
             if (maxP - minP >= 2) {
-                statusHtml += '<span class="seating-rebalance-warn">Rebalance?</span>';
+                statusHtml += '<span class="seating-rebalance-warn">' + i18n.t('seating.rebalance') + '</span>';
             }
         }
         statusHtml += '</div>';
@@ -893,11 +896,11 @@ function renderTableLocks() {
         html += '<div class="table-lock-card">' +
             '<div class="table-lock-header">' +
             '<span class="table-lock-name" style="color:' + t.color + '">' + t.name + '</span>' +
-            (!isLocked ? '<span class="table-lock-free">(' + freeCount + ' volných)</span>' : '') +
+            (!isLocked ? '<span class="table-lock-free">(' + freeCount + ' ' + i18n.t('seating.free') + ')</span>' : '') +
             '<button class="btn table-lock-toggle' + (isLocked ? ' danger' : '') +
             '" data-table="' + t.id + '" style="margin-left:auto;min-width:auto;padding:8px 16px">' +
-            (isLocked ? 'Zamčený' : 'Otevřený') + '</button>' +
-            '<button class="btn table-rotate" data-table="' + t.id + '" style="min-width:auto;padding:8px 16px" title="Otočit o 90°">\u21BB</button>' +
+            (isLocked ? i18n.t('seating.locked') : i18n.t('seating.open')) + '</button>' +
+            '<button class="btn table-rotate" data-table="' + t.id + '" style="min-width:auto;padding:8px 16px" title="' + i18n.t('seating.rotate') + '">\u21BB</button>' +
             '</div>';
 
         if (!isLocked) {
@@ -913,7 +916,7 @@ function renderTableLocks() {
             html += '</div>';
             const walls = tl.walls || [];
             html += '<div class="wall-toggle-row">' +
-                '<span class="wall-toggle-label">Zdi:</span>';
+                '<span class="wall-toggle-label">' + i18n.t('seating.walls') + '</span>';
             [{side:'top',icon:'\u25B2'},{side:'bottom',icon:'\u25BC'},{side:'left',icon:'\u25C4'},{side:'right',icon:'\u25BA'}].forEach(w => {
                 html += '<button class="wall-toggle-btn' + (walls.includes(w.side) ? ' active' : '') +
                     '" data-table="' + t.id + '" data-wall="' + w.side + '">' + w.icon + '</button>';
@@ -950,7 +953,7 @@ function saveTables() {
     statusEl.textContent = '';
     statusEl.className = 'save-status';
     tournamentRef.child('tables').set(clean).then(() => {
-        statusEl.textContent = 'Uloženo';
+        statusEl.textContent = i18n.t('tables.saved');
         statusEl.className = 'save-status saved';
         setTimeout(() => { statusEl.textContent = ''; statusEl.className = 'save-status'; }, 2000);
     });
@@ -978,7 +981,7 @@ document.getElementById('tables-config-list').addEventListener('click', (e) => {
     if (!btn) return;
     const idx = parseInt(btn.dataset.idx);
     if (TABLES.length <= 1) return;
-    if (!confirm('Smazat stůl "' + TABLES[idx].name + '"?')) return;
+    if (!confirm(i18n.t('tables.confirmRemove', { name: TABLES[idx].name }))) return;
     const removedId = TABLES[idx].id;
     TABLES.splice(idx, 1);
     const list = T.players.list || [];
@@ -1040,7 +1043,7 @@ function renderBlindStructure() {
             const breakLabel = s.label || '';
             classes.push('break-row');
             tr.className = classes.join(' ');
-            tr.innerHTML = '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' \u2013 ' + endHH + ':' + endMM +
+            tr.innerHTML = '<td colspan="' + (anteOn ? 5 : 4) + '">' + i18n.t('label.break') + ' ' + timeStr + ' \u2013 ' + endHH + ':' + endMM +
                 (breakLabel ? '<div class="break-label">' + breakLabel.replace(/</g, '&lt;') + '</div>' : '') + '</td>';
         } else {
             levelNum++;
@@ -1072,7 +1075,7 @@ function renderBreaksList() {
 
     const breaks = T.breaks || [];
     if (!breaks.length) {
-        container.innerHTML = '<div style="opacity:0.4">Žádné přestávky</div>';
+        container.innerHTML = '<div style="opacity:0.4">' + i18n.t('breaks.none') + '</div>';
         return;
     }
 
@@ -1089,15 +1092,15 @@ function renderBreaksList() {
     container.innerHTML = breaks.map((b, i) =>
         '<div class="break-row" data-idx="' + i + '">' +
         '<div class="break-row-head">' +
-        '<label>Po levelu</label>' +
+        '<label>' + i18n.t('breaks.afterLevel') + '</label>' +
         '<input type="number" class="break-after" min="1" value="' + b.afterLevel + '" inputmode="numeric">' +
-        '<label>D\u00e9lka (min)</label>' +
+        '<label>' + i18n.t('breaks.duration') + '</label>' +
         '<input type="number" class="break-dur" min="1" value="' + b.duration + '" inputmode="numeric">' +
-        '<span class="break-row-time">' + (times[b.afterLevel] || 'mimo strukturu') + '</span>' +
-        '<button class="note-remove break-remove" title="Smazat p\u0159est\u00e1vku">&times;</button>' +
+        '<span class="break-row-time">' + (times[b.afterLevel] || i18n.t('breaks.outside')) + '</span>' +
+        '<button class="note-remove break-remove" title="' + i18n.t('breaks.remove') + '">&times;</button>' +
         '</div>' +
-        '<input type="text" class="break-label-input" value="' + (b.label || '').replace(/"/g, '&quot;') + '" placeholder="Popisek ve struktu\u0159e (nap\u0159. Konec re-buy\u016F)">' +
-        '<textarea class="break-msg-input" rows="2" placeholder="Text na TV b\u011bhem p\u0159est\u00e1vky \u2014 prvn\u00ed \u0159\u00e1dek v\u011bt\u0161\u00edm p\u00edsmem...">' + (b.message || '').replace(/</g, '&lt;') + '</textarea>' +
+        '<input type="text" class="break-label-input" value="' + (b.label || '').replace(/"/g, '&quot;') + '" placeholder="' + i18n.t('breaks.labelPlaceholder') + '">' +
+        '<textarea class="break-msg-input" rows="2" placeholder="' + i18n.t('breaks.messagePlaceholder') + '">' + (b.message || '').replace(/</g, '&lt;') + '</textarea>' +
         '</div>'
     ).join('');
     container.querySelectorAll('textarea').forEach(autofitTextarea);
@@ -1174,7 +1177,7 @@ setInterval(() => {
             const pauseMin = Math.floor(pauseDur / 60000);
             const pauseSec = Math.floor((pauseDur % 60000) / 1000);
             const timerLevelEl = document.getElementById('timer-level');
-            timerLevelEl.textContent = 'PAUZA — ' + pauseMin + ':' + String(pauseSec).padStart(2, '0');
+            timerLevelEl.textContent = i18n.t('label.pause') + ' — ' + pauseMin + ':' + String(pauseSec).padStart(2, '0');
             timerLevelEl.style.color = 'var(--accent)';
         }
     } else {
@@ -1313,7 +1316,7 @@ document.getElementById('new-player-name').addEventListener('keydown', (e) => {
 
 // Test players
 document.getElementById('btn-add-test-players').addEventListener('click', () => {
-    if (!confirm('Přidat 8 testovacích hráčů?')) return;
+    if (!confirm(i18n.t('players.confirmTest'))) return;
     const names = ['Adam', 'Bára', 'Cyril', 'Dana', 'Emil', 'Fanda', 'Gita', 'Honza'];
     const list = T.players.list || [];
     names.forEach(name => {
@@ -1329,7 +1332,7 @@ document.getElementById('btn-add-test-players').addEventListener('click', () => 
 
 // Remove all
 document.getElementById('btn-remove-all-players').addEventListener('click', () => {
-    if (!confirm('Opravdu smazat všechny hráče?')) return;
+    if (!confirm(i18n.t('players.confirmRemoveAll'))) return;
     T.players.list = [];
     savePlayerList();
     render();
@@ -1409,7 +1412,7 @@ document.getElementById('players-list').addEventListener('click', (e) => {
 
     if (btn.classList.contains('player-remove')) {
         const idx = parseInt(btn.dataset.idx);
-        if (list[idx] && confirm('Odebrat ' + list[idx].name + '?')) {
+        if (list[idx] && confirm(i18n.t('players.confirmRemove', { name: list[idx].name }))) {
             list.splice(idx, 1);
             T.players.list = list;
             savePlayerList();
@@ -1422,7 +1425,7 @@ document.getElementById('players-list').addEventListener('click', (e) => {
 // Timer
 document.getElementById('btn-start').addEventListener('click', () => {
     if (T.state.status === 'running') return;
-    if (!confirm('Spustit timer?')) return;
+    if (!confirm(i18n.t('timer.confirmStart'))) return;
     tournamentRef.child('state').update({
         status: 'running',
         startedAt: serverNow()
@@ -1466,7 +1469,7 @@ document.getElementById('btn-level-back').addEventListener('click', () => shiftL
 document.getElementById('btn-level-fwd').addEventListener('click', () => shiftLevel(1));
 
 document.getElementById('btn-reset').addEventListener('click', () => {
-    if (!confirm('Opravdu resetovat timer?')) return;
+    if (!confirm(i18n.t('timer.confirmReset'))) return;
     tournamentRef.child('state').set(DEFAULTS.state);
     tournamentRef.child('payoutConfig').set(null);
     tournamentRef.child('eventLog').set(null);
@@ -1492,13 +1495,13 @@ document.getElementById('btn-save-winners').addEventListener('click', () => {
     }
     tournamentRef.update(updates).then(() => {
         const btn = document.getElementById('btn-save-winners');
-        btn.textContent = 'Vítězové vyhlášeni \u2713';
-        setTimeout(() => { btn.textContent = 'Vyhlásit vítěze'; }, 2000);
+        btn.textContent = i18n.t('winners.declared');
+        setTimeout(() => { btn.textContent = i18n.t('winners.declare'); }, 2000);
     });
 });
 
 document.getElementById('btn-clear-winners').addEventListener('click', () => {
-    if (!confirm('Smazat výsledky?')) return;
+    if (!confirm(i18n.t('winners.confirmClear'))) return;
     T.state.winners = {};
     tournamentRef.child('state/winners').set({});
     renderWinners();
@@ -1630,7 +1633,7 @@ notesList.addEventListener('drop', (e) => {
 // Rules
 document.getElementById('rules-sections-list').addEventListener('click', (e) => {
     if (e.target.classList.contains('rule-remove')) {
-        if (!confirm('Smazat pravidlo?')) return;
+        if (!confirm(i18n.t('rules.confirmRemoveRule'))) return;
         const si = parseInt(e.target.closest('.rules-admin-items').dataset.sectionIdx);
         const idx = parseInt(e.target.dataset.ruleIdx);
         const rules = collectRules();
@@ -1640,7 +1643,7 @@ document.getElementById('rules-sections-list').addEventListener('click', (e) => 
         saveRules();
     }
     if (e.target.classList.contains('section-remove')) {
-        if (!confirm('Smazat celou sekci pravidel?')) return;
+        if (!confirm(i18n.t('rules.confirmRemoveSection'))) return;
         const si = parseInt(e.target.dataset.sectionIdx);
         const rules = collectRules();
         rules.splice(si, 1);
@@ -1787,7 +1790,7 @@ document.getElementById('table-locks-ui').addEventListener('click', (e) => {
 
 // Reshuffle
 document.getElementById('btn-reshuffle-seats').addEventListener('click', () => {
-    if (!confirm('Přepočítat zasedací pořádek?')) return;
+    if (!confirm(i18n.t('seating.confirmReshuffle'))) return;
     const list = T.players.list || [];
     list.forEach(p => { delete p.table; delete p.seat; });
     list.forEach(p => { if (p.active) assignSeat(p, list); });
@@ -1849,7 +1852,7 @@ function renderProfiles() {
     const prev = sel.value;
     const keys = Object.keys(T.profiles || {});
     keys.sort((a, b) => (T.profiles[a].name || a).localeCompare(T.profiles[b].name || b, 'cs'));
-    sel.innerHTML = '<option value="">— Uložené profily —</option>' +
+    sel.innerHTML = '<option value="">' + i18n.t('profiles.none') + '</option>' +
         keys.map(k => '<option value="' + k.replace(/"/g, '&quot;') + '">' +
             (T.profiles[k].name || k).replace(/</g, '&lt;') + '</option>').join('');
     if (T.profiles[prev]) sel.value = prev;
@@ -1860,7 +1863,7 @@ document.getElementById('btn-profile-save').addEventListener('click', () => {
     const name = (nameEl.value || '').trim();
     if (!name) { nameEl.focus(); return; }
     const key = sanitizeProfileKey(name);
-    if (T.profiles[key] && !confirm('Profil „' + name + '" už existuje. Přepsat?')) return;
+    if (T.profiles[key] && !confirm(i18n.t('profiles.confirmOverwrite', { name: name }))) return;
     const profile = {
         name: name,
         savedAt: serverNow(),
@@ -1873,8 +1876,8 @@ document.getElementById('btn-profile-save').addEventListener('click', () => {
         const sel = document.getElementById('profile-select');
         if (sel) sel.value = key;
         const btn = document.getElementById('btn-profile-save');
-        btn.textContent = 'Uloženo ✓';
-        setTimeout(() => { btn.textContent = 'Uložit jako profil'; }, 1500);
+        btn.textContent = i18n.t('profiles.saved');
+        setTimeout(() => { btn.textContent = i18n.t('profiles.save'); }, 1500);
     });
 });
 
@@ -1883,7 +1886,7 @@ document.getElementById('btn-profile-load').addEventListener('click', () => {
     const key = sel.value;
     if (!key || !T.profiles[key]) return;
     const profile = T.profiles[key];
-    if (!confirm('Načíst profil „' + (profile.name || key) + '"? Přepíše aktuální strukturu a nastavení turnaje.')) return;
+    if (!confirm(i18n.t('profiles.confirmLoad', { name: profile.name || key }))) return;
     const config = { ...DEFAULTS.config, ...(profile.config || {}) };
     const blindOverrides = profile.blindOverrides || {};
     const breaks = profile.breaks || [];
@@ -1907,7 +1910,7 @@ document.getElementById('btn-profile-delete').addEventListener('click', () => {
     const sel = document.getElementById('profile-select');
     const key = sel.value;
     if (!key || !T.profiles[key]) return;
-    if (!confirm('Smazat profil „' + (T.profiles[key].name || key) + '"?')) return;
+    if (!confirm(i18n.t('profiles.confirmDelete', { name: T.profiles[key].name || key }))) return;
     tournamentRef.child('profiles/' + key).remove();
     sel.value = '';
 });
@@ -1973,9 +1976,11 @@ function populateSoundSelects() {
     for (const id of ids) {
         const sel = document.getElementById(id);
         if (!sel) continue;
+        const prev = sel.value;
         sel.innerHTML = '';
-        sel.appendChild(new Option('— žádný —', ''));
+        sel.appendChild(new Option(i18n.t('sounds.none'), ''));
         for (const f of ALL_SOUND_FILES) sel.appendChild(new Option(f, f));
+        sel.value = prev;
     }
 }
 populateSoundSelects();
@@ -2002,8 +2007,27 @@ SOUND_BINDINGS.forEach(({ selectId, testBtnId, ref }) => {
 
 // Clear event log
 document.getElementById('btn-clear-event-log').addEventListener('click', () => {
-    if (!confirm('Smazat log událostí?')) return;
+    if (!confirm(i18n.t('log.confirmClear'))) return;
     tournamentRef.child('eventLog').set(null);
     T.eventLog = [];
     renderEventLog();
+});
+
+// ─── Language ───────────────────────────────────────────────
+function updateLangButtons() {
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('accent', btn.dataset.lang === i18n.getLang());
+    });
+}
+updateLangButtons();
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        i18n.setLang(btn.dataset.lang);
+        i18n.applyI18n();
+        updateLangButtons();
+        populateSoundSelects();
+        buildSectionNav();
+        render();
+    });
 });

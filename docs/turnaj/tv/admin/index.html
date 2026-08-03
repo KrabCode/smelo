@@ -14,8 +14,8 @@
 </head>
 <body>
     <div id="admin-gate" style="position:fixed;inset:0;z-index:9999;display:flex;gap:8px;align-items:center;justify-content:center;background:#111;">
-        <input type="password" id="admin-gate-pwd" placeholder="Heslo" autofocus style="padding:10px;font-size:1.1em;">
-        <button type="button" id="admin-gate-btn" class="btn">Odemknout</button>
+        <input type="password" id="admin-gate-pwd" data-i18n-placeholder="gate.password" placeholder="Heslo" autofocus style="padding:10px;font-size:1.1em;">
+        <button type="button" id="admin-gate-btn" class="btn" data-i18n="gate.unlock">Odemknout</button>
     </div>
     <div class="admin-wrap" style="display:none">
 
@@ -24,24 +24,24 @@
 
         <!-- Timer controls -->
         <div class="section" id="section-timer">
-            <h2>&#x23F1;&#xFE0F; Timer <button type="button" class="guard-toggle" data-target="section-timer">&#x1F512;</button></h2>
+            <h2>&#x23F1;&#xFE0F; <span data-i18n="sec.timer">Timer</span> <button type="button" class="guard-toggle" data-target="section-timer">&#x1F512;</button></h2>
             <div class="timer-display" id="timer-display">00:00</div>
             <div class="timer-level" id="timer-level"></div>
             <div class="section-body">
             <div class="btn-row">
                 <button class="btn accent big" id="btn-start">Start</button>
                 <button class="btn big" id="btn-pause" style="display:none">Pauza</button>
-                <button class="btn danger big" id="btn-reset">Reset</button>
+                <button class="btn danger big" id="btn-reset" data-i18n="timer.reset">Reset</button>
             </div>
             <div id="start-time-row" style="display:none">
-                <label>Začátek turnaje</label>
+                <label data-i18n="timer.startOfTournament">Začátek turnaje</label>
                 <div class="inline-row">
                     <input type="time" id="cfg-start-time" step="60">
-                    <button class="btn" id="btn-set-start-time">Nastavit</button>
+                    <button class="btn" id="btn-set-start-time" data-i18n="timer.set">Nastavit</button>
                 </div>
                 <div class="inline-row" style="margin-top:8px">
-                    <button class="btn big" id="btn-level-back" style="flex:1">&#9664; Level zpět</button>
-                    <button class="btn big" id="btn-level-fwd" style="flex:1">Level vpřed &#9654;</button>
+                    <button class="btn big" id="btn-level-back" style="flex:1">&#9664; <span data-i18n="timer.levelBack">Level zpět</span></button>
+                    <button class="btn big" id="btn-level-fwd" style="flex:1"><span data-i18n="timer.levelFwd">Level vpřed</span> &#9654;</button>
                 </div>
             </div>
             </div>
@@ -49,43 +49,43 @@
 
         <!-- Players -->
         <div class="section" id="section-players">
-            <h2>&#x1F465; Hráči <span class="badge" id="player-count">0</span> <button type="button" class="guard-toggle" data-target="section-players">&#x1F512;</button></h2>
+            <h2>&#x1F465; <span data-i18n="sec.players">Hráči</span> <span class="badge" id="player-count">0</span> <button type="button" class="guard-toggle" data-target="section-players">&#x1F512;</button></h2>
             <div class="section-body">
             <div class="inline-row">
-                <input type="text" id="new-player-name" placeholder="Jméno hráče..." enterkeyhint="done">
-                <button class="btn accent" id="btn-add-player">+ Hráč</button>
+                <input type="text" id="new-player-name" data-i18n-placeholder="players.namePlaceholder" placeholder="Jméno hráče..." enterkeyhint="done">
+                <button class="btn accent" id="btn-add-player" data-i18n="players.add">+ Hráč</button>
             </div>
             <div id="players-list"></div>
             <div class="player-summary" id="player-summary"></div>
             <div class="btn-row" style="margin-top:12px">
-                <button class="btn" id="btn-add-test-players">+ Test (8)</button>
-                <button class="btn danger" id="btn-remove-all-players">Smazat vše</button>
+                <button class="btn" id="btn-add-test-players" data-i18n="players.test">+ Test (8)</button>
+                <button class="btn danger" id="btn-remove-all-players" data-i18n="players.removeAll">Smazat vše</button>
             </div>
             </div>
         </div>
 
         <!-- Winners -->
         <div class="section" id="section-winners">
-            <h2>&#x1F3C6; Výsledky <button type="button" class="guard-toggle" data-target="section-winners">&#x1F512;</button></h2>
+            <h2>&#x1F3C6; <span data-i18n="sec.winners">Výsledky</span> <button type="button" class="guard-toggle" data-target="section-winners">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="winners-fields"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn accent big" id="btn-save-winners">Vyhlásit vítěze</button>
-                    <button class="btn danger" id="btn-clear-winners">Smazat výsledky</button>
+                    <button class="btn accent big" id="btn-save-winners" data-i18n="winners.declare">Vyhlásit vítěze</button>
+                    <button class="btn danger" id="btn-clear-winners" data-i18n="winners.clear">Smazat výsledky</button>
                 </div>
             </div>
         </div>
 
         <!-- Payouts -->
         <div class="section" id="section-payout">
-            <h2>&#x1F4B0; Výplaty <button type="button" class="guard-toggle" data-target="section-payout">&#x1F512;</button></h2>
+            <h2>&#x1F4B0; <span data-i18n="sec.payout">Výplaty</span> <button type="button" class="guard-toggle" data-target="section-payout">&#x1F512;</button></h2>
             <div class="section-body">
                 <div class="pool-display" id="pool-display"></div>
                 <div id="payout-config-rows"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn" id="btn-payout-add">+ Místo</button>
-                    <button class="btn" id="btn-payout-remove">− Místo</button>
-                    <button class="btn" id="btn-payout-auto">Auto</button>
+                    <button class="btn" id="btn-payout-add" data-i18n="payout.addPlace">+ Místo</button>
+                    <button class="btn" id="btn-payout-remove" data-i18n="payout.removePlace">− Místo</button>
+                    <button class="btn" id="btn-payout-auto" data-i18n="payout.auto">Auto</button>
                 </div>
                 <div class="payout-config-total" id="payout-config-total"></div>
             </div>
@@ -93,12 +93,12 @@
 
         <!-- Tables config -->
         <div class="section" id="section-tables">
-            <h2>&#x26E9;&#xFE0F; Stoly <button type="button" class="guard-toggle" data-target="section-tables">&#x1F512;</button></h2>
+            <h2>&#x26E9;&#xFE0F; <span data-i18n="sec.tables">Stoly</span> <button type="button" class="guard-toggle" data-target="section-tables">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="tables-config-list"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn accent" id="btn-add-table">+ Stůl</button>
-                    <button class="btn accent" id="btn-save-tables">Uložit</button>
+                    <button class="btn accent" id="btn-add-table" data-i18n="tables.add">+ Stůl</button>
+                    <button class="btn accent" id="btn-save-tables" data-i18n="tables.save">Uložit</button>
                 </div>
                 <span class="save-status" id="tables-save-status"></span>
             </div>
@@ -106,27 +106,27 @@
 
         <!-- Seating -->
         <div class="section" id="section-seating">
-            <h2>&#x1FA91; Místa <button type="button" class="guard-toggle" data-target="section-seating">&#x1F512;</button></h2>
+            <h2>&#x1FA91; <span data-i18n="sec.seating">Místa</span> <button type="button" class="guard-toggle" data-target="section-seating">&#x1F512;</button></h2>
             <div id="seating-status"></div>
             <div class="section-body">
                 <div id="table-locks-ui"></div>
                 <div class="btn-row" style="margin-top:12px">
-                    <button class="btn big" id="btn-reshuffle-seats">Přepočítat místa</button>
+                    <button class="btn big" id="btn-reshuffle-seats" data-i18n="seating.reshuffle">Přepočítat místa</button>
                 </div>
             </div>
         </div>
 
         <!-- Notes -->
         <div class="section" id="section-notes">
-            <h2>&#x1F4F0; Poznámky (ticker) <button type="button" class="guard-toggle" data-target="section-notes">&#x1F512;</button></h2>
+            <h2>&#x1F4F0; <span data-i18n="sec.notes">Poznámky (ticker)</span> <button type="button" class="guard-toggle" data-target="section-notes">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="notes-list"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn" id="btn-add-note">+ Poznámka</button>
+                    <button class="btn" id="btn-add-note" data-i18n="notes.add">+ Poznámka</button>
                     <span class="save-status" id="notes-save-status"></span>
                 </div>
                 <div style="margin-top:12px">
-                    <label for="cfg-ticker-speed" style="font-size:0.85em;color:var(--text-secondary)">Rychlost tickeru: <span id="ticker-speed-label">40s</span></label>
+                    <label for="cfg-ticker-speed" style="font-size:0.85em;color:var(--text-secondary)"><span data-i18n="notes.tickerSpeed">Rychlost tickeru:</span> <span id="ticker-speed-label">40s</span></label>
                     <input type="range" id="cfg-ticker-speed" min="10" max="120" step="5" value="40" style="width:100%">
                 </div>
             </div>
@@ -134,7 +134,7 @@
 
         <!-- Rules -->
         <div class="section" id="section-rules">
-            <h2>&#x1F4CB; Pravidla (TV) <button type="button" class="guard-toggle" data-target="section-rules">&#x1F512;</button></h2>
+            <h2>&#x1F4CB; <span data-i18n="sec.rules">Pravidla (TV)</span> <button type="button" class="guard-toggle" data-target="section-rules">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="rules-sections-list"></div>
                 <span class="save-status" id="rules-save-status"></span>
@@ -143,11 +143,11 @@
 
         <!-- Blind structure preview -->
         <div class="section" id="section-blinds">
-            <h2>&#x1F4C8; Struktura blindů <button type="button" class="guard-toggle" data-target="section-blinds">&#x1F512;</button></h2>
+            <h2>&#x1F4C8; <span data-i18n="sec.blinds">Struktura blindů</span> <button type="button" class="guard-toggle" data-target="section-blinds">&#x1F512;</button></h2>
             <div class="section-body">
             <table class="structure-table">
                 <thead>
-                    <tr><th>#</th><th>Čas</th><th>SB</th><th>BB</th><th id="th-ante" style="display:none">Ante</th></tr>
+                    <tr><th>#</th><th data-i18n="th.time">Čas</th><th>SB</th><th>BB</th><th id="th-ante" style="display:none">Ante</th></tr>
                 </thead>
                 <tbody id="structure-body"></tbody>
             </table>
@@ -156,12 +156,12 @@
 
         <!-- Breaks -->
         <div class="section" id="section-breaks">
-            <h2>&#x23F8;&#xFE0F; Přestávky <button type="button" class="guard-toggle" data-target="section-breaks">&#x1F512;</button></h2>
+            <h2>&#x23F8;&#xFE0F; <span data-i18n="sec.breaks">Přestávky</span> <button type="button" class="guard-toggle" data-target="section-breaks">&#x1F512;</button></h2>
             <div class="section-body">
-                <small class="hint">Každá přestávka začne po zvoleném levelu. Popisek se ukáže ve struktuře, text běží na TV během přestávky.</small>
+                <small class="hint" data-i18n="breaks.hint">Každá přestávka začne po zvoleném levelu. Popisek se ukáže ve struktuře, text běží na TV během přestávky.</small>
                 <div id="breaks-list"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn" id="btn-add-break">+ Přestávka</button>
+                    <button class="btn" id="btn-add-break" data-i18n="breaks.add">+ Přestávka</button>
                     <span class="save-status" id="breaks-save-status"></span>
                 </div>
             </div>
@@ -169,60 +169,60 @@
 
         <!-- Config -->
         <div class="section" id="section-config">
-            <h2>&#x2699;&#xFE0F; Nastavení turnaje <button type="button" class="guard-toggle" data-target="section-config">&#x1F512;</button></h2>
+            <h2>&#x2699;&#xFE0F; <span data-i18n="sec.config">Nastavení turnaje</span> <button type="button" class="guard-toggle" data-target="section-config">&#x1F512;</button></h2>
             <div class="section-body">
                 <div class="config-grid">
-                    <div class="config-sub">Struktura</div>
+                    <div class="config-sub" data-i18n="cfg.structure">Struktura</div>
                     <div class="config-field">
-                        <label for="cfg-level-dur">Délka levelu (min)</label>
+                        <label for="cfg-level-dur" data-i18n="cfg.levelDur">Délka levelu (min)</label>
                         <input type="number" id="cfg-level-dur" value="20" inputmode="numeric">
                     </div>
                     <div class="config-field">
-                        <label for="cfg-max-levels">Max levelů</label>
+                        <label for="cfg-max-levels" data-i18n="cfg.maxLevels">Max levelů</label>
                         <input type="number" id="cfg-max-levels" value="12" min="2" inputmode="numeric">
                     </div>
                     <div class="config-field">
-                        <label for="cfg-ante-mult">Ante (× BB)</label>
+                        <label for="cfg-ante-mult" data-i18n="cfg.ante">Ante (× BB)</label>
                         <input type="number" id="cfg-ante-mult" value="0" min="0" max="10" step="0.5" inputmode="decimal">
                     </div>
                     <div class="config-field">
-                        <label for="cfg-start-time-est">Orientační začátek</label>
+                        <label for="cfg-start-time-est" data-i18n="cfg.startEst">Orientační začátek</label>
                         <input type="time" id="cfg-start-time-est" value="19:00" step="60">
                     </div>
                     <div class="config-field">
-                        <label for="cfg-waiting-msg">Text před začátkem</label>
+                        <label for="cfg-waiting-msg" data-i18n="cfg.waitingMsg">Text před začátkem</label>
                         <input type="text" id="cfg-waiting-msg" value="Orientační začátek" placeholder="Orientační začátek">
                     </div>
-                    <div class="config-sub">Žetony</div>
+                    <div class="config-sub" data-i18n="cfg.chips">Žetony</div>
                     <div class="config-field">
-                        <label for="cfg-buyin-amount">Buy-in (Kč)</label>
+                        <label for="cfg-buyin-amount" data-i18n="cfg.buyin">Buy-in (Kč)</label>
                         <input type="number" id="cfg-buyin-amount" value="400" inputmode="numeric">
                     </div>
                     <div class="config-field">
-                        <label for="cfg-stack">Žetonů za buy-in</label>
+                        <label for="cfg-stack" data-i18n="cfg.buyinChips">Žetonů za buy-in</label>
                         <input type="number" id="cfg-stack" value="5000" inputmode="numeric">
                     </div>
                     <div class="config-field"></div>
                     <div class="config-field">
-                        <label for="cfg-bonus">Bonus žetony za včasný příchod</label>
+                        <label for="cfg-bonus" data-i18n="cfg.bonus">Bonus žetony za včasný příchod</label>
                         <input type="number" id="cfg-bonus" value="5000" inputmode="numeric">
                     </div>
 
-                    <div class="config-sub">Add-on</div>
+                    <div class="config-sub" data-i18n="cfg.addon">Add-on</div>
                     <div class="config-field">
-                        <label for="cfg-addon-amount">Add-on cena (Kč)</label>
+                        <label for="cfg-addon-amount" data-i18n="cfg.addonPrice">Add-on cena (Kč)</label>
                         <input type="number" id="cfg-addon-amount" value="0" min="0" inputmode="numeric">
                     </div>
                     <div class="config-field">
-                        <label for="cfg-addon-chips">Add-on žetony</label>
+                        <label for="cfg-addon-chips" data-i18n="cfg.addonChips">Add-on žetony</label>
                         <input type="number" id="cfg-addon-chips" value="0" min="0" inputmode="numeric">
                     </div>
 
-                    <div class="config-sub">Poplatky</div>
+                    <div class="config-sub" data-i18n="cfg.fees">Poplatky</div>
                     <div class="config-field">
-                        <label for="cfg-organizer-fee">Poplatek organizátorům (Kč)</label>
+                        <label for="cfg-organizer-fee" data-i18n="cfg.organizerFee">Poplatek organizátorům (Kč)</label>
                         <input type="number" id="cfg-organizer-fee" value="0" min="0" inputmode="numeric">
-                        <small class="hint">Odečte se z prize poolu před výplatou</small>
+                        <small class="hint" data-i18n="cfg.organizerFeeHint">Odečte se z prize poolu před výplatou</small>
                     </div>
 
                 </div>
@@ -232,59 +232,59 @@
 
         <!-- Tournament profiles -->
         <div class="section" id="section-profiles">
-            <h2>&#x1F4BE; Profily turnaje <button type="button" class="guard-toggle" data-target="section-profiles">&#x1F512;</button></h2>
+            <h2>&#x1F4BE; <span data-i18n="sec.profiles">Profily turnaje</span> <button type="button" class="guard-toggle" data-target="section-profiles">&#x1F512;</button></h2>
             <div class="section-body">
-                <small class="hint">Uloží i načte celé nastavení turnaje — strukturu blindů, přestávky, žetony, buy-in i poplatky.</small>
+                <small class="hint" data-i18n="profiles.hint">Uloží i načte celé nastavení turnaje — strukturu blindů, přestávky, žetony, buy-in i poplatky.</small>
                 <div class="profiles-bar">
-                    <select id="profile-select"><option value="">— Uložené profily —</option></select>
-                    <button class="btn" id="btn-profile-load">Načíst</button>
-                    <button class="btn danger" id="btn-profile-delete" title="Smazat profil">&times;</button>
+                    <select id="profile-select"><option value="" data-i18n="profiles.none">— Uložené profily —</option></select>
+                    <button class="btn" id="btn-profile-load" data-i18n="profiles.load">Načíst</button>
+                    <button class="btn danger" id="btn-profile-delete" data-i18n-title="profiles.delete" title="Smazat profil">&times;</button>
                 </div>
                 <div class="profiles-save">
-                    <input type="text" id="profile-name" placeholder="Název profilu…" maxlength="40">
-                    <button class="btn" id="btn-profile-save">Uložit jako profil</button>
+                    <input type="text" id="profile-name" data-i18n-placeholder="profiles.namePlaceholder" placeholder="Název profilu…" maxlength="40">
+                    <button class="btn" id="btn-profile-save" data-i18n="profiles.save">Uložit jako profil</button>
                 </div>
             </div>
         </div>
 
         <!-- Sounds -->
         <div class="section" id="section-sounds">
-            <h2>&#x1F50A; Zvuky <button type="button" class="guard-toggle" data-target="section-sounds">&#x1F512;</button></h2>
+            <h2>&#x1F50A; <span data-i18n="sec.sounds">Zvuky</span> <button type="button" class="guard-toggle" data-target="section-sounds">&#x1F512;</button></h2>
             <div class="section-body">
                 <div class="sound-list">
                     <div class="sound-item">
-                        <label for="cfg-level-sound">Změna levelu</label>
+                        <label for="cfg-level-sound" data-i18n="sounds.levelChange">Změna levelu</label>
                         <div class="inline-row" style="margin-bottom:0">
                             <select id="cfg-level-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
-                            <button class="btn" id="btn-test-sound" type="button">Test</button>
+                            <button class="btn" id="btn-test-sound" type="button" data-i18n="sounds.test">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
-                        <label for="cfg-buy-sound">Buy-in / re-buy</label>
+                        <label for="cfg-buy-sound" data-i18n="sounds.buyin">Buy-in / re-buy</label>
                         <div class="inline-row" style="margin-bottom:0">
                             <select id="cfg-buy-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
-                            <button class="btn" id="btn-test-buy-sound" type="button">Test</button>
+                            <button class="btn" id="btn-test-buy-sound" type="button" data-i18n="sounds.test">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
-                        <label for="cfg-knockout-sound">Vyřazení (prohra)</label>
+                        <label for="cfg-knockout-sound" data-i18n="sounds.koLoss">Vyřazení (prohra)</label>
                         <div class="inline-row" style="margin-bottom:0">
                             <select id="cfg-knockout-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
-                            <button class="btn" id="btn-test-knockout-sound" type="button">Test</button>
+                            <button class="btn" id="btn-test-knockout-sound" type="button" data-i18n="sounds.test">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
-                        <label for="cfg-knockout-win-sound">Vyřazení (výhra)</label>
+                        <label for="cfg-knockout-win-sound" data-i18n="sounds.koWin">Vyřazení (výhra)</label>
                         <div class="inline-row" style="margin-bottom:0">
                             <select id="cfg-knockout-win-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
-                            <button class="btn" id="btn-test-knockout-win-sound" type="button">Test</button>
+                            <button class="btn" id="btn-test-knockout-win-sound" type="button" data-i18n="sounds.test">Test</button>
                         </div>
                     </div>
                     <div class="sound-item">
-                        <label for="cfg-end-sound">Konec turnaje</label>
+                        <label for="cfg-end-sound" data-i18n="sounds.end">Konec turnaje</label>
                         <div class="inline-row" style="margin-bottom:0">
                             <select id="cfg-end-sound" class="player-seat-select" style="flex:1;font-size:1.1em;padding:12px"></select>
-                            <button class="btn" id="btn-test-end-sound" type="button">Test</button>
+                            <button class="btn" id="btn-test-end-sound" type="button" data-i18n="sounds.test">Test</button>
                         </div>
                     </div>
                 </div>
@@ -293,11 +293,22 @@
 
         <!-- Event Log -->
         <div class="section" id="section-event-log">
-            <h2>&#x1F4C3; Log <button type="button" class="guard-toggle" data-target="section-event-log">&#x1F512;</button></h2>
+            <h2>&#x1F4C3; <span data-i18n="sec.log">Log</span> <button type="button" class="guard-toggle" data-target="section-event-log">&#x1F512;</button></h2>
             <div class="section-body">
                 <div id="event-log-list"></div>
                 <div class="btn-row" style="margin-top:8px">
-                    <button class="btn danger" id="btn-clear-event-log">Smazat log</button>
+                    <button class="btn danger" id="btn-clear-event-log" data-i18n="log.clear">Smazat log</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language -->
+        <div class="section" id="section-language">
+            <h2>&#x1F310; <span data-i18n="sec.language">Jazyk</span></h2>
+            <div class="section-body">
+                <div class="btn-row">
+                    <button class="btn lang-btn" data-lang="cs" lang="cs">Čeština</button>
+                    <button class="btn lang-btn" data-lang="uk" lang="uk">Українська</button>
                 </div>
             </div>
         </div>

@@ -76,7 +76,15 @@ This calculation exists in **6 places** — 3 in `tv/app.js` (payout table, winn
 `startingStack`, `levelDuration`, `maxLevels`, `startTime`, `bonusAmount`, `buyInAmount`, `addonChips`, `addonAmount`, `anteMult`, `organizerFee`
 
 ### UI language
-The tournament UI is in **Czech**. Use Czech for all user-facing labels and hints.
+The TV display is **Czech only** — players read it, so its labels stay Czech.
+
+The admin console is bilingual (Czech / Ukrainian), switched from the "Jazyk" card at the bottom and remembered per device in `localStorage.adminLang`. Strings live in `tv/admin/i18n.js`:
+
+- Static markup uses `data-i18n` / `data-i18n-placeholder` / `data-i18n-title`; `applyI18n()` fills them in.
+- JS-rendered markup calls `i18n.t('key')` — namespaced because `t` is already taken by the `TABLES.forEach(t => …)` loops.
+- Adding a string means adding the key to **both** `cs` and `uk`. A switch re-runs `applyI18n()`, `populateSoundSelects()`, `buildSectionNav()` and `render()`, which repaints everything.
+
+**Only console chrome is translated.** Content that reaches the TV — `DEFAULT_RULES`, `DEFAULTS.notes`, table names, the waiting message, break labels/messages, player names — stays Czech in both modes, and anything already saved in Firebase is never retranslated.
 
 ## Results chart (`docs/chart.js`)
 
