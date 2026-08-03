@@ -286,6 +286,7 @@ const DEFAULTS = {
         bonusAmount: 5000,
         startTime: '19:00',
         buyInAmount: 400,
+        bountyAmount: 0,
         addonChips: 0,
         addonAmount: 0,
         anteMult: 0,
@@ -654,6 +655,18 @@ function render() {
     document.getElementById('hd-avg').textContent = avgStack.toLocaleString('cs');
     document.getElementById('hd-buyin-amount').textContent = (config.buyInAmount || 400).toLocaleString('cs');
     document.getElementById('hd-buyin-chips').textContent = (config.startingStack || 0).toLocaleString('cs');
+    // Bounty — informative only, never part of the prize pool
+    const bountyItem = document.getElementById('hd-bounty-item');
+    if (bountyItem) {
+        const bounty = config.bountyAmount || 0;
+        if (bounty > 0) {
+            bountyItem.style.display = '';
+            document.getElementById('hd-bounty-amount').textContent = bounty.toLocaleString('cs');
+        } else {
+            bountyItem.style.display = 'none';
+        }
+    }
+
     const addonItem = document.getElementById('hd-addon-item');
     if (addonItem) {
         if (config.addonAmount > 0) {

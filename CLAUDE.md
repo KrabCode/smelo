@@ -73,7 +73,9 @@ The prize pool formula is: `totalBuys * buyInAmount + addons * addonPrice - orga
 This calculation exists in **6 places** — 3 in `tv/app.js` (payout table, winner banner, knockout feed) and 3 in `admin/app.js` (pool display, payout config render, payout config drag). When modifying the formula, update all 6.
 
 ### Config fields (saved to Firebase `tournament/config`)
-`startingStack`, `levelDuration`, `maxLevels`, `startTime`, `bonusAmount`, `buyInAmount`, `addonChips`, `addonAmount`, `anteMult`, `organizerFee`
+`startingStack`, `levelDuration`, `maxLevels`, `startTime`, `bonusAmount`, `buyInAmount`, `bountyAmount`, `addonChips`, `addonAmount`, `anteMult`, `organizerFee`
+
+`bountyAmount` is **display only** — it shows in the TV header between buy-in and add-on and must stay out of the prize pool formula and every chip/payout calculation.
 
 ### UI language
 The TV display is **Czech only** — players read it, so its labels stay Czech.
