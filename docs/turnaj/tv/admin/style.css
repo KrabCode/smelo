@@ -901,15 +901,20 @@ body {
 }
 .break-after,
 .break-dur {
-    width: 64px;
+    width: 84px;
     background: var(--bg-input);
     border: 1px solid var(--border-light);
     border-radius: 6px;
     color: var(--text);
-    padding: 8px;
-    font-size: 1em;
+    padding: 12px 10px;
+    font-size: 1.15em;
     text-align: right;
+    -moz-appearance: textfield;
 }
+.break-after::-webkit-inner-spin-button,
+.break-after::-webkit-outer-spin-button,
+.break-dur::-webkit-inner-spin-button,
+.break-dur::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .break-after:focus,
 .break-dur:focus {
     outline: none;
