@@ -788,9 +788,6 @@ function render() {
     tbody.innerHTML = '';
     let runningMinutes = getRunningMinutes(state, config);
 
-    const thAnte = document.getElementById('th-ante');
-    if (thAnte) thAnte.style.display = anteOn ? '' : 'none';
-
     let levelNum = 0;
     struct.forEach((s, i) => {
         const tr = document.createElement('tr');
@@ -810,17 +807,16 @@ function render() {
             classes.push('break-row');
             tr.className = classes.join(' ');
             tr.innerHTML =
-                '<td colspan="' + (anteOn ? 5 : 4) + '">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM +
+                '<td colspan="4">PŘESTÁVKA ' + timeStr + ' – ' + endHH + ':' + endMM +
                 (breakLabel ? '<div class="break-label">' + breakLabel.replace(/</g, '&lt;') + '</div>' : '') + '</td>';
         } else {
             levelNum++;
             tr.className = classes.join(' ');
-            const anteCell = anteOn ? '<td>' + Math.round(s.big * anteMult).toLocaleString('cs') + '</td>' : '';
             tr.innerHTML =
                 '<td>' + levelNum + '</td>' +
                 '<td>' + timeStr + '</td>' +
                 '<td>' + s.small.toLocaleString('cs') + '</td>' +
-                '<td>' + s.big.toLocaleString('cs') + '</td>' + anteCell;
+                '<td>' + s.big.toLocaleString('cs') + '</td>';
         }
         runningMinutes += s.duration;
         tbody.appendChild(tr);
