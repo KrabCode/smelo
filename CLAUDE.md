@@ -60,7 +60,12 @@ The main feature. Firebase Realtime Database syncs state between the admin conso
 - **`tv/admin/app.js`** (~1870 lines) — Admin console: all tournament controls, player management, payout config, blind editing, seating, sounds
 
 ### Firebase data model
-Tournament state lives under a single `tournament/` ref with children: `config`, `state`, `players`, `blindStructure`, `blindOverrides`, `payoutConfig`, `tableLocks`, `eventLog`, `breakMessages`, `breakLabels`, `rules`, `notes`, and sound refs.
+Tournament state lives under a single `tournament/` ref with children: `config`, `state`, `players`, `blindStructure`, `blindOverrides`, `payoutConfig`, `tableLocks`, `eventLog`, `breaks`, `rules`, `notes`, and sound refs.
+
+### Breaks
+`breaks` is an explicit list — `[{ afterLevel, duration, label?, message? }]` — edited in the admin's "Přestávky" card. `calculateBlinds()` inserts them into `blindStructure` after the given blind level (never after the last one), copying `label` (small text in the structure table) and `message` (banner shown on the TV during the break) onto the generated break entry, so the texts survive every recalculation. Both `tv/app.js` and `admin/app.js` carry a copy of `getBreaks()` / `makeBreakEntry()` / `calculateBlinds()` — keep them in sync. Tournament profiles save and restore `breaks` alongside `config` and `blindOverrides`.
+
+Legacy data (breaks generated from `config.levelsPerBreak` with `breakMessages`/`breakLabels` keyed by structure index) is migrated to `breaks` once, on the first admin load — see `legacyBreaks()`.
 
 ### Prize pool calculation (appears in multiple places!)
 The prize pool formula is: `totalBuys * buyInAmount + addons * addonPrice - organizerFee`
@@ -68,7 +73,7 @@ The prize pool formula is: `totalBuys * buyInAmount + addons * addonPrice - orga
 This calculation exists in **6 places** — 3 in `tv/app.js` (payout table, winner banner, knockout feed) and 3 in `admin/app.js` (pool display, payout config render, payout config drag). When modifying the formula, update all 6.
 
 ### Config fields (saved to Firebase `tournament/config`)
-`startingStack`, `levelDuration`, `maxLevels`, `startTime`, `bonusAmount`, `levelsPerBreak`, `breakDuration`, `maxBreaks`, `buyInAmount`, `addonChips`, `addonAmount`, `anteMult`, `organizerFee`
+`startingStack`, `levelDuration`, `maxLevels`, `startTime`, `bonusAmount`, `buyInAmount`, `addonChips`, `addonAmount`, `anteMult`, `organizerFee`
 
 ### UI language
 The tournament UI is in **Czech**. Use Czech for all user-facing labels and hints.

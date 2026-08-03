@@ -284,10 +284,6 @@ const DEFAULTS = {
         levelDuration: 20,
         maxLevels: 12,
         bonusAmount: 5000,
-
-        levelsPerBreak: 0,
-        breakDuration: 30,
-        maxBreaks: 0,
         startTime: '19:00',
         buyInAmount: 400,
         addonChips: 0,
@@ -311,8 +307,7 @@ const DEFAULTS = {
     blindOverrides: {},
     tableLocks: {},
     payoutConfig: null,
-    breakMessages: {},
-    breakLabels: {},
+    breaks: [],
     rules: null,
     notes: [
         'Buy-in a re-buy neomezeně, ale jen do konce přestávky',
@@ -325,65 +320,63 @@ const DEFAULTS = {
 let T = JSON.parse(JSON.stringify(DEFAULTS));
 T.notes = DEFAULTS.notes.slice();
 
+// ─── Breaks ─────────────────────────────────────────────────
+// Sorted, one break per level at most
+function getBreaks() {
+    const seen = new Set();
+    return (T.breaks || [])
+        .filter(b => b && b.afterLevel > 0 && b.duration > 0)
+        .slice()
+        .sort((a, b) => a.afterLevel - b.afterLevel)
+        .filter(b => { if (seen.has(b.afterLevel)) return false; seen.add(b.afterLevel); return true; });
+}
+
+// Break texts travel with the structure entry so they survive recalculation
+function makeBreakEntry(b) {
+    const entry = { small: 0, big: 0, duration: b.duration, isBreak: true };
+    if (b.label) entry.label = b.label;
+    if (b.message) entry.message = b.message;
+    return entry;
+}
+
 // ─── Blind Calculation ──────────────────────────────────────
 function calculateBlinds(config, totalChips, freezeUpTo) {
     const { levelDuration } = config;
     const numLevels = Math.max(2, config.maxLevels || 12);
-    const lpb = config.levelsPerBreak || 0;
-    const breakDur = config.breakDuration || 30;
-    const maxBreaks = config.maxBreaks || 0;
-
+    const breaks = getBreaks();
     const levels = [];
 
+    let blindCount = 0;
+    let lastWasBreak = false;
+    let sb = 5;
+
+    // Already-played entries stay exactly as they were
     if (freezeUpTo >= 0 && T.blindStructure && T.blindStructure.length > 0) {
-        // Freeze existing entries up to and including freezeUpTo
         const frozen = Math.min(freezeUpTo + 1, T.blindStructure.length);
         for (let i = 0; i < frozen; i++) {
-            levels.push({ ...T.blindStructure[i] });
-        }
-
-        // Count only real blind levels among frozen entries
-        const frozenBlindCount = levels.filter(l => !l.isBreak).length;
-        const remaining = numLevels - frozenBlindCount;
-
-        if (remaining > 0) {
-            const lastBlind = [...levels].reverse().find(l => !l.isBreak);
-            let sb = lastBlind ? lastBlind.big : 5;
-            for (let i = 0; i < remaining; i++) {
-                levels.push({ small: sb, big: sb * 2, duration: levelDuration });
-                sb = sb * 2;
+            const entry = { ...T.blindStructure[i] };
+            levels.push(entry);
+            if (entry.isBreak) {
+                lastWasBreak = true;
+            } else {
+                blindCount++;
+                lastWasBreak = false;
+                sb = entry.big;
             }
-        }
-    } else {
-        // Simple doubling: 5/10, 10/20, 20/40, 40/80, ...
-        let sb = 5;
-        for (let i = 0; i < numLevels; i++) {
-            levels.push({ small: sb, big: sb * 2, duration: levelDuration });
-            sb = sb * 2;
         }
     }
 
-    // Insert breaks every N blind levels
-    if (lpb > 0) {
-        let blindCount = 0;
-        let breakCount = 0;
-        for (let i = 0; i < levels.length; i++) {
-            if (levels[i].isBreak) { breakCount++; continue; }
-            blindCount++;
-            if (blindCount % lpb === 0) {
-                if (maxBreaks > 0 && breakCount >= maxBreaks) break;
-                const remainingBlinds = levels.slice(i + 1).some(l => !l.isBreak);
-                if (!remainingBlinds) break;
-                if (i + 1 < levels.length && levels[i + 1].isBreak) continue;
-                levels.splice(i + 1, 0, {
-                    small: 0, big: 0,
-                    duration: breakDur,
-                    isBreak: true
-                });
-                breakCount++;
-                i++;
-            }
+    // Remaining levels double from the last one (5/10, 10/20, 20/40, ...),
+    // breaks inserted from the list
+    while (blindCount < numLevels) {
+        if (blindCount > 0 && !lastWasBreak) {
+            const b = breaks.find(x => x.afterLevel === blindCount);
+            if (b) levels.push(makeBreakEntry(b));
         }
+        levels.push({ small: sb, big: sb * 2, duration: levelDuration });
+        blindCount++;
+        lastWasBreak = false;
+        sb = sb * 2;
     }
 
     return levels;
@@ -756,8 +749,8 @@ function render() {
         progressBarEl.classList.add('on-break');
         document.getElementById('blinds-sub').textContent = '';
 
-        // Break message — use per-break message keyed by structure index
-        const bMsg = (T.breakMessages[lvl] || '').trim();
+        // Break message — carried on the break entry itself
+        const bMsg = (curEntry.message || '').trim();
         if (bMsg) {
             const escaped = bMsg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const lines = escaped.split('\n');
@@ -813,7 +806,7 @@ function render() {
             const endMin = runningMinutes + s.duration;
             const endHH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
             const endMM = String(endMin % 60).padStart(2, '0');
-            const breakLabel = T.breakLabels[i] || '';
+            const breakLabel = s.label || '';
             classes.push('break-row');
             tr.className = classes.join(' ');
             tr.innerHTML =
@@ -1191,8 +1184,7 @@ tournamentRef.on('value', (snap) => {
     if (selectedTableIndex >= TABLES.length) selectedTableIndex = TABLES.length - 1;
     T.tableLocks = data.tableLocks || {};
     T.payoutConfig = data.payoutConfig || null;
-    T.breakMessages = data.breakMessages || {};
-    T.breakLabels = data.breakLabels || {};
+    T.breaks = data.breaks || [];
     T.rules = data.rules || null;
     T.notes = data.notes || DEFAULTS.notes;
 

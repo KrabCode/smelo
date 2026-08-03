@@ -881,6 +881,46 @@ body {
     opacity: 0.6;
 }
 .blind-reset:active { opacity: 1; }
+/* Break list */
+.break-row {
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+}
+.break-row-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.break-row-head label {
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+.break-after,
+.break-dur {
+    width: 64px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 8px;
+    font-size: 1em;
+    text-align: right;
+}
+.break-after:focus,
+.break-dur:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+.break-row-time {
+    margin-left: auto;
+    font-size: 0.85em;
+    font-family: monospace;
+    color: var(--green);
+}
 .break-label-input {
     width: 100%;
     box-sizing: border-box;
