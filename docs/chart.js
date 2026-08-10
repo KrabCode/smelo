@@ -274,8 +274,7 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         const delta = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
         if (delta === 0) return null;
         const po = storedCumulative[ci][rowIdx];
-        const pred = po != null ? po - delta : null;
-        return { name: name.split('/')[0].trim(), fullName: name, pred, delta, po, color: playerColors[name] };
+        return { name: name.split('/')[0].trim(), fullName: name, delta, po, color: playerColors[name] };
     }).filter(Boolean).sort((a, b) => b.delta - a.delta);
 
     const sign = v => v > 0 ? '+' + v : String(v);
@@ -286,10 +285,9 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         `<td style="white-space:nowrap;">${maxPlayerDisplayName}</td>` +
         `<td>-99999</td>` +
         `<td>-99999</td>` +
-        `<td>-99999</td>` +
         `</tr>`;
     let html = `<div class="tt"><table class="tt-table">`;
-    html += `<thead><tr><th></th><th></th><th>Před</th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
+    html += `<thead><tr><th></th><th></th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
     entries.forEach(e => {
         const isFocus = e.fullName === hoveredPlayer;
         const bld = isFocus ? 'font-weight:bold;' : '';
@@ -297,7 +295,6 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         html += `<tr data-player="${e.fullName}" style="cursor:pointer;${bg}">` +
             `<td><span class="tt-dot" style="background:${e.color}"></span></td>` +
             `<td style="text-align:left;${bld}">${e.name}</td>` +
-            `<td class="tt-pred" style="${bld}">${e.pred != null ? e.pred : '—'}</td>` +
             `<td class="${deltaClass(e.delta)}" style="${bld}">${sign(e.delta)}</td>` +
             `<td class="tt-po" style="${bld}">${e.po != null ? e.po : '—'}</td>` +
             `</tr>`;
