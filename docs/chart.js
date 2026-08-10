@@ -287,7 +287,7 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
         `<td>-99999</td>` +
         `</tr>`;
     let html = `<div class="tt"><table class="tt-table">`;
-    html += `<thead><tr><th></th><th></th><th>Změna</th><th>Po</th></tr></thead><tbody>${sizer}`;
+    html += `<thead><tr><th></th><th></th><th>Změna</th><th>Celkem</th></tr></thead><tbody>${sizer}`;
     entries.forEach(e => {
         const isFocus = e.fullName === hoveredPlayer;
         const bld = isFocus ? 'font-weight:bold;' : '';
