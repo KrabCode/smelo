@@ -248,8 +248,10 @@ img { border-radius: 16px; }
 #sessionDetails {
     display: flex;
     flex-direction: column;
-    flex: 0 0 320px;
-    width: 320px;
+    flex: 0 0 auto;
+    width: fit-content;
+    min-width: 220px;
+    max-width: 320px;
     max-height: 470px;
     background: #1e1e1e;
     border: 1px solid #444;
