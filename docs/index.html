@@ -24,48 +24,43 @@
     <button class="tab-btn" data-tab="input">Záznam</button>
   </div>
   <div class="tab-panel active" data-tab="vysledky">
-    <div id="chartWindow">
-      <div id="chartTitleBar">
-        <span id="chartTitleText">Kumulativní šmelo</span>
-        <div class="win-buttons">
-          <button id="btnFullscreen" class="win-btn" title="Celá obrazovka" aria-label="Celá obrazovka">⛶</button>
+    <div id="resultsLayout">
+      <div id="chartWindow">
+        <div id="chartTitleBar">
+          <span id="chartTitleText">Kumulativní šmelo</span>
+          <div class="win-buttons">
+            <button id="btnFullscreen" class="win-btn" title="Celá obrazovka" aria-label="Celá obrazovka">⛶</button>
+          </div>
+        </div>
+        <div id="rangeToggle" class="win-toolbar" style="display:none;">
+          <button id="btnReset" class="range-btn" title="Vynulovat každého na začátku zobrazeného období">Reset</button>
+          <span class="range-sep" aria-hidden="true"></span>
+          <button id="btnQuarter" class="range-btn" data-range="quarter">Čtvrtletí</button>
+          <button id="btnHalf" class="range-btn active" data-range="half">Půlrok</button>
+          <button id="btnYear" class="range-btn" data-range="year">Rok</button>
+          <button id="btnAll" class="range-btn" data-range="all">Vše</button>
+          <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
+          <span class="range-sep" aria-hidden="true"></span>
+          <button id="btnTurnover" class="range-btn" title="Zobrazit obrat — součet všech výher v dané hře">Obrat</button>
+          <button id="btnPlayers" class="range-btn" title="Zobrazit počet hráčů v dané hře">Hráčů</button>
+          <button id="btnZtraceno" class="range-btn" title="Zobrazit ztracené / nezaznamenané peníze v dané hře">Ztraceno</button>
+          <div id="overlayNote" style="display:none;"></div>
+        </div>
+        <div id="graphSpinner"><div class="spinner"></div></div>
+        <div id="chartContainer">
+          <div id="chartDiv" style="visibility:hidden;"></div>
+          <div id="fsDetail"></div>
         </div>
       </div>
-      <div id="rangeToggle" class="win-toolbar" style="display:none;">
-        <button id="btnReset" class="range-btn" title="Vynulovat každého na začátku zobrazeného období">Reset</button>
-        <span class="range-sep" aria-hidden="true"></span>
-        <button id="btnQuarter" class="range-btn" data-range="quarter">Čtvrtletí</button>
-        <button id="btnHalf" class="range-btn active" data-range="half">Půlrok</button>
-        <button id="btnYear" class="range-btn" data-range="year">Rok</button>
-        <button id="btnAll" class="range-btn" data-range="all">Vše</button>
-        <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
-        <span class="range-sep" aria-hidden="true"></span>
-        <button id="btnTurnover" class="range-btn" title="Zobrazit obrat — součet všech výher v dané hře">Obrat</button>
-        <button id="btnPlayers" class="range-btn" title="Zobrazit počet hráčů v dané hře">Hráčů</button>
-        <button id="btnZtraceno" class="range-btn" title="Zobrazit ztracené / nezaznamenané peníze v dané hře">Ztraceno</button>
-        <div id="overlayNote" style="display:none;"></div>
-      </div>
-      <div id="graphSpinner"><div class="spinner"></div></div>
-      <div id="chartContainer">
-        <div id="chartDiv" style="visibility:hidden;"></div>
-        <div id="fsDetail"></div>
+      <div id="sessionDetails" style="display:none;">
+        <div id="sessionCardHeader">
+          <button id="sliderPrev" class="range-btn" aria-label="Předchozí"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg></button>
+          <h3 id="sessionCardTitle"></h3>
+          <button id="sliderNext" class="range-btn" aria-label="Další"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></button>
+        </div>
+        <div id="sessionSliderInfo"></div>
       </div>
     </div>
-    <details id="sessionDetails" open style="display:none;">
-      <summary id="sessionSummary" style="cursor:pointer; user-select:none;">Detail</summary>
-      <div id="sessionPanel">
-      <div id="sessionCardRow">
-        <div id="sessionCard">
-          <div id="sessionCardHeader">
-            <button id="sliderPrev" class="range-btn" aria-label="Předchozí"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 6 9 12 15 18"/></svg></button>
-            <h3 id="sessionCardTitle"></h3>
-            <button id="sliderNext" class="range-btn" aria-label="Další"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg></button>
-          </div>
-          <div id="sessionSliderInfo"></div>
-        </div>
-      </div>
-      </div>
-    </details>
     <div id="statsTableDiv"></div>
   </div>
   <div class="tab-panel" data-tab="turnaje">

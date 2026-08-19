@@ -476,10 +476,7 @@ function drawChart() {
                     }
                 }
             }
-            if (s.row != null) {
-                sliderIdx = s.row;
-                document.getElementById('sessionDetails').open = true;
-            }
+            if (s.row != null) sliderIdx = s.row;
             if (playerChanged) { drawChart(); renderStatsTable(); }
             if (s.row != null) { updateSliderInfo(); setChartHighlight(sliderIdx); updateFsDetail(sliderIdx); }
         });
@@ -637,14 +634,16 @@ function renderStatsTable() {
 
 window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
 
-// Resizable chart frame: redraw the chart to fit whenever the window is resized.
-// The chosen size is intentionally not persisted — the window always opens at its
-// default size.
+// Redraw the chart to fit whenever its box changes size (viewport resize, or the
+// results layout switching between the row and stacked breakpoints).
 (function initChartResize() {
     const win = document.getElementById('chartWindow');
     if (!win) return;
-    // Clear any size saved by older versions so it can't force a small start size.
-    try { localStorage.removeItem('smelo_chart_w'); localStorage.removeItem('smelo_chart_h'); } catch (e) {}
+    // Clear any size saved by older draggable/resizable versions.
+    try {
+        localStorage.removeItem('smelo_chart_w'); localStorage.removeItem('smelo_chart_h');
+        localStorage.removeItem('smelo_chart_x'); localStorage.removeItem('smelo_chart_y');
+    } catch (e) {}
     if (!window.ResizeObserver) return;
     let t = null;
     const ro = new ResizeObserver(() => {
@@ -689,71 +688,6 @@ window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
     });
 })();
 
-// Drag the whole chart window by its title bar, like a desktop window. Uses a CSS
-// transform so the document flow (and the slot the window occupies) stays put, and
-// persists the offset. Transform is dropped in fullscreen — it would shift the
-// viewport-sized fullscreen element off-screen.
-(function initChartDrag() {
-    const win = document.getElementById('chartWindow');
-    const bar = document.getElementById('chartTitleBar');
-    if (!win || !bar) return;
-    let offX = Number(localStorage.getItem('smelo_chart_x')) || 0;
-    let offY = Number(localStorage.getItem('smelo_chart_y')) || 0;
-    const apply = () => { win.style.transform = document.fullscreenElement ? '' : `translate(${offX}px, ${offY}px)`; };
-    apply();
-    let startX = 0, startY = 0, baseX = 0, baseY = 0, dragging = false;
-    bar.addEventListener('pointerdown', e => {
-        // Left button only; ignore the window buttons and never drag in fullscreen.
-        if (e.button !== 0 || e.target.closest('.win-btn') || document.fullscreenElement) return;
-        dragging = true;
-        startX = e.clientX; startY = e.clientY; baseX = offX; baseY = offY;
-        bar.setPointerCapture(e.pointerId);
-    });
-    bar.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        offX = baseX + (e.clientX - startX);
-        offY = baseY + (e.clientY - startY);
-        apply();
-    });
-    const end = () => {
-        if (!dragging) return;
-        dragging = false;
-        try {
-            localStorage.setItem('smelo_chart_x', String(Math.round(offX)));
-            localStorage.setItem('smelo_chart_y', String(Math.round(offY)));
-        } catch (e) {}
-    };
-    bar.addEventListener('pointerup', end);
-    bar.addEventListener('pointercancel', end);
-    document.addEventListener('fullscreenchange', apply);
-})();
-
-// Drag the detail card by its header, like the chart window — but with no maximize
-// button and no persisted position (it always reappears centered).
-(function initDetailDrag() {
-    const card = document.getElementById('sessionCard');
-    const bar = document.getElementById('sessionCardHeader');
-    if (!card || !bar) return;
-    let offX = 0, offY = 0, startX = 0, startY = 0, baseX = 0, baseY = 0, dragging = false;
-    const apply = () => { card.style.transform = `translate(${offX}px, ${offY}px)`; };
-    bar.addEventListener('pointerdown', e => {
-        // Left button only; ignore the prev/next buttons.
-        if (e.button !== 0 || e.target.closest('.range-btn')) return;
-        dragging = true;
-        startX = e.clientX; startY = e.clientY; baseX = offX; baseY = offY;
-        bar.setPointerCapture(e.pointerId);
-    });
-    bar.addEventListener('pointermove', e => {
-        if (!dragging) return;
-        offX = baseX + (e.clientX - startX);
-        offY = baseY + (e.clientY - startY);
-        apply();
-    });
-    const end = () => { dragging = false; };
-    bar.addEventListener('pointerup', end);
-    bar.addEventListener('pointercancel', end);
-})();
-
 function initSlider() {
     const n = storedSessionLabels ? storedSessionLabels.length : 0;
     if (!n) return;
@@ -765,7 +699,6 @@ function initSlider() {
 
 function updateSliderInfo() {
     if (!storedSessionLabels || sliderIdx < 0) return;
-    document.getElementById('sessionSummary').textContent = 'Detail';
     document.getElementById('sessionCardTitle').textContent = storedSessionLabels[sliderIdx];
     const n = storedSessionLabels.length;
     document.getElementById('sliderPrev').style.visibility = sliderIdx <= 0 ? 'hidden' : '';
