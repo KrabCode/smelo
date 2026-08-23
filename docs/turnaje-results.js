@@ -22,6 +22,10 @@ const turnajeResults = [
     { name: 'Renda', points: 1900 },
     { name: 'Krab', points: 1300 },
   ] },
+  { id: 5, results: [
+    { name: 'Dima', points: 3700 },
+    { name: 'Krab', points: 2000 },
+  ] },
 ];
 
 function renderTurnajeResults() {
