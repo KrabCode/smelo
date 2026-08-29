@@ -57,7 +57,7 @@ function renderTurnajeResults() {
       const valueHtml = entry.money != null ?
         '<span class="turnaj-value">' +
           '<span class="turnaj-money">' + entry.money + ' Kč</span>' +
-          '<span class="turnaj-points secondary">' + entry.points + ' b.</span>' +
+          '<span class="turnaj-points secondary">' + entry.points + '</span>' +
         '</span>' :
         '<span class="turnaj-points">' + entry.points + '</span>';
       return '<div class="turnaj-row rank-' + rank + '">' +

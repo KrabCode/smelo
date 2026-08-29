@@ -472,14 +472,12 @@ a.card { color: var(--text); text-decoration: none; }
     font-family: monospace;
 }
 .turnaj-row.rank-1 .turnaj-rank,
-.turnaj-row.rank-2 .turnaj-rank,
-.turnaj-row.rank-3 .turnaj-rank {
+.turnaj-row.rank-2 .turnaj-rank {
     font-size: 2em;
     line-height: 1;
 }
 .turnaj-row.rank-1 .turnaj-rank { color: #ffb300; }
 .turnaj-row.rank-2 .turnaj-rank { color: #ccc; }
-.turnaj-row.rank-3 .turnaj-rank { color: #cd7f32; }
 .turnaj-name { flex: 1; color: #eee; }
 .turnaj-points { color: #999; font-family: monospace; }
 .turnaj-value {
