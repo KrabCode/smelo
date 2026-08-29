@@ -27,8 +27,13 @@ const turnajeResults = [
     { name: 'Krab', points: 2000 },
   ] },
   { id: 6, results: [
-    { name: 'Krab', points: 900 },
-    { name: 'Váňa', points: 400 },
+    { name: 'Krab', points: 7 },
+    { name: 'Váňa', points: 6 },
+    { name: 'Renda', points: 5 },
+    { name: 'Denis', points: 4 },
+    { name: 'Miriss', points: 3 },
+    { name: 'Humr', points: 2 },
+    { name: 'Dima', points: 1 },
   ] },
 ];
 
