@@ -26,9 +26,11 @@ const turnajeResults = [
     { name: 'Dima', points: 3700 },
     { name: 'Krab', points: 2000 },
   ] },
-  { id: 6, results: [
-    { name: 'Krab', points: 7 },
-    { name: 'Váňa', points: 6 },
+  // Sit and go: only the top n placements pay out money; everyone still earns
+  // ranking points based on the full player count (n players, n..1 points).
+  { id: 6, type: 'sitAndGo', results: [
+    { name: 'Krab', points: 7, money: 900 },
+    { name: 'Váňa', points: 6, money: 400 },
     { name: 'Renda', points: 5 },
     { name: 'Denis', points: 4 },
     { name: 'Miriss', points: 3 },
@@ -43,7 +45,7 @@ function renderTurnajeResults() {
 
   const sorted = [...turnajeResults].sort((a, b) => b.id - a.id);
 
-  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+  const medals = { 1: '🥇', 2: '🥈' };
 
   container.innerHTML = sorted.map(function(turnaj, turnajIndex) {
     const results = [...turnaj.results].sort((a, b) => b.points - a.points);
@@ -52,10 +54,16 @@ function renderTurnajeResults() {
       if (i === 0 || entry.points !== results[i - 1].points) rank++;
       entry.rank = rank;
       const rankLabel = medals[rank] || (rank + '.');
+      const valueHtml = entry.money != null ?
+        '<span class="turnaj-value">' +
+          '<span class="turnaj-money">' + entry.money + ' Kč</span>' +
+          '<span class="turnaj-points secondary">' + entry.points + ' b.</span>' +
+        '</span>' :
+        '<span class="turnaj-points">' + entry.points + '</span>';
       return '<div class="turnaj-row rank-' + rank + '">' +
         '<span class="turnaj-rank">' + rankLabel + '</span>' +
         '<span class="turnaj-name">' + entry.name + '</span>' +
-        '<span class="turnaj-points">' + entry.points + '</span>' +
+        valueHtml +
       '</div>';
     }).join('');
     const cardClass = 'turnaj-card' + (turnajIndex === 0 ? ' latest' : '');

@@ -482,6 +482,14 @@ a.card { color: var(--text); text-decoration: none; }
 .turnaj-row.rank-3 .turnaj-rank { color: #cd7f32; }
 .turnaj-name { flex: 1; color: #eee; }
 .turnaj-points { color: #999; font-family: monospace; }
+.turnaj-value {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+.turnaj-money { color: #eee; font-family: monospace; font-weight: bold; }
+.turnaj-points.secondary { font-size: 0.75em; }
 .turnaj-card.latest {
     background: linear-gradient(135deg, #1e1a10, #222);
     border-color: #ffb300;
