@@ -67,8 +67,9 @@ function renderTurnajeResults() {
       '</div>';
     }).join('');
     const cardClass = 'turnaj-card' + (turnajIndex === 0 ? ' latest' : '');
+    const title = turnaj.type === 'sitAndGo' ? 'Sit & Go' : (turnaj.id + '. turnaj');
     return '<div class="' + cardClass + '">' +
-      '<div class="turnaj-title">' + turnaj.id + '. turnaj</div>' +
+      '<div class="turnaj-title">' + title + '</div>' +
       rows +
     '</div>';
   }).join('');
