@@ -26,6 +26,10 @@ const turnajeResults = [
     { name: 'Dima', points: 3700 },
     { name: 'Krab', points: 2000 },
   ] },
+  { id: 6, results: [
+    { name: 'Krab', points: 900 },
+    { name: 'Váňa', points: 400 },
+  ] },
 ];
 
 function renderTurnajeResults() {
