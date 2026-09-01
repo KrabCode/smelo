@@ -154,10 +154,12 @@ function processAndRender() {
     // "Reset" mode: re-base every line to zero at the start of the shown period, so the
     // chart shows net change within the cycle instead of carried-over all-time totals.
     if (resetBaseline) {
-        cumulative.forEach(arr => {
-            let base = null;
-            for (let i = 0; i < arr.length; i++) { if (arr[i] != null) { base = arr[i]; break; } }
-            if (base != null) for (let i = 0; i < arr.length; i++) { if (arr[i] != null) arr[i] -= base; }
+        cumulative.forEach((arr, ci) => {
+            // The carry-in is the total from before the window, not the first point inside it
+            // (that one already includes its own session's result). Zero for a player who
+            // started inside the window — and for everyone on "Vše", where Reset is a no-op.
+            const base = cutoffIndex > 0 ? allCumulative[ci][cutoffIndex - 1] : 0;
+            if (base) for (let i = 0; i < arr.length; i++) { if (arr[i] != null) arr[i] -= base; }
         });
     }
 
