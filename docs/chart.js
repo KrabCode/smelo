@@ -1,6 +1,7 @@
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAYSlBiWTAJ_th0XEzDk9fthNQBrF88_FdBry3l8l9IrcGuopvFoBzIY4Byb5yfTE0U-LyqGkmZxkX/pub?gid=0&single=true&output=csv';
 const PLAYER_MIN_SESSIONS = 2;
 const PLAYER_RECENT_SESSION_COUNT = 10;
+const Y_ZOOM_MAX = 16;
 const COLORS = [
     "#E15759","#4E79A7","#F28E2B","#76B7B2","#59A14F","#EDC948",
     "#B07AA1","#FF9DA7","#9C755F","#BAB0AC","#1F77B4","#AEC7E8",
@@ -38,6 +39,10 @@ let rawAllRowsWithDate = null, rawHeaders = null;
 let maxPlayerDisplayName = '';
 let storedHighlightTooltips = {}, storedRenderOrder = [];
 let sliderIdx = -1;
+// Vertical zoom: 1 = the whole data range. yCenter is the value in the middle of the view,
+// yBase the unzoomed window, yView the one currently drawn (both set by drawChart).
+let yZoom = Math.min(Math.max(Number(localStorage.getItem('smelo_yzoom')) || 1, 1), Y_ZOOM_MAX);
+let yCenter = null, yBase = null, yView = null;
 const CACHE_KEY = 'smelo_graph_csv', CACHE_TS_KEY = 'smelo_graph_csv_ts', CACHE_TTL = 1800000;
 
 function fetchCSV() {
@@ -308,6 +313,22 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     return html + '</div>';
 }
 
+// Gridline spacing of the unzoomed axis — the ladder the chart has always used.
+function baseTickStep(range) {
+    return range <= 2000 ? 500 : range <= 5000 ? 1000 : range <= 15000 ? 2500 : 5000;
+}
+// Zoomed-in spacing: the next 1/2/2.5/5 x 10^n above span/6, so a zoomed view keeps
+// three to six gridlines however far in it goes.
+function zoomTickStep(span) {
+    const raw = span / 6, mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw / mag;
+    return (n > 5 ? 10 : n > 2.5 ? 5 : n > 2 ? 2.5 : n > 1 ? 2 : 1) * mag;
+}
+// Keep the zoomed window inside the data range; at zoom 1 there is nothing to pan.
+function clampCenter(c, span) {
+    const lo = yBase.min + span / 2, hi = yBase.max - span / 2;
+    return hi <= lo ? (yBase.min + yBase.max) / 2 : Math.min(Math.max(c, lo), hi);
+}
+
 function drawChart() {
     if (!storedCumulative) return;
     const cumulative = storedCumulative;
@@ -367,14 +388,20 @@ function drawChart() {
 
     let yMin = 0, yMax = 0;
     cumulative.forEach(arr => arr.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }));
-    const yRange = yMax - yMin;
-    const step = yRange <= 2000 ? 500 : yRange <= 5000 ? 1000 : yRange <= 15000 ? 2500 : 5000;
+    // Base window: the data range snapped out to whole ticks. The vertical zoom shrinks it
+    // around yCenter; at zoom 1 it is the full range, exactly as an unzoomed chart was.
+    const baseStep = baseTickStep(yMax - yMin);
+    yBase = { min: Math.floor(yMin / baseStep) * baseStep, max: Math.ceil(yMax / baseStep) * baseStep };
+    const ySpan = (yBase.max - yBase.min) / yZoom;
+    yCenter = clampCenter(yCenter == null ? (yBase.min + yBase.max) / 2 : yCenter, ySpan);
+    yView = { min: yCenter - ySpan / 2, max: yCenter + ySpan / 2 };
+    const step = yZoom === 1 ? baseStep : zoomTickStep(ySpan);
     const axisTicks = [];
-    for (let t = Math.floor(yMin / step) * step; t <= Math.ceil(yMax / step) * step; t += step) axisTicks.push(t);
-    // Right-axis driver: a flat, invisible line pinned to the top tick. It only exists so
+    for (let t = Math.ceil(yView.min / step) * step; t <= yView.max; t += step) axisTicks.push(t);
+    // Right-axis driver: a flat, invisible line pinned to the top of the view. It only exists so
     // axis 1 renders; keeping it in the empty top margin stops it overlapping — and blocking
     // clicks on — the leader's line (which is what a per-row max would trace).
-    const mirrorTop = axisTicks.length ? axisTicks[axisTicks.length - 1] : yMax;
+    const mirrorTop = yView.max;
 
     for (let i = 0; i < sessionLabels.length; i++) {
         const row = [i];
@@ -430,7 +457,7 @@ function drawChart() {
     } else if (activeOverlay === 'ztraceno') {
         series[playerNames.length + 1] = { type: 'line', targetAxisIndex: 1, color: ZTRACENO_LINE, lineWidth: 2, pointSize: 4, visibleInLegend: false, enableInteractivity: true };
     }
-    const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short', ticks: axisTicks };
+    const vAxisShared = { textStyle: { color: '#aaa' }, gridlines: { color: '#333' }, baselineColor: '#888', format: 'short', ticks: axisTicks, viewWindow: { min: yView.min, max: yView.max } };
     let axis1 = { ...vAxisShared, gridlines: { color: 'transparent' } };
     if (activeOverlay === 'turnover') {
         const maxT = Math.max(1, ...storedTurnover.filter(v => v != null));
@@ -686,6 +713,101 @@ window.addEventListener('resize', () => { if (storedCumulative) drawChart(); });
             updateFsDetail(sliderIdx >= 0 ? sliderIdx : (storedSessionLabels ? storedSessionLabels.length - 1 : 0));
         }
     });
+})();
+
+// === Vertical zoom: toolbar buttons, wheel, and drag-to-pan (mouse and touch alike) ===
+function syncZoomUI() {
+    const div = document.getElementById('chartDiv');
+    document.getElementById('btnZoomOut').disabled = yZoom <= 1;
+    document.getElementById('btnZoomIn').disabled = yZoom >= Y_ZOOM_MAX;
+    document.getElementById('btnZoomReset').classList.toggle('active', yZoom > 1);
+    // Claim vertical touch gestures only while there is something to pan, so an unzoomed
+    // chart still scrolls the page under a finger.
+    div.style.touchAction = yZoom > 1 ? 'pan-x' : '';
+    div.classList.toggle('pannable', yZoom > 1);
+}
+
+// Plot rectangle, in coordinates relative to #chartDiv. Null until the chart has drawn.
+function plotBox() {
+    try {
+        const b = chart && chart.getChartLayoutInterface().getChartAreaBoundingBox();
+        return b && b.height ? b : null;
+    } catch (e) { return null; }
+}
+
+// The value under a screen y, used to anchor wheel zoom on the point below the cursor.
+function valueAtClientY(clientY) {
+    const box = plotBox();
+    if (!box || !yView) return null;
+    const y = clientY - document.getElementById('chartDiv').getBoundingClientRect().top - box.top;
+    return yView.max - (y / box.height) * (yView.max - yView.min);
+}
+
+function clampZoom(z) { return Math.min(Math.max(z, 1), Y_ZOOM_MAX); }
+
+// Zoom keeping `anchor` (a data value) at its current screen position.
+function setYZoom(z, anchor) {
+    z = clampZoom(z);
+    if (z === yZoom) return;
+    if (yCenter != null && anchor != null) yCenter = anchor + (yCenter - anchor) * (yZoom / z);
+    yZoom = z;
+    if (yZoom === 1) yCenter = null;
+    try { localStorage.setItem('smelo_yzoom', String(yZoom)); } catch (e) {}
+    syncZoomUI();
+    if (storedCumulative) drawChart();
+}
+
+(function initYZoom() {
+    const div = document.getElementById('chartDiv');
+    if (!div) return;
+    document.getElementById('btnZoomIn').addEventListener('click', () => setYZoom(yZoom * 1.5, yCenter));
+    document.getElementById('btnZoomOut').addEventListener('click', () => setYZoom(yZoom / 1.5, yCenter));
+    document.getElementById('btnZoomReset').addEventListener('click', () => { yCenter = null; setYZoom(1); });
+
+    div.addEventListener('wheel', e => {
+        const z = clampZoom(yZoom * (e.deltaY < 0 ? 1.25 : 1 / 1.25));
+        if (z === yZoom) return; // already at a limit — let the wheel scroll the page instead
+        e.preventDefault();
+        setYZoom(z, valueAtClientY(e.clientY));
+    }, { passive: false });
+
+    let panId = null, panY = 0, panMoved = false, panRaf = null, suppressClick = false;
+    div.addEventListener('pointerdown', e => {
+        if (yZoom <= 1 || !e.isPrimary || panId != null) return;
+        panId = e.pointerId; panY = e.clientY; panMoved = false;
+        div.setPointerCapture(panId);
+    });
+    div.addEventListener('pointermove', e => {
+        if (e.pointerId !== panId) return;
+        const box = plotBox();
+        if (!box || !yView || yCenter == null) return;
+        // Below the threshold it is still a tap/click on a player line, not a pan.
+        if (!panMoved && Math.abs(e.clientY - panY) < 4) return;
+        panMoved = true; suppressClick = true;
+        e.preventDefault();
+        div.classList.add('panning');
+        // Drag down = the lines follow the finger, so the window moves up the value scale.
+        yCenter += (e.clientY - panY) * (yView.max - yView.min) / box.height;
+        panY = e.clientY;
+        if (!panRaf) panRaf = requestAnimationFrame(() => { panRaf = null; if (storedCumulative) drawChart(); });
+    });
+    const endPan = e => {
+        if (e.pointerId !== panId) return;
+        try { div.releasePointerCapture(panId); } catch (err) {}
+        panId = null;
+        div.classList.remove('panning');
+    };
+    div.addEventListener('pointerup', endPan);
+    div.addEventListener('pointercancel', endPan);
+    // A finished pan must not also select whatever line the release landed on.
+    div.addEventListener('click', e => {
+        if (!suppressClick) return;
+        suppressClick = false;
+        e.stopPropagation();
+        e.preventDefault();
+    }, true);
+
+    syncZoomUI();
 })();
 
 function initSlider() {

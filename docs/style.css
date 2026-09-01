@@ -165,6 +165,8 @@ img { border-radius: 16px; }
     margin: 0 auto;
     user-select: none;
 }
+#chartDiv.pannable { cursor: grab; }
+#chartDiv.panning { cursor: grabbing; }
 /* Fullscreen: fill the whole screen, chart fills it */
 #chartWindow:fullscreen {
     width: 100vw !important;
@@ -380,6 +382,9 @@ img { border-radius: 16px; }
 }
 .range-btn.active { background: #555; color: #eee; border-color: #888; }
 .range-btn:hover { background: #444; }
+.range-btn:disabled { opacity: 0.4; cursor: default; }
+.range-btn:disabled:hover { background: #333; }
+.zoom-btn { padding: 4px 10px; min-width: 34px; }
 .range-sep {
     display: inline-block;
     width: 1px;
