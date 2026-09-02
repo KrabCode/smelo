@@ -776,8 +776,7 @@ function setYZoom(z, anchor) {
     let panId = null, panY = 0, panMoved = false, panRaf = null, suppressClick = false;
     div.addEventListener('pointerdown', e => {
         if (yZoom <= 1 || !e.isPrimary || panId != null) return;
-        panId = e.pointerId; panY = e.clientY; panMoved = false;
-        div.setPointerCapture(panId);
+        panId = e.pointerId; panY = e.clientY; panMoved = false; suppressClick = false;
     });
     div.addEventListener('pointermove', e => {
         if (e.pointerId !== panId) return;
@@ -785,6 +784,10 @@ function setYZoom(z, anchor) {
         if (!box || !yView || yCenter == null) return;
         // Below the threshold it is still a tap/click on a player line, not a pan.
         if (!panMoved && Math.abs(e.clientY - panY) < 4) return;
+        // Capture only once this really is a drag. Capturing on pointerdown retargets the
+        // following mouseup/click to #chartDiv, so Google Charts never sees the click land on
+        // a node and selecting a player stops working the moment the chart is zoomed in.
+        if (!panMoved) { try { div.setPointerCapture(panId); } catch (err) {} }
         panMoved = true; suppressClick = true;
         e.preventDefault();
         div.classList.add('panning');
