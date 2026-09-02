@@ -393,6 +393,54 @@ img { border-radius: 16px; }
     margin: 0 10px;
     vertical-align: middle;
 }
+/* === Player filter dropdown === */
+.filter-wrap { position: relative; display: inline-block; }
+#btnPlayerFilter.active { background: #4a3a1f; color: #ffcf7a; border-color: #a87c2e; }
+.filter-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 10;
+    background: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 6px;
+    padding: 6px;
+    min-width: 170px;
+    max-height: 260px;
+    overflow-y: auto;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.filter-menu-hint { font-size: 0.72em; color: #888; padding: 2px 6px 6px; }
+.filter-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    color: #ddd;
+    white-space: nowrap;
+}
+.filter-menu-item:hover { background: #383838; }
+.filter-menu-item input { margin: 0; accent-color: #ffb300; }
+.filter-menu-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.filter-menu-clear {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 6px;
+    border: none;
+    border-top: 1px solid #444;
+    background: none;
+    color: #999;
+    font-size: 0.8em;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+}
+.filter-menu-clear:hover { color: #eee; }
 #overlayTip {
     position: absolute;
     display: none;

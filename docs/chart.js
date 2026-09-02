@@ -26,7 +26,56 @@ const OVERLAY_NOTES = {
     ztraceno: { html: '<b>Ztraceno</b> — neplánovaná nesrovnalost v záznamu.', color: ZTRACENO_TEXT },
     reset: { html: '<b>Reset</b> — každý začíná na nule od začátku období.', color: '#c9b3e6' }
 };
-let chart = null, chartData = null, playerNames = [], playerColors = {}, selectedPlayer = localStorage.getItem('smelo_player') || '';
+let chart = null, chartData = null, playerNames = [], playerColors = {};
+// Player filter: up to MAX_FILTER_PLAYERS players tracked at once. Size 0/1 behaves like the
+// old single-highlight mode (all lines shown, one bold); size 2+ hides every other line so
+// only the tracked players are drawn — that's the actual "filter".
+const MAX_FILTER_PLAYERS = 3;
+let selectedPlayers = new Set(loadSelectedPlayers());
+function loadSelectedPlayers() {
+    try {
+        const raw = localStorage.getItem('smelo_players');
+        if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    // Migrate the old single-player key.
+    const legacy = localStorage.getItem('smelo_player');
+    if (legacy) {
+        try { localStorage.setItem('smelo_players', JSON.stringify([legacy])); localStorage.removeItem('smelo_player'); } catch (e) {}
+        return [legacy];
+    }
+    return [];
+}
+function persistSelectedPlayers() {
+    try { localStorage.setItem('smelo_players', JSON.stringify([...selectedPlayers])); } catch (e) {}
+}
+// Adds/removes a player from the tracked set; a 4th pick evicts the oldest one (Sets keep
+// insertion order), so the set never grows past MAX_FILTER_PLAYERS. Used by the filter
+// dropdown, where checkboxes build up a multi-player selection.
+function togglePlayer(name) {
+    if (selectedPlayers.has(name)) {
+        selectedPlayers.delete(name);
+    } else {
+        if (selectedPlayers.size >= MAX_FILTER_PLAYERS) selectedPlayers.delete(selectedPlayers.values().next().value);
+        selectedPlayers.add(name);
+    }
+    persistSelectedPlayers();
+}
+// Classic single-highlight click: replaces the whole selection with just this one player (or
+// clears it if it was already the lone selection), leaving every other line visible (muted).
+// Used by the chart line (outside filter mode), the stats table, and tooltip rows — the
+// dropdown checkboxes are the only way to build a 2-3 player filter.
+function selectSinglePlayer(name) {
+    const wasOnly = selectedPlayers.size === 1 && selectedPlayers.has(name);
+    selectedPlayers.clear();
+    if (!wasOnly) selectedPlayers.add(name);
+    persistSelectedPlayers();
+}
+// Chart line click: inside filter mode only tracked lines are drawn/clickable, so a click
+// there just drops that one player out of the filter; otherwise it's a classic single-select.
+function handleLineClick(name) {
+    if (selectedPlayers.size >= 2) togglePlayer(name);
+    else selectSinglePlayer(name);
+}
 let storedCumulative = null, storedOriginalCells = null, storedSessionLabels = null, storedAxisLabels = null, storedDates = null, storedTurnover = null, storedPlayerCount = null, storedZtraceno = null;
 // Mutually-exclusive aux overlay on the right axis: '' | 'turnover' | 'players' | 'ztraceno'
 let activeOverlay = localStorage.getItem('smelo_overlay') || (localStorage.getItem('smelo_turnover') === '1' ? 'turnover' : '');
@@ -206,7 +255,7 @@ function processAndRender() {
     storedPlayerCount = playerCount;
     storedZtraceno = ztraceno;
 
-    if (!selectedPlayer) {
+    if (selectedPlayers.size === 0) {
         const lastIdx = originalCells.length - 1;
         if (lastIdx >= 0) {
             let winnerName = '', winnerDelta = -Infinity;
@@ -217,9 +266,11 @@ function processAndRender() {
                 const d = name.split('/')[0].trim(), wd = winnerName.split('/')[0].trim();
                 if (v > winnerDelta || (v === winnerDelta && d < wd)) { winnerDelta = v; winnerName = name; }
             });
-            if (winnerName) selectedPlayer = winnerName;
+            if (winnerName) { selectedPlayers.add(winnerName); persistSelectedPlayers(); }
         }
     }
+    buildPlayerFilterMenu();
+    syncPlayerFilterUI();
 
     drawChart();
     drawStatsChart();
@@ -275,7 +326,56 @@ document.getElementById('btnRefreshChart').addEventListener('click', () => {
     fetchAndRender();
 });
 
-function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
+// === Player filter dropdown: checkbox list of every player, up to MAX_FILTER_PLAYERS tracked ===
+function buildPlayerFilterMenu() {
+    const menu = document.getElementById('playerFilterMenu');
+    if (!menu || !playerNames.length) return;
+    let html = `<div class="filter-menu-hint">Sleduj max. ${MAX_FILTER_PLAYERS} hráče</div>`;
+    playerNames.forEach(name => {
+        const checked = selectedPlayers.has(name) ? ' checked' : '';
+        const display = name.split('/')[0].trim();
+        html += `<label class="filter-menu-item"><input type="checkbox" data-player="${name}"${checked}>` +
+            `<span class="filter-menu-dot" style="background:${playerColors[name]}"></span>${display}</label>`;
+    });
+    html += `<button type="button" class="filter-menu-clear" id="btnPlayerFilterClear">Zrušit výběr</button>`;
+    menu.innerHTML = html;
+    menu.querySelectorAll('input[data-player]').forEach(cb => {
+        cb.addEventListener('change', () => {
+            togglePlayer(cb.dataset.player);
+            syncPlayerFilterUI();
+            drawChart();
+            renderStatsTable();
+        });
+    });
+    document.getElementById('btnPlayerFilterClear').addEventListener('click', () => {
+        selectedPlayers.clear();
+        persistSelectedPlayers();
+        syncPlayerFilterUI();
+        drawChart();
+        renderStatsTable();
+    });
+}
+// Keeps the toolbar button label/state and the menu's checkboxes in sync with selectedPlayers,
+// without rebuilding the whole menu (that would drop it mid-interaction).
+function syncPlayerFilterUI() {
+    const btn = document.getElementById('btnPlayerFilter');
+    if (!btn) return;
+    const n = selectedPlayers.size;
+    btn.textContent = (n >= 2 ? `Hráči (${n}) ▾` : 'Hráči ▾');
+    btn.classList.toggle('active', n >= 2);
+    const menu = document.getElementById('playerFilterMenu');
+    if (menu) menu.querySelectorAll('input[data-player]').forEach(cb => { cb.checked = selectedPlayers.has(cb.dataset.player); });
+}
+(function initPlayerFilterMenu() {
+    const btn = document.getElementById('btnPlayerFilter');
+    const menu = document.getElementById('playerFilterMenu');
+    const wrap = document.getElementById('playerFilterWrap');
+    if (!btn || !menu || !wrap) return;
+    btn.addEventListener('click', () => { menu.style.display = menu.style.display === 'none' ? '' : 'none'; });
+    document.addEventListener('click', e => { if (!wrap.contains(e.target)) menu.style.display = 'none'; });
+})();
+
+function buildTooltip(rowIdx, highlightLabels) {
     const entries = playerNames.map((name, ci) => {
         const cell = storedOriginalCells[rowIdx][ci];
         const delta = (cell !== undefined && cell !== '' && cell !== '0') ? Number(cell) : 0;
@@ -296,7 +396,7 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
     let html = `<div class="tt"><table class="tt-table">`;
     html += `<thead><tr><th></th><th></th><th>Změna</th><th>Celkem</th></tr></thead><tbody>${sizer}`;
     entries.forEach(e => {
-        const isFocus = e.fullName === hoveredPlayer;
+        const isFocus = selectedPlayers.has(e.fullName);
         const bld = isFocus ? 'font-weight:bold;' : '';
         const bg = isFocus ? 'background:rgba(255,255,255,0.06);' : '';
         html += `<tr data-player="${e.fullName}" style="cursor:pointer;${bg}">` +
@@ -307,9 +407,12 @@ function buildTooltip(rowIdx, highlightLabels, hoveredPlayer) {
             `</tr>`;
     });
     html += `</tbody></table>`;
-    if (highlightLabels && highlightLabels[rowIdx]) {
-        const pName = selectedPlayer ? selectedPlayer.split('/')[0].trim() : '';
-        const pColor = selectedPlayer ? playerColors[selectedPlayer] : '#ffb300';
+    // The best/worst note only exists in single-highlight mode (see drawChart), so there's
+    // exactly one tracked player to attribute it to.
+    if (highlightLabels && highlightLabels[rowIdx] && selectedPlayers.size === 1) {
+        const only = [...selectedPlayers][0];
+        const pName = only.split('/')[0].trim();
+        const pColor = playerColors[only];
         html += `<div style="margin-top:6px;padding-top:4px;border-top:1px solid #444;font-size:11px;"><span style="color:${pColor};font-weight:bold;">${pName}</span><br><span style="color:#ffb300;">${highlightLabels[rowIdx]}</span></div>`;
     }
     return html + '</div>';
@@ -338,10 +441,16 @@ function drawChart() {
     const sessionLabels = storedSessionLabels;
     const axisLabels = storedAxisLabels || storedSessionLabels;
 
-    // Find highlight indices for selected player
+    // 2+ tracked players = filter mode: every other line is hidden outright. 0/1 keeps the
+    // old single-highlight look (all lines shown, the one tracked player bold).
+    const filterActive = selectedPlayers.size >= 2;
+    const onlyPlayer = selectedPlayers.size === 1 ? [...selectedPlayers][0] : null;
+
+    // Find highlight indices for the single tracked player (best/worst star markers only
+    // make sense with exactly one line singled out).
     let highlightTooltips = {}, highlightTypes = {};
-    if (selectedPlayer) {
-        const ci = playerNames.indexOf(selectedPlayer);
+    if (onlyPlayer) {
+        const ci = playerNames.indexOf(onlyPlayer);
         if (ci >= 0) {
             let bestVal = -Infinity, worstVal = Infinity, bestIdx = -1, worstIdx = -1;
             for (let i = 0; i < originalCells.length; i++) {
@@ -365,10 +474,9 @@ function drawChart() {
 
     storedHighlightTooltips = highlightTooltips;
 
-    // Render selected player last so it paints on top
-    const selectedIdx = selectedPlayer ? playerNames.indexOf(selectedPlayer) : -1;
+    // Render tracked players last so they paint on top of the untracked ones.
     const renderOrder = playerNames.map((_, i) => i);
-    if (selectedIdx >= 0) { renderOrder.splice(selectedIdx, 1); renderOrder.push(selectedIdx); }
+    renderOrder.sort((a, b) => (selectedPlayers.has(playerNames[a]) ? 1 : 0) - (selectedPlayers.has(playerNames[b]) ? 1 : 0));
     storedRenderOrder = renderOrder;
 
     // Numeric x-axis (row index) with explicit sparse ticks — a string axis would merge
@@ -388,8 +496,11 @@ function drawChart() {
     else if (activeOverlay === 'players') { chartData.addColumn('number', 'Hráči'); }
     else if (activeOverlay === 'ztraceno') { chartData.addColumn('number', 'Ztraceno'); }
 
+    // In filter mode, scale the axis to only the tracked players — otherwise an untracked
+    // outlier would still stretch the range even though its line isn't drawn.
     let yMin = 0, yMax = 0;
-    cumulative.forEach(arr => arr.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }));
+    const yRangeSource = filterActive ? cumulative.filter((_, ci) => selectedPlayers.has(playerNames[ci])) : cumulative;
+    yRangeSource.forEach(arr => arr.forEach(v => { if (v != null) { yMin = Math.min(yMin, v); yMax = Math.max(yMax, v); } }));
     // Base window: the data range snapped out to whole ticks. The vertical zoom shrinks it
     // around yCenter; at zoom 1 it is the full range, exactly as an unzoomed chart was.
     const baseStep = baseTickStep(yMax - yMin);
@@ -409,18 +520,22 @@ function drawChart() {
         const row = [i];
         renderOrder.forEach((ci, j) => {
             const name = playerNames[ci];
-            const v = cumulative[ci][i];
+            const tracked = selectedPlayers.has(name);
+            // Filter mode: untracked players' points are nulled out so their line just doesn't draw.
+            const v = (filterActive && !tracked) ? null : cumulative[ci][i];
             row.push(v);
             row.push(null);
             const cell = originalCells[i][ci];
             const played = cell !== undefined && cell !== '' && cell !== '0' && Number(cell) !== 0;
-            if (selectedPlayer && name === selectedPlayer) {
+            if (onlyPlayer && name === onlyPlayer) {
                 const pc = playerColors[name];
                 const ht = highlightTypes[i];
                 if (ht === 'best') row.push('point {size: 7; shape-type: triangle; fill-color: #4ade80; stroke-color: #4ade80; stroke-width: 0; visible: true;}');
                 else if (ht === 'worst') row.push('point {size: 7; shape-type: triangle; shape-rotation: 180; fill-color: #f87171; stroke-color: #f87171; stroke-width: 0; visible: true;}');
                 else if (played) row.push('point {size: 2.5; fill-color: ' + pc + '; visible: true;}');
                 else row.push(null);
+            } else if (filterActive && tracked && played) {
+                row.push('point {size: 2.5; fill-color: ' + playerColors[name] + '; visible: true;}');
             } else {
                 row.push(null);
             }
@@ -443,8 +558,15 @@ function drawChart() {
     renderOrder.forEach((ci, j) => {
         const name = playerNames[ci];
         const color = playerColors[name];
-        if (selectedPlayer && name === selectedPlayer) series[j] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
-        else series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
+        const tracked = selectedPlayers.has(name);
+        if (filterActive) {
+            if (tracked) series[j] = { color, lineWidth: 2.5, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+            else series[j] = { color: 'transparent', lineWidth: 0, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0, enableInteractivity: false };
+        } else if (tracked) {
+            series[j] = { color, lineWidth: 3, pointSize: 0, visibleInLegend: true, targetAxisIndex: 0 };
+        } else {
+            series[j] = { color: mute(color), lineWidth: 1, pointSize: 0, visibleInLegend: false, targetAxisIndex: 0 };
+        }
     });
     // Mirror series drives the right-hand y-axis labels; when an aux series overlay is shown
     // it yields axis 1 to that overlay, so park it on axis 0 (still invisible). Reset has no
@@ -498,9 +620,9 @@ function drawChart() {
                 var j = Math.round((s.column - 1) / 3);
                 if (storedRenderOrder && j >= 0 && j < storedRenderOrder.length && (s.column - 1) % 3 === 0) {
                     var player = playerNames[storedRenderOrder[j]];
-                    if (player && player !== selectedPlayer) {
-                        selectedPlayer = player;
-                        localStorage.setItem('smelo_player', selectedPlayer);
+                    if (player) {
+                        handleLineClick(player);
+                        syncPlayerFilterUI();
                         playerChanged = true;
                     }
                 }
@@ -576,7 +698,7 @@ function updateFsDetail(rowIdx) {
     if (!el || fsDetailDismissed || rowIdx == null || !storedSessionLabels || !storedSessionLabels[rowIdx]) return;
     el.innerHTML = '<button class="fs-detail-close" title="Skrýt" aria-label="Skrýt">×</button>' +
         '<div class="fs-detail-title">' + storedSessionLabels[rowIdx] + '</div>' +
-        buildTooltip(rowIdx, storedHighlightTooltips, selectedPlayer || null);
+        buildTooltip(rowIdx, storedHighlightTooltips);
 }
 
 let statsSortCol = 'total', statsSortAsc = false, statsData = null;
@@ -629,7 +751,7 @@ function renderStatsTable() {
     const f = v => `${v}`;
     let html = `<table><tr><th data-col="name">Hráč${arrow('name')}</th><th data-col="total">Kumulativní šmelo${arrow('total')}</th><th data-col="games">Počet her${arrow('games')}</th><th data-col="avg">Průměr za hru${arrow('avg')}</th><th data-col="best">Největší výhra${arrow('best')}</th><th data-col="worst">Největší prohra${arrow('worst')}</th></tr>`;
     sorted.forEach(s => {
-        const sel = selectedPlayer === s.fullName ? ' class="selected"' : '';
+        const sel = selectedPlayers.has(s.fullName) ? ' class="selected"' : '';
         html += `<tr data-player="${s.fullName}"${sel}>` +
             `<td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${s.color};margin-right:6px;vertical-align:middle;"></span>${s.name}</td>` +
             `<td class="${c(s.total)}">${f(s.total)}</td>` +
@@ -652,9 +774,8 @@ function renderStatsTable() {
     });
     div.querySelectorAll('tr[data-player]').forEach(tr => {
         tr.addEventListener('click', () => {
-            const player = tr.dataset.player;
-            selectedPlayer = selectedPlayer === player ? '' : player;
-            localStorage.setItem('smelo_player', selectedPlayer);
+            selectSinglePlayer(tr.dataset.player);
+            syncPlayerFilterUI();
             drawChart();
             renderStatsTable();
         });
@@ -831,11 +952,11 @@ function updateSliderInfo() {
     document.getElementById('sliderPrev').style.visibility = sliderIdx <= 0 ? 'hidden' : '';
     document.getElementById('sliderNext').style.visibility = sliderIdx >= n - 1 ? 'hidden' : '';
     const infoEl = document.getElementById('sessionSliderInfo');
-    infoEl.innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips, selectedPlayer || null);
+    infoEl.innerHTML = buildTooltip(sliderIdx, storedHighlightTooltips);
     infoEl.querySelectorAll('tr[data-player]').forEach(tr => {
         tr.addEventListener('click', () => {
-            selectedPlayer = selectedPlayer === tr.dataset.player ? '' : tr.dataset.player;
-            localStorage.setItem('smelo_player', selectedPlayer);
+            selectSinglePlayer(tr.dataset.player);
+            syncPlayerFilterUI();
             drawChart();
             renderStatsTable();
         });
