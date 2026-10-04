@@ -82,7 +82,7 @@ let activeOverlay = localStorage.getItem('smelo_overlay') || (localStorage.getIt
 // Reset is an independent mode (re-bases the main lines), not a right-axis overlay.
 if (activeOverlay === 'reset') activeOverlay = '';
 let resetBaseline = localStorage.getItem('smelo_reset') === '1';
-let rangeMode = localStorage.getItem('smelo_range') || 'half';
+let rangeMode = 'all';
 const RANGE_MONTHS = { quarter: 3, half: 6, year: 12 };
 let rawAllRowsWithDate = null, rawHeaders = null;
 let maxPlayerDisplayName = '';
@@ -277,17 +277,12 @@ function processAndRender() {
 }
 
 function syncRangeUI() {
-    document.querySelectorAll('#rangeToggle [data-range]').forEach(b => b.classList.toggle('active', b.dataset.range === rangeMode));
+    document.getElementById('rangeSelect').value = rangeMode;
 }
-document.querySelectorAll('#rangeToggle [data-range]').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (rangeMode === btn.dataset.range) return;
-        rangeMode = btn.dataset.range;
-        localStorage.setItem('smelo_range', rangeMode);
-        syncRangeUI();
-        sliderIdx = -1; // auto-select the last shown node for the new range
-        processAndRender();
-    });
+document.getElementById('rangeSelect').addEventListener('change', e => {
+    rangeMode = e.target.value;
+    sliderIdx = -1; // auto-select the last shown node for the new range
+    processAndRender();
 });
 function syncOverlayNote() {
     const note = document.getElementById('overlayNote');
