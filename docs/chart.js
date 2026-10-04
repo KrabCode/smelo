@@ -277,13 +277,28 @@ function processAndRender() {
 }
 
 function syncRangeUI() {
-    document.getElementById('rangeSelect').value = rangeMode;
+    const items = document.querySelectorAll('#rangeMenu [data-range]');
+    items.forEach(it => it.classList.toggle('selected', it.dataset.range === rangeMode));
+    const current = document.querySelector(`#rangeMenu [data-range="${rangeMode}"]`);
+    document.getElementById('btnRange').textContent = current.textContent + ' ▾';
 }
-document.getElementById('rangeSelect').addEventListener('change', e => {
-    rangeMode = e.target.value;
-    sliderIdx = -1; // auto-select the last shown node for the new range
-    processAndRender();
-});
+(function initRangeMenu() {
+    const btn = document.getElementById('btnRange');
+    const menu = document.getElementById('rangeMenu');
+    const wrap = document.getElementById('rangeWrap');
+    btn.addEventListener('click', () => { menu.style.display = menu.style.display === 'none' ? '' : 'none'; });
+    document.addEventListener('click', e => { if (!wrap.contains(e.target)) menu.style.display = 'none'; });
+    menu.querySelectorAll('[data-range]').forEach(it => {
+        it.addEventListener('click', () => {
+            menu.style.display = 'none';
+            if (rangeMode === it.dataset.range) return;
+            rangeMode = it.dataset.range;
+            syncRangeUI();
+            sliderIdx = -1; // auto-select the last shown node for the new range
+            processAndRender();
+        });
+    });
+})();
 function syncOverlayNote() {
     const note = document.getElementById('overlayNote');
     // Aux overlay note takes the line; otherwise show the Reset explainer when Reset is on.

@@ -35,12 +35,15 @@
         <div id="rangeToggle" class="win-toolbar" style="display:none;">
           <button id="btnReset" class="range-btn" title="Vynulovat každého na začátku zobrazeného období">Reset</button>
           <span class="range-sep" aria-hidden="true"></span>
-          <select id="rangeSelect" class="range-btn" title="Zobrazené období">
-            <option value="quarter">Čtvrtletí</option>
-            <option value="half">Půlrok</option>
-            <option value="year">Rok</option>
-            <option value="all">Vše</option>
-          </select>
+          <div id="rangeWrap" class="filter-wrap">
+            <button id="btnRange" class="range-btn" title="Zobrazené období">Vše ▾</button>
+            <div id="rangeMenu" class="filter-menu" style="display:none;">
+              <div class="filter-menu-item" data-range="quarter">Čtvrtletí</div>
+              <div class="filter-menu-item" data-range="half">Půlrok</div>
+              <div class="filter-menu-item" data-range="year">Rok</div>
+              <div class="filter-menu-item" data-range="all">Vše</div>
+            </div>
+          </div>
           <button id="btnRefreshChart" class="range-btn" title="Přenačíst graf">↻</button>
           <span class="range-sep" aria-hidden="true"></span>
           <button id="btnZoomOut" class="range-btn zoom-btn" title="Oddálit svisle">&minus;</button>

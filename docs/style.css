@@ -424,6 +424,7 @@ img { border-radius: 16px; }
     white-space: nowrap;
 }
 .filter-menu-item:hover { background: #383838; }
+.filter-menu-item.selected { background: #444; color: #fff; }
 .filter-menu-item input { margin: 0; accent-color: #ffb300; }
 .filter-menu-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .filter-menu-clear {
