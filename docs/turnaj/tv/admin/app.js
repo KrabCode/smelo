@@ -1849,6 +1849,14 @@ function sanitizeProfileKey(name) {
     return name.trim().replace(/[.#$/[\]]/g, '_').slice(0, 60) || 'profil';
 }
 
+function formatProfileDate(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const p = n => String(n).padStart(2, '0');
+    return ' — ' + d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+        ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
 function renderProfiles() {
     const sel = document.getElementById('profile-select');
     if (!sel) return;
@@ -1857,7 +1865,7 @@ function renderProfiles() {
     keys.sort((a, b) => (T.profiles[a].name || a).localeCompare(T.profiles[b].name || b, 'cs'));
     sel.innerHTML = '<option value="">' + i18n.t('profiles.none') + '</option>' +
         keys.map(k => '<option value="' + k.replace(/"/g, '&quot;') + '">' +
-            (T.profiles[k].name || k).replace(/</g, '&lt;') + '</option>').join('');
+            (T.profiles[k].name || k).replace(/</g, '&lt;') + formatProfileDate(T.profiles[k].savedAt) + '</option>').join('');
     if (T.profiles[prev]) sel.value = prev;
 }
 
